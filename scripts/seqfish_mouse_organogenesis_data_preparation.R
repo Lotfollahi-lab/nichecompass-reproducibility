@@ -3,15 +3,11 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install(version = "3.16")
 BiocManager::install("zellkonverter")
 BiocManager::install("scRNAseq")
-<<<<<<< HEAD
 BiocManager::install("rhdf5")
-=======
->>>>>>> 6619c23b9bd35a18507787553e227cb6a7367cd2
 
 library(data.table)
 library(SingleCellExperiment)
 library(zellkonverter)
-<<<<<<< HEAD
 library(rhdf5)
 
 metadata <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/metadata.Rds","rb"))
@@ -47,15 +43,3 @@ rownames(sce) <- imputed_row_names
 colnames(sce) <- imputed_col_names
 # sce <- sce[, grepl("embryo2", colnames(sce))]
 writeH5AD(sce, file = "seqfish_mouse_organogenesis_imputed.h5ad")
-=======
-
-counts <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/counts.Rds","rb"))
-metadata <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/metadata.Rds","rb"))
-
-sce <- SingleCellExperiment(
-  list(counts=counts),
-  colData=DataFrame(Area=metadata$Area,
-                    celltype_mapped_refined=metadata$celltype_mapped_refined))
-
-writeH5AD(sce, file = "seqfish_mouse_organogenesis.h5ad")
->>>>>>> 6619c23b9bd35a18507787553e227cb6a7367cd2
