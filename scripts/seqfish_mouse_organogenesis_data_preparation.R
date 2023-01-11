@@ -16,9 +16,10 @@ metadata <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2
 ##### seqFISH data #####
 ########################
 
-counts <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/counts.Rds","rb"))
+counts <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/counts.Rds", "rb"))
+logcounts <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/exprs.Rds", "rb"))
 sce <- SingleCellExperiment(
-  list(counts=counts),
+  list(logcounts=logcounts, counts=counts),
   colData=DataFrame(Area=metadata$Area,
                     celltype_mapped_refined=metadata$celltype_mapped_refined,
                     x=metadata$x_global_affine,
@@ -32,14 +33,13 @@ writeH5AD(sce, file = "seqfish_mouse_organogenesis.h5ad")
 download.file("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/imputed.h5", "imputed.h5")
 imputed_row_names <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/imputed_row_names.Rds", "rb"))
 imputed_col_names <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/imputed_column_names.Rds", "rb"))
-expr_imputed <- as(h5read("imputed.h5", "/logcounts"), "dgCMatrix")
+logcounts_imputed <- as(h5read("imputed.h5", "/logcounts"), "dgCMatrix")
 sce <- SingleCellExperiment(
-  list(counts=expr_imputed),
+  list(logcounts=logcounts_imputed),
   colData=DataFrame(Area=metadata$Area,
                     celltype_mapped_refined=metadata$celltype_mapped_refined,
                     x=metadata$x_global_affine,
                     y=metadata$y_global_affine))ß
 rownames(sce) <- imputed_row_names
 colnames(sce) <- imputed_col_names
-# sce <- sce[, grepl("embryo2", colnames(sce))]
 writeH5AD(sce, file = "seqfish_mouse_organogenesis_imputed.h5ad")
