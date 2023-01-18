@@ -33,7 +33,7 @@ writeH5AD(sce, file = "seqfish_mouse_organogenesis.h5ad")
 download.file("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/imputed.h5", "imputed.h5")
 imputed_row_names <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/imputed_row_names.Rds", "rb"))
 imputed_col_names <- readRDS(url("https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/imputed_column_names.Rds", "rb"))
-logcounts_imputed <- as(h5read("imputed.h5", "/logcounts"), "dgCMatrix")
+logcounts_imputed <- as(h5read("../datasets/bronze/seqfish_mouse_organogenesis/imputed.h5", "/logcounts"), "dgCMatrix")
 sce <- SingleCellExperiment(
   list(logcounts=logcounts_imputed),
   colData=DataFrame(Area=metadata$Area,
