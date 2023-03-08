@@ -10,7 +10,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y python3-opencv \
                                          wget \
                                          vim \
+                                         g++ \
+                                         gcc \
                                          git
+                                         
 
 # Download & install VSCode code-server for interactive development
 ARG CODE_SERVER_VERSION=4.2.0
@@ -41,15 +44,25 @@ RUN wget \
     && rm -f Miniconda3-latest-Linux-x86_64.sh 
 RUN conda init bash
 
-# Create conda environment
-COPY environment.yml .
-RUN conda env create -f environment.yml
+# Create autotalker conda environment
+COPY autotalker_env.yml .
+RUN conda env create -f autotalker_env.yml
+
+# Create deeplinc conda environment
+COPY deeplinc_env.yml .
+RUN conda env create -f deeplinc_env.yml
 
 # Copy environment file (for Charliecloud)
 COPY environment /environment
 
 # Expose mlflow server port
 EXPOSE 8338
+
+# Install scarches from source
+#RUN git clone https://github.com/theislab/scarches &&\
+#    cd scarches &&\
+#    /bin/bash -c ". activate autotalker" &&\
+#    python3 setup.py install
 
 # Remove retrieved packages from local cache and remove orphaned dependency packages 
 RUN apt-get clean -y && apt-get autoremove -y
