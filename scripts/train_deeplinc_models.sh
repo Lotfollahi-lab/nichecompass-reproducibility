@@ -32,11 +32,11 @@ do
         fi
     
         # Build and execute the Python script command with line breaks
-        cmd="python ../../../../../scripts/deeplinc.py \
-            -e ../counts.csv \
-            -a ../$adj_file \
-            -c ../coords.csv \
-            -r ../cell_types.csv \
+        cmd="python ../../../../../../scripts/deeplinc.py \
+            -e ../../counts.csv \
+            -a ../../$adj_file \
+            -c ../../coords.csv \
+            -r ../../cell_types.csv \
             -n run$i \
             -i 40 \
             --seed $((i-1))"
