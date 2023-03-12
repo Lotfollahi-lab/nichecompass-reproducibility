@@ -2,7 +2,7 @@
 # coding: utf-8
 
 ###############################################################################
-# Autotalker Reference Model Training #
+# Autotalker Benchmark Models Training #
 ###############################################################################
 
 ###############################################################################
@@ -19,6 +19,7 @@ sys.path.append("../../autotalker")
 import argparse
 import os
 import sys
+import time
 from datetime import datetime
 
 import anndata as ad
@@ -42,19 +43,22 @@ parser = argparse.ArgumentParser(description=os.path.basename(__file__))
 parser.add_argument(
     "--dataset",
     type=str,
-    help="Input dataset. The adata file name has to be f'{dataset}.h5ad' "
-         "or f'{dataset}_{batch}.h5ad' if `batch` is not `None`.")
+    help="Input dataset. The adata file name has to be f'{dataset}.h5ad' ")
 parser.add_argument(
-    "--batch",
+    "--adata_new_name",
     type=str,
     default=None,
-    help="Batch of the input dataset used as reference. If not `None`, the "
-         "adata file name has to be f'{dataset}_{batch}.h5ad'")
+    help="Name of adata to which to append results. If `None`, create.")
 parser.add_argument(
-    "--n_neighbors",
-    type=int,
-    default=12,
-    help="Number of neighbors used to compute the spatial neighborhood graph.")
+    "--n_neighbors_list",
+    nargs="+",
+    default="4 4 8 8 12 12 16 16 20 20",
+    help="Number of neighbors per model training run.")
+parser.add_argument(
+    "--cell_type_key",
+    type=str,
+    default="cell_type",
+    help="Key in `adata.obs` where the cell types are stored.")
 parser.add_argument(
     "--spatial_key",
     type=str,
@@ -70,17 +74,17 @@ parser.add_argument(
 parser.add_argument(
     "--nichenet_max_n_target_genes_per_gp",
     type=int,
-    default=50,
+    default=20000,
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
     "--include_mebocost_gps",
     type=bool,
-    default=False,
+    default=True,
     help="Indicator whether to include mebocost gene programs.")
 parser.add_argument(
     "--mebocost_species",
     type=str,
-    default="human",
+    default="mouse",
     help="Species that is used for the retrieval of mebocost gene programs.")
 parser.add_argument(
     "--gp_filter_mode",
@@ -110,10 +114,20 @@ parser.add_argument(
 
 # Model
 parser.add_argument(
-    "--model_label",
+    "--model_name",
     type=str,
-    default="reference",
-    help="Label of the model under which it will be saved.")
+    default="autotalker",
+    help="Name of the model.")
+parser.add_argument(
+    "--edge_batch_size_list",
+    nargs="+",
+    default="512 512 256 256 256 256 128 128 128 128",
+    help="Edge batch sizes per model training run.")
+parser.add_argument(
+    "--node_batch_size_list",
+    nargs="+",
+    default="64 64 32 32 32 32 16 16 16 16",
+    help="Node batch sizes per model training run.")
 parser.add_argument(
     "--counts_key",
     type=str,
@@ -173,7 +187,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_cond_embed",
     type=int,
-    default=180,
+    default=20,
     help="s. Autotalker class signature")
 parser.add_argument(
     "--log_variational",
@@ -218,29 +232,36 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_group_lasso",
     type=float,
-    default=0.01,
+    default=0.,
     help="s. Autotalker train method signature")
 parser.add_argument(
     "--lambda_l1_masked",
     type=float,
-    default=0.01,
-    help="s. Autotalker train method signature")
-parser.add_argument(
-    "--edge_batch_size",
-    type=int,
-    default=128,
-    help="s. Autotalker train method signature")
-parser.add_argument(
-    "--node_batch_size",
-    type=int,
-    default=16,
+    default=0.,
     help="s. Autotalker train method signature")
 
+# Other
+parser.add_argument(
+    "--seeds",
+    nargs="+",
+    default="0 1 2 3 4 5 6 7 8 9",
+    help="Random seeds per model training run.")
+parser.add_argument(
+    "--run_index",
+    nargs="+",
+    default="1 2 3 4 5 6 7 8 9 10",
+    help="Index per model training run.")
+
 args = parser.parse_args()
-if args.batch is not None:
-    dataset_batch = f"{args.dataset}_{args.batch}"
-else:
-    dataset_batch = dataset
+n_neighbors_list = [int(n_neighbors) for n_neighbors in args.n_neighbors_list]
+edge_batch_size_list = [
+    int(edge_batch_size) for edge_batch_size in args.edge_batch_size_list]
+node_batch_size_list = [
+    int(node_batch_size) for node_batch_size in args.node_batch_size_list]
+seeds = [int(seed) for seed in args.seeds]
+run_index = [int(run_idx) for run_idx in args.run_index]
+
+print(n_neighbors_list)
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -250,17 +271,12 @@ print(f"Run timestamp: {current_timestamp}.")
 print("Script arguments:")
 print(sys.argv)
 
-# Set mlflow experiment
-experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
-mlflow_experiment_id = experiment.experiment_id
-mlflow.log_param("timestamp", current_timestamp)
-
 ###############################################################################
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-model_artifacts_folder_path = f"../artifacts/{args.dataset}/models/" \
-                              f"{current_timestamp}"
+figure_folder_path = f"../../figures/{args.dataset}/method_benchmarking/" \
+                             f"{args.model_name}/{current_timestamp}"
 gp_data_folder_path = "../datasets/gp_data" # gene program data
 srt_data_folder_path = "../datasets/srt_data" # spatially-resolved
                                               # transcriptomics data
@@ -269,32 +285,10 @@ nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
-os.makedirs(model_artifacts_folder_path, exist_ok=True)
+os.makedirs(figure_folder_path, exist_ok=True)
 
 ###############################################################################
-## 2. Data ##
-###############################################################################
-
-###############################################################################
-### 2.1 Load Data & Compute Spatial Neighbor Graph ###
-###############################################################################
-
-print("\nLoading data...")
-adata = ad.read_h5ad(f"{srt_data_gold_folder_path}/{dataset_batch}.h5ad")
-
-print("\nComputing the spatial neighborhood graph...")
-# Compute (separate) spatial neighborhood
-sq.gr.spatial_neighbors(adata,
-                        coord_type="generic",
-                        spatial_key=args.spatial_key,
-                        n_neighs=args.n_neighbors)
-# Make adjacency matrix symmetric
-adata.obsp["spatial_connectivities"] = (
-    adata.obsp["spatial_connectivities"].maximum(
-        adata.obsp["spatial_connectivities"].T))
-
-###############################################################################
-## 3. Prepare Gene Program Mask ##
+## 2. Prepare Gene Program Mask ##
 ###############################################################################
 
 print("\nPreparing the gene program mask...")
@@ -342,67 +336,117 @@ combined_new_gp_dict = filter_and_combine_gp_dict_gps(
 print("Number of gene programs before filtering and combining: "
       f"{len(combined_gp_dict)}.")
 print(f"Number of gene programs after filtering and combining: "
-      f"{len(combined_new_gp_dict)}.")   
-
-# Add the gene program dictionary as binary masks to the adata for model training
-add_gps_from_gp_dict_to_adata(
-    gp_dict=combined_new_gp_dict,
-    adata=adata,
-    genes_uppercase=True,
-    gp_targets_mask_key=args.gp_targets_mask_key,
-    gp_sources_mask_key=args.gp_sources_mask_key,
-    gp_names_key=args.gp_names_key,
-    min_genes_per_gp=1,
-    min_source_genes_per_gp=0,
-    min_target_genes_per_gp=0,
-    max_genes_per_gp=None,
-    max_source_genes_per_gp=None,
-    max_target_genes_per_gp=None,
-    filter_genes_not_in_masks=False)
-
-# Determine dimensionality of hidden encoder (in case n_layers_encoder > 1)
-n_hidden_encoder = len(adata.uns[args.gp_names_key])
+      f"{len(combined_new_gp_dict)}.")
 
 ###############################################################################
-### 4. Initialize, Train & Save Model ###
+## 3. Train Models ##
 ###############################################################################
 
-print("\nTraining model...")
-# Initialize model
-model = Autotalker(adata,
-                   counts_key=args.counts_key,
-                   adj_key=args.adj_key,
-                   condition_key=args.condition_key,
-                   cond_embed_injection=args.cond_embed_injection,
-                   n_cond_embed=args.n_cond_embed,
-                   gp_names_key=args.gp_names_key,
-                   active_gp_names_key=args.active_gp_names_key,
-                   gp_targets_mask_key=args.gp_targets_mask_key,
-                   gp_sources_mask_key=args.gp_sources_mask_key,
-                   latent_key=args.latent_key,
-                   active_gp_thresh_ratio=args.active_gp_thresh_ratio,
-                   gene_expr_recon_dist=args.gene_expr_recon_dist,
-                   n_layers_encoder=args.n_layers_encoder,
-                   conv_layer_encoder=args.conv_layer_encoder,
-                   n_hidden_encoder=n_hidden_encoder,
-                   log_variational=args.log_variational)
+if args.adata_new_name is None:
+    # Create new adata to store benchmarking results
+    adata_original = ad.read_h5ad(
+        f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
+    adata_new = ad.AnnData(sp.csr_matrix(
+        (adata_original.shape[0], adata_original.shape[1]),
+        dtype=np.float32))
+    adata_new.obs["cell_type"] = adata_original.obs[args.cell_type_key].values
+    del(adata_original)
+else:
+    adata_new = ad.read_h5ad(
+        f"{srt_data_gold_folder_path}/{args.adata_new_name}.h5ad")
+    
+for run_number, n_neighbors in zip(run_index, n_neighbors_list):
+    # Load data
+    adata = ad.read_h5ad(f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
+    adata.obs[args.condition_key] == "batch1"
 
-# Train model
-model.train(n_epochs=args.n_epochs,
-            n_epochs_all_gps=args.n_epochs_all_gps,
-            lr=args.lr,
-            lambda_edge_recon=args.lambda_edge_recon,
-            lambda_gene_expr_recon=args.lambda_gene_expr_recon,
-            lambda_group_lasso=args.lambda_group_lasso,
-            lambda_l1_masked=args.lambda_l1_masked,
-            edge_batch_size=args.edge_batch_size,
-            node_batch_size=args.node_batch_size,
-            mlflow_experiment_id=mlflow_experiment_id,
-            verbose=True)
+    # Add the gene program dictionary as binary masks to the adata for model
+    # training
+    add_gps_from_gp_dict_to_adata(
+        gp_dict=combined_new_gp_dict,
+        adata=adata,
+        genes_uppercase=True,
+        gp_targets_mask_key=args.gp_targets_mask_key,
+        gp_sources_mask_key=args.gp_sources_mask_key,
+        gp_names_key=args.gp_names_key,
+        min_genes_per_gp=1,
+        min_source_genes_per_gp=0,
+        min_target_genes_per_gp=0,
+        max_genes_per_gp=None,
+        max_source_genes_per_gp=None,
+        max_target_genes_per_gp=None,
+        filter_genes_not_in_masks=False)
 
-print("\nSaving model...")
-# Save trained model
-model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",
-           overwrite=True,
-           save_adata=True,
-           adata_file_name=f"{dataset_batch}.h5ad")
+    # Determine dimensionality of hidden encoder (in case n_layers_encoder > 1)
+    n_hidden_encoder = len(adata.uns[args.gp_names_key])
+    
+    # Compute spatial neighborhood graph
+    sq.gr.spatial_neighbors(adata,
+                            coord_type="generic",
+                            spatial_key=args.spatial_key,
+                            n_neighs=n_neighbors)
+
+    # Make adjacency matrix symmetric
+    adata.obsp["spatial_connectivities"] = (
+        adata.obsp["spatial_connectivities"].maximum(
+            adata.obsp["spatial_connectivities"].T))
+
+    start_time = time.time()
+    
+    print("\nTraining model...")
+    # Initialize model
+    model = Autotalker(adata,
+                       counts_key=args.counts_key,
+                       adj_key=args.adj_key,
+                       condition_key=args.condition_key,
+                       cond_embed_injection=args.cond_embed_injection,
+                       n_cond_embed=args.n_cond_embed,
+                       gp_names_key=args.gp_names_key,
+                       active_gp_names_key=args.active_gp_names_key,
+                       gp_targets_mask_key=args.gp_targets_mask_key,
+                       gp_sources_mask_key=args.gp_sources_mask_key,
+                       latent_key=args.latent_key,
+                       active_gp_thresh_ratio=args.active_gp_thresh_ratio,
+                       gene_expr_recon_dist=args.gene_expr_recon_dist,
+                       n_layers_encoder=args.n_layers_encoder,
+                       conv_layer_encoder=args.conv_layer_encoder,
+                       n_hidden_encoder=n_hidden_encoder,
+                       log_variational=args.log_variational)
+
+    # Train model
+    model.train(n_epochs=args.n_epochs,
+                n_epochs_all_gps=args.n_epochs_all_gps,
+                lr=args.lr,
+                lambda_edge_recon=args.lambda_edge_recon,
+                lambda_gene_expr_recon=args.lambda_gene_expr_recon,
+                lambda_group_lasso=args.lambda_group_lasso,
+                lambda_l1_masked=args.lambda_l1_masked,
+                edge_batch_size=edge_batch_size_list[run_number-1],
+                node_batch_size=node_batch_size_list[run_number-1],
+                seed=seeds[run_number-1],
+                verbose=True)
+    
+    # Measure time for model training
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    hours, rem = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(rem, 60)
+    print(f"Duration of model training in run {run_number}: {int(hours)} "
+          f"hours, {int(minutes)} minutes and {int(seconds)} seconds.")
+    
+    # Store model training duration
+    adata_new.uns[
+        f"{args.model_name}_model_training_duration_run{run_number}"] = (
+        elapsed_time)
+
+    # Store latent representation
+    adata_new.obsm[args.latent_key + f"_run{run_number}"] = (
+        adata.obsm[args.latent_key])
+
+    # Store intermediate adata to disk
+    adata_new.write(
+        f"{srt_data_gold_folder_path}/{args.dataset}_{args.model_name}.h5ad")
+
+# Store final adata to disk
+adata_new.write(
+    f"{srt_data_gold_folder_path}/{args.dataset}_{args.model_name}.h5ad")

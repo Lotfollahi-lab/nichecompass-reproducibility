@@ -42,14 +42,12 @@ parser = argparse.ArgumentParser(description=os.path.basename(__file__))
 parser.add_argument(
     "--dataset",
     type=str,
-    help="Input dataset. The adata file name has to be f'{dataset}.h5ad' "
-         "or f'{dataset}_{batch}.h5ad' if `batch` is not `None`.")
+    help="Input dataset. The adata file name has to be "
+         "f'{dataset}_{batch}.h5ad'.")
 parser.add_argument(
     "--batch",
     type=str,
-    default=None,
-    help="Batch of the input dataset used as reference. If not `None`, the "
-         "adata file name has to be f'{dataset}_{batch}.h5ad'")
+    help="Batch of the input dataset used as query.")
 parser.add_argument(
     "--n_neighbors",
     type=int,
@@ -110,9 +108,22 @@ parser.add_argument(
 
 # Model
 parser.add_argument(
-    "--model_label",
+    "--reference_model_label",
     type=str,
     default="reference",
+    help="Label of the reference model under which it was saved.")
+parser.add_argument(
+    "--reference_batch",
+    type=str,
+    help="Batch of the input dataset used for reference model training.")
+parser.add_argument(
+    "--load_timestamp",
+    type=str,
+    help="Timestamp of the reference model training run.")
+parser.add_argument(
+    "--model_label",
+    type=str,
+    default="query",
     help="Label of the model under which it will be saved.")
 parser.add_argument(
     "--counts_key",
@@ -237,10 +248,7 @@ parser.add_argument(
     help="s. Autotalker train method signature")
 
 args = parser.parse_args()
-if args.batch is not None:
-    dataset_batch = f"{args.dataset}_{args.batch}"
-else:
-    dataset_batch = dataset
+dataset_batch = f"{args.dataset}_{args.batch}"
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -260,7 +268,7 @@ mlflow.log_param("timestamp", current_timestamp)
 ###############################################################################
 
 model_artifacts_folder_path = f"../artifacts/{args.dataset}/models/" \
-                              f"{current_timestamp}"
+                                   f"{args.load_timestamp}"
 gp_data_folder_path = "../datasets/gp_data" # gene program data
 srt_data_folder_path = "../datasets/srt_data" # spatially-resolved
                                               # transcriptomics data
@@ -339,10 +347,8 @@ combined_new_gp_dict = filter_and_combine_gp_dict_gps(
     overlap_thresh_genes=args.overlap_thresh_genes,
     verbose=False)
 
-print("Number of gene programs before filtering and combining: "
-      f"{len(combined_gp_dict)}.")
-print(f"Number of gene programs after filtering and combining: "
-      f"{len(combined_new_gp_dict)}.")   
+print(f"Number of gene programs before filtering and combining: {len(combined_gp_dict)}.")
+print(f"Number of gene programs after filtering and combining: {len(combined_new_gp_dict)}.")   
 
 # Add the gene program dictionary as binary masks to the adata for model training
 add_gps_from_gp_dict_to_adata(
@@ -364,28 +370,19 @@ add_gps_from_gp_dict_to_adata(
 n_hidden_encoder = len(adata.uns[args.gp_names_key])
 
 ###############################################################################
-### 4. Initialize, Train & Save Model ###
+### 3.2 Initialize, Train & Save Model ###
 ###############################################################################
 
 print("\nTraining model...")
-# Initialize model
-model = Autotalker(adata,
-                   counts_key=args.counts_key,
-                   adj_key=args.adj_key,
-                   condition_key=args.condition_key,
-                   cond_embed_injection=args.cond_embed_injection,
-                   n_cond_embed=args.n_cond_embed,
-                   gp_names_key=args.gp_names_key,
-                   active_gp_names_key=args.active_gp_names_key,
-                   gp_targets_mask_key=args.gp_targets_mask_key,
-                   gp_sources_mask_key=args.gp_sources_mask_key,
-                   latent_key=args.latent_key,
-                   active_gp_thresh_ratio=args.active_gp_thresh_ratio,
-                   gene_expr_recon_dist=args.gene_expr_recon_dist,
-                   n_layers_encoder=args.n_layers_encoder,
-                   conv_layer_encoder=args.conv_layer_encoder,
-                   n_hidden_encoder=n_hidden_encoder,
-                   log_variational=args.log_variational)
+# Load model trained on reference data for transfer learning with query data
+# Freeze all weights except for conditional weights
+model = Autotalker.load(
+    dir_path=model_artifacts_folder_path + f"/{args.reference_model_label}",
+    adata=adata,
+    adata_file_name=f"{args.dataset}_{args.reference_batch}.h5ad",
+    gp_names_key=args.gp_names_key,
+    unfreeze_all_weights=False,
+    unfreeze_cond_embed_weights=True)
 
 # Train model
 model.train(n_epochs=args.n_epochs,
@@ -398,7 +395,7 @@ model.train(n_epochs=args.n_epochs,
             edge_batch_size=args.edge_batch_size,
             node_batch_size=args.node_batch_size,
             mlflow_experiment_id=mlflow_experiment_id,
-            verbose=True)
+            verbose=False)
 
 print("\nSaving model...")
 # Save trained model
