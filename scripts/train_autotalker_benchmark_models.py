@@ -355,7 +355,8 @@ else:
     adata_new = ad.read_h5ad(
         f"{srt_data_gold_folder_path}/{args.adata_new_name}.h5ad")
     
-for run_number, n_neighbors in zip(run_index, n_neighbors_list):
+for i, (run_number, n_neighbors) in enumerate(
+zip(run_index, n_neighbors_list)):
     # Load data
     adata = ad.read_h5ad(f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
     adata.obs[args.condition_key] == "batch1"
@@ -421,9 +422,9 @@ for run_number, n_neighbors in zip(run_index, n_neighbors_list):
                 lambda_gene_expr_recon=args.lambda_gene_expr_recon,
                 lambda_group_lasso=args.lambda_group_lasso,
                 lambda_l1_masked=args.lambda_l1_masked,
-                edge_batch_size=edge_batch_size_list[run_number-1],
-                node_batch_size=node_batch_size_list[run_number-1],
-                seed=seeds[run_number-1],
+                edge_batch_size=edge_batch_size_list[i],
+                node_batch_size=node_batch_size_list[i],
+                seed=seeds[i],
                 verbose=True)
     
     # Measure time for model training
