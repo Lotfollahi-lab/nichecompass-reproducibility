@@ -23,6 +23,7 @@ from datetime import datetime
 
 import anndata as ad
 import mlflow
+import scipy.sparse as sp
 import squidpy as sq
 
 from autotalker.models import Autotalker
@@ -42,24 +43,32 @@ parser = argparse.ArgumentParser(description=os.path.basename(__file__))
 parser.add_argument(
     "--dataset",
     type=str,
-    help="Input dataset. The adata file name has to be f'{dataset}.h5ad' "
-         "or f'{dataset}_{batch}.h5ad' if `batch` is not `None`.")
+    help="Input dataset name. The adata file name has to be f'{dataset}.h5ad' "
+         "if `reference_batches` is `None`. If `reference_batches` is not "
+         "`None`, the adata file names have to be f'{dataset}_{batch}.h5ad' "
+         "for each batch in `reference_batches`.")
 parser.add_argument(
-    "--batch",
-    type=str,
+    "--reference_batches",
+    nargs='+',
     default=None,
-    help="Batch of the input dataset used as reference. If not `None`, the "
-         "adata file name has to be f'{dataset}_{batch}.h5ad'")
+    help="Batches of the input dataset used as reference. If not `None`, the "
+         "adata file names have to be f'{dataset}_{batch}.h5ad' for each batch"
+         " in `reference_batches`.")
 parser.add_argument(
     "--n_neighbors",
     type=int,
     default=12,
-    help="Number of neighbors used to compute the spatial neighborhood graph.")
+    help="Number of neighbors used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--spatial_key",
     type=str,
     default="spatial",
     help="Key in `adata.obsm` where the spatial coordinates are stored.")
+parser.add_argument(
+    "--mapping_entity_key",
+    type=str,
+    default="mapping_entity",
+    help="Key in `adata.obsm` where the mapping entities are stored.")
 
 # Gene program mask
 parser.add_argument(
@@ -74,7 +83,7 @@ parser.add_argument(
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
     "--include_mebocost_gps",
-    type=bool,
+    action=argparse.BooleanOptionalAction,
     default=False,
     help="Indicator whether to include mebocost gene programs.")
 parser.add_argument(
@@ -89,7 +98,7 @@ parser.add_argument(
     help="Which kind of gene programs are filtered.")
 parser.add_argument(
     "--combine_overlap_gps",
-    type=bool,
+    action=argparse.BooleanOptionalAction,
     default=True,
     help="Indicator whether to combine overlapping gene programs.")
 parser.add_argument(
@@ -166,7 +175,7 @@ parser.add_argument(
     help="s. Autotalker class signature")
 parser.add_argument(
     "--cond_embed_injection",
-    type=list,
+    nargs='+',
     default=["gene_expr_decoder",
              "graph_decoder"],
     help="s. Autotalker class signature")
@@ -177,7 +186,7 @@ parser.add_argument(
     help="s. Autotalker class signature")
 parser.add_argument(
     "--log_variational",
-    type=bool,
+    action=argparse.BooleanOptionalAction,
     default=True,
     help="s. Autotalker class signature") # counts as input
 parser.add_argument(
@@ -237,10 +246,11 @@ parser.add_argument(
     help="s. Autotalker train method signature")
 
 args = parser.parse_args()
-if args.batch is not None:
-    dataset_batch = f"{args.dataset}_{args.batch}"
-else:
-    dataset_batch = dataset
+if args.reference_batches is not None:
+    print(type(args.reference_batches))
+    print(args.reference_batches)
+    reference_batches = [batch for batch in args.reference_batches]
+    print(reference_batches)
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -272,32 +282,18 @@ omnipath_lr_interactions_file_path = gp_data_folder_path + \
 os.makedirs(model_artifacts_folder_path, exist_ok=True)
 
 ###############################################################################
-## 2. Data ##
-###############################################################################
-
-###############################################################################
-### 2.1 Load Data & Compute Spatial Neighbor Graph ###
-###############################################################################
-
-print("\nLoading data...")
-adata = ad.read_h5ad(f"{srt_data_gold_folder_path}/{dataset_batch}.h5ad")
-
-print("\nComputing the spatial neighborhood graph...")
-# Compute (separate) spatial neighborhood
-sq.gr.spatial_neighbors(adata,
-                        coord_type="generic",
-                        spatial_key=args.spatial_key,
-                        n_neighs=args.n_neighbors)
-# Make adjacency matrix symmetric
-adata.obsp["spatial_connectivities"] = (
-    adata.obsp["spatial_connectivities"].maximum(
-        adata.obsp["spatial_connectivities"].T))
-
-###############################################################################
-## 3. Prepare Gene Program Mask ##
+## 2. Gene Program Mask ##
 ###############################################################################
 
 print("\nPreparing the gene program mask...")
+# OmniPath gene programs
+omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
+    min_curation_effort=0,
+    load_from_disk=True,
+    save_to_disk=False,
+    file_path=omnipath_lr_interactions_file_path,
+    plot_gp_gene_count_distributions=False)
+
 # NicheNet gene programs
 nichenet_gp_dict = extract_gp_dict_from_nichenet_ligand_target_mx(
     keep_target_genes_ratio=args.nichenet_keep_target_genes_ratio,
@@ -307,13 +303,9 @@ nichenet_gp_dict = extract_gp_dict_from_nichenet_ligand_target_mx(
     file_path=nichenet_ligand_target_mx_file_path,
     plot_gp_gene_count_distributions=False)
 
-# OmniPath gene programs
-omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
-    min_curation_effort=0,
-    load_from_disk=True,
-    save_to_disk=False,
-    file_path=omnipath_lr_interactions_file_path,
-    plot_gp_gene_count_distributions=False)
+# Combine gene programs into one dictionary
+combined_gp_dict = dict(omnipath_gp_dict)
+combined_gp_dict.update(nichenet_gp_dict)
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
@@ -322,11 +314,7 @@ if args.include_mebocost_gps:
     species=args.mebocost_species,
     genes_uppercase=True,
     plot_gp_gene_count_distributions=False)
-    
-# Combine gene programs into one dictionary
-combined_gp_dict = dict(nichenet_gp_dict)
-combined_gp_dict.update(omnipath_gp_dict)
-if args.include_mebocost_gps:
+
     combined_gp_dict.update(mebocost_gp_dict)
     
 # Filter and combine gene programs
@@ -344,10 +332,83 @@ print("Number of gene programs before filtering and combining: "
 print(f"Number of gene programs after filtering and combining: "
       f"{len(combined_new_gp_dict)}.")   
 
-# Add the gene program dictionary as binary masks to the adata for model training
+###############################################################################
+## 3. Data ##
+###############################################################################
+
+###############################################################################
+### 3.1 Load Data & Compute Spatial Neighbor Graph ###
+###############################################################################
+
+adata_batch_list = []
+for batch in reference_batches:
+    print(f"Processing batch {batch}...")
+    print(f"\nLoading data...")
+    adata = ad.read_h5ad(
+        f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+    adata.obs[args.mapping_entity_key] = "reference"
+
+    print(f"\nComputing spatial neighborhood graph...")
+    # Compute (separate) spatial neighborhood graphs
+    sq.gr.spatial_neighbors(adata,
+                            coord_type="generic",
+                            spatial_key=args.spatial_key,
+                            n_neighs=args.n_neighbors)
+    # Make adjacency matrix symmetric
+    adata.obsp[args.adj_key] = (
+        adata.obsp[args.adj_key].maximum(
+            adata.obsp[args.adj_key].T))
+
+    adata_batch_list.append(adata)
+
+adata_reference = ad.concat(adata_batch_list, join="inner")
+
+# Combine spatial neighborhood graphs as disconnected components
+batch_connectivities = []
+len_before_batch = 0
+for i in range(len(adata_batch_list)):
+    if i == 0: # first batch
+        after_batch_connectivities_extension = sp.csr_matrix(
+            (adata_batch_list[0].shape[0],
+             (adata_reference.shape[0] -
+              adata_batch_list[0].shape[0])))
+        batch_connectivities.append(sp.hstack(
+            (adata_batch_list[0].obsp[args.adj_key],
+             after_batch_connectivities_extension)))
+    elif i == (len(adata_batch_list) - 1): # last batch
+        before_batch_connectivities_extension = sp.csr_matrix(
+            (adata_batch_list[i].shape[0],
+             (adata_reference.shape[0] -
+              adata_batch_list[i].shape[0])))
+        batch_connectivities.append(sp.hstack(
+            (before_batch_connectivities_extension,
+             adata_batch_list[i].obsp[args.adj_key])))
+    else: # middle batches
+        before_batch_connectivities_extension = sp.csr_matrix(
+            (adata_batch_list[i].shape[0], len_before_batch))
+        after_batch_connectivities_extension = sp.csr_matrix(
+            (adata_batch_list[i].shape[0],
+             (adata_reference.shape[0] -
+              adata_batch_list[i].shape[0] -
+              len_before_batch)))
+        batch_connectivities.append(sp.hstack(
+            (before_batch_connectivities_extension,
+             adata_batch_list[i].obsp[args.adj_key],
+             after_batch_connectivities_extension)))
+    len_before_batch += adata_batch_list[i].shape[0]
+        
+connectivities = sp.vstack(batch_connectivities)
+adata_reference.obsp[args.adj_key] = connectivities
+
+###############################################################################
+### 3.2 Add Gene Program Mask to Data ###
+###############################################################################
+
+# Add the gene program dictionary as binary masks to the adata for model 
+# training
 add_gps_from_gp_dict_to_adata(
     gp_dict=combined_new_gp_dict,
-    adata=adata,
+    adata=adata_reference,
     genes_uppercase=True,
     gp_targets_mask_key=args.gp_targets_mask_key,
     gp_sources_mask_key=args.gp_sources_mask_key,
@@ -361,15 +422,15 @@ add_gps_from_gp_dict_to_adata(
     filter_genes_not_in_masks=False)
 
 # Determine dimensionality of hidden encoder (in case n_layers_encoder > 1)
-n_hidden_encoder = len(adata.uns[args.gp_names_key])
+n_hidden_encoder = len(adata_reference.uns[args.gp_names_key])
 
 ###############################################################################
-### 4. Initialize, Train & Save Model ###
+## 4. Initialize, Train & Save Model ##
 ###############################################################################
 
 print("\nTraining model...")
 # Initialize model
-model = Autotalker(adata,
+model = Autotalker(adata_reference,
                    counts_key=args.counts_key,
                    adj_key=args.adj_key,
                    condition_key=args.condition_key,
@@ -405,4 +466,4 @@ print("\nSaving model...")
 model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",
            overwrite=True,
            save_adata=True,
-           adata_file_name=f"{dataset_batch}.h5ad")
+           adata_file_name=f"{args.dataset}_reference.h5ad")
