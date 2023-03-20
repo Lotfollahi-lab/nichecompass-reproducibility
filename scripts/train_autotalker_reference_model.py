@@ -23,6 +23,7 @@ from datetime import datetime
 
 import anndata as ad
 import mlflow
+import scanpy as sc
 import scipy.sparse as sp
 import squidpy as sq
 
@@ -31,7 +32,8 @@ from autotalker.utils import (add_gps_from_gp_dict_to_adata,
                               extract_gp_dict_from_mebocost_es_interactions,
                               extract_gp_dict_from_nichenet_ligand_target_mx,
                               extract_gp_dict_from_omnipath_lr_interactions,
-                              filter_and_combine_gp_dict_gps)
+                              filter_and_combine_gp_dict_gps,
+                              get_unique_genes_from_gp_dict)
 
 ###############################################################################
 ### 1.2 Define Parameters ###
@@ -69,6 +71,17 @@ parser.add_argument(
     type=str,
     default="mapping_entity",
     help="Key in `adata.obsm` where the mapping entities will be stored.")
+parser.add_argument(
+    "--filter_genes",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether genes should be filtered.")
+parser.add_argument(
+    "--n_hvg",
+    type=int,
+    default=2000,
+    help="Number of highly variable genes that are kept if `filter_genes` is "
+         "`True`.")
 
 # Gene program mask
 parser.add_argument(
@@ -289,6 +302,10 @@ omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
     file_path=omnipath_lr_interactions_file_path,
     plot_gp_gene_count_distributions=False)
 
+omnipath_genes = get_unique_genes_from_gp_dict(
+    gp_dict=omnipath_gp_dict,
+    retrieved_gene_entities=["sources", "targets"])
+
 # NicheNet gene programs
 nichenet_gp_dict = extract_gp_dict_from_nichenet_ligand_target_mx(
     keep_target_genes_ratio=args.nichenet_keep_target_genes_ratio,
@@ -298,9 +315,17 @@ nichenet_gp_dict = extract_gp_dict_from_nichenet_ligand_target_mx(
     file_path=nichenet_ligand_target_mx_file_path,
     plot_gp_gene_count_distributions=False)
 
+nichenet_source_genes = get_unique_genes_from_gp_dict(
+    gp_dict=nichenet_gp_dict,
+    retrieved_gene_entities=["sources"])
+
 # Combine gene programs into one dictionary
 combined_gp_dict = dict(omnipath_gp_dict)
 combined_gp_dict.update(nichenet_gp_dict)
+
+if args.filter_genes:
+    # Get gene program relevant genes
+    gp_relevant_genes = list(set(omnipath_genes + nichenet_source_genes))
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
@@ -309,8 +334,16 @@ if args.include_mebocost_gps:
     species=args.mebocost_species,
     genes_uppercase=True,
     plot_gp_gene_count_distributions=False)
+    
+    mebocost_genes = get_unique_genes_from_gp_dict(
+        gp_dict=mebocost_gp_dict,
+        retrieved_gene_entities=["sources", "targets"])
 
     combined_gp_dict.update(mebocost_gp_dict)
+    
+    if args.filter_genes:
+        # Update gene program relevant genes
+        gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
     
 # Filter and combine gene programs
 combined_new_gp_dict = filter_and_combine_gp_dict_gps(
@@ -325,7 +358,7 @@ combined_new_gp_dict = filter_and_combine_gp_dict_gps(
 print("Number of gene programs before filtering and combining: "
       f"{len(combined_gp_dict)}.")
 print(f"Number of gene programs after filtering and combining: "
-      f"{len(combined_new_gp_dict)}.")   
+      f"{len(combined_new_gp_dict)}.")
 
 ###############################################################################
 ## 3. Data ##
@@ -338,12 +371,12 @@ print(f"Number of gene programs after filtering and combining: "
 adata_batch_list = []
 for batch in args.reference_batches:
     print(f"\nProcessing batch {batch}...")
-    print(f"Loading data...")
+    print("Loading data...")
     adata = ad.read_h5ad(
         f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
     adata.obs[args.mapping_entity_key] = "reference"
 
-    print(f"Computing spatial neighborhood graph...")
+    print("Computing spatial neighborhood graph...")
     # Compute (separate) spatial neighborhood graphs
     sq.gr.spatial_neighbors(adata,
                             coord_type="generic",
@@ -394,6 +427,41 @@ for i in range(len(adata_batch_list)):
         
 connectivities = sp.vstack(batch_connectivities)
 adata_reference.obsp[args.adj_key] = connectivities
+
+if args.filter_genes:
+    print("Filtering genes...")
+    # Filter genes and only keep ligand, receptor, metabolitye enzyme, 
+    # metabolite sensor and the 'n_hvg' highly variable genes (potential target
+    # genes of nichenet)
+    print(f"Starting with {len(adata_reference.var_names)} genes.")
+    sc.pp.filter_genes(adata_reference,
+                       min_cells=0)
+    print(f"Keeping {len(adata_reference.var_names)} genes after filtering "
+          "genes with expression in 0 cells.")
+    sc.pp.highly_variable_genes(
+        adata_reference,
+        n_top_genes=args.n_hvg,
+        flavor="seurat",
+        batch_key=args.condition_key,
+        subset=False)
+
+    adata_reference.var["gp_relevant"] = (
+        adata_reference.var.index.str.upper().isin(gp_relevant_genes))
+    adata_reference.var["keep_gene"] = (adata_reference.var["gp_relevant"] | 
+                                        adata_reference.var["highly_variable"])
+    adata_reference = (
+        adata_reference[:, adata_reference.var["keep_gene"] == True])
+    print(f"Keeping {len(adata_reference.var_names)} highly variable or gene "
+          "program relevant genes.")
+    adata_reference = (
+        adata_reference[:, adata_reference.var_names[
+            adata_reference.var_names.str.upper().isin(
+                gp_dict_genes)].sort_values()])
+    print(f"Keeping {len(adata_reference.var_names)} genes after filtering "
+          "genes not in gp dict.")
+    adata_reference = adata_reference[:, (adata_reference.X.sum(axis=0) > 0)]
+    print(f"Keeping {len(adata_reference.var_names)} genes after removing "
+          "genes with 0 expression.")
 
 ###############################################################################
 ### 3.2 Add Gene Program Mask to Data ###
