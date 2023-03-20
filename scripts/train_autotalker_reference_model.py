@@ -337,13 +337,13 @@ print(f"Number of gene programs after filtering and combining: "
 
 adata_batch_list = []
 for batch in args.reference_batches:
-    print(f"Processing batch {batch}...")
-    print(f"\nLoading data...")
+    print(f"\nProcessing batch {batch}...")
+    print(f"Loading data...")
     adata = ad.read_h5ad(
         f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
     adata.obs[args.mapping_entity_key] = "reference"
 
-    print(f"\nComputing spatial neighborhood graph...")
+    print(f"Computing spatial neighborhood graph...")
     # Compute (separate) spatial neighborhood graphs
     sq.gr.spatial_neighbors(adata,
                             coord_type="generic",
