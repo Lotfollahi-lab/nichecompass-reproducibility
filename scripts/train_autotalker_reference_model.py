@@ -68,7 +68,7 @@ parser.add_argument(
     "--mapping_entity_key",
     type=str,
     default="mapping_entity",
-    help="Key in `adata.obsm` where the mapping entities are stored.")
+    help="Key in `adata.obsm` where the mapping entities will be stored.")
 
 # Gene program mask
 parser.add_argument(
@@ -246,11 +246,6 @@ parser.add_argument(
     help="s. Autotalker train method signature")
 
 args = parser.parse_args()
-if args.reference_batches is not None:
-    print(type(args.reference_batches))
-    print(args.reference_batches)
-    reference_batches = [batch for batch in args.reference_batches]
-    print(reference_batches)
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -341,7 +336,7 @@ print(f"Number of gene programs after filtering and combining: "
 ###############################################################################
 
 adata_batch_list = []
-for batch in reference_batches:
+for batch in args.reference_batches:
     print(f"Processing batch {batch}...")
     print(f"\nLoading data...")
     adata = ad.read_h5ad(
