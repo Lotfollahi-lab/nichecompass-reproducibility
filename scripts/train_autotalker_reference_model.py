@@ -469,8 +469,8 @@ if args.filter_genes:
     else:
         if adata.X.astype(int).sum() == adata.X.sum(): # raw counts
             hvg_flavor = "seurat_v3"
-        else:
-            hvg_flavor = "seurat" # log normalized counts
+        else: # log normalized counts
+            hvg_flavor = "seurat"
 
     sc.pp.highly_variable_genes(
         adata_reference,
