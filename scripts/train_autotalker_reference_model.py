@@ -459,9 +459,23 @@ if args.filter_genes:
                        min_cells=0)
     print(f"Keeping {len(adata_reference.var_names)} genes after filtering "
           "genes with expression in 0 cells.")
+
+    if args.counts_key is not None:
+        if (adata.layers[args.counts_key].astype(int).sum() == 
+        adata.layers[args.counts_key].sum()): # raw counts
+            hvg_flavor = "seurat_v3"
+        else:
+            hvg_flavor = "seurat" # log normalized counts
+    else:
+        if adata.X.astype(int).sum() == adata.X.sum(): # raw counts
+            hvg_flavor = "seurat_v3"
+        else:
+            hvg_flavor = "seurat" # log normalized counts
+
     sc.pp.highly_variable_genes(
         adata_reference,
         n_top_genes=args.n_hvg,
+        flavor=hvg_flavor,
         batch_key=args.condition_key,
         subset=False)
 
