@@ -195,8 +195,8 @@ parser.add_argument(
 parser.add_argument(
     "--cond_embed_injection",
     nargs='+',
-    default=["gene_expr_decoder",
-             "graph_decoder"],
+    default=["encoder",
+             "gene_expr_decoder"],
     help="s. Autotalker class signature")
 parser.add_argument(
     "--n_cond_embed",
@@ -268,6 +268,8 @@ args = parser.parse_args()
 
 if args.reference_batches == [None]:
     args.reference_batches = None
+if args.cond_embed_injection == [None]:
+    args.cond_embed_injection = None
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -461,12 +463,14 @@ if args.filter_genes:
           "genes with expression in 0 cells.")
 
     if args.counts_key is not None:
+        hvg_layer = args.counts_key
         if (adata.layers[args.counts_key].astype(int).sum() == 
         adata.layers[args.counts_key].sum()): # raw counts
             hvg_flavor = "seurat_v3"
         else:
             hvg_flavor = "seurat" # log normalized counts
     else:
+        hvg_layer = None
         if adata.X.astype(int).sum() == adata.X.sum(): # raw counts
             hvg_flavor = "seurat_v3"
         else: # log normalized counts
@@ -474,6 +478,7 @@ if args.filter_genes:
 
     sc.pp.highly_variable_genes(
         adata_reference,
+        layer=hvg_layer,
         n_top_genes=args.n_hvg,
         flavor=hvg_flavor,
         batch_key=args.condition_key,
