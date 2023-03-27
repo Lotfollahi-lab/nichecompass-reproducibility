@@ -248,6 +248,11 @@ parser.add_argument(
     default=1.,
     help="s. Autotalker train method signature")
 parser.add_argument(
+    "--cond_contrastive_thresh",
+    type=float,
+    default=0.8,
+    help="s. Autotalker train method signature")
+parser.add_argument(
     "--lambda_group_lasso",
     type=float,
     default=0.01,
@@ -558,6 +563,7 @@ model.train(n_epochs=args.n_epochs,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
             lambda_cond_contrastive=args.lambda_cond_contrastive,
+            cond_contrastive_thresh=args.cond_contrastive_thresh,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
             edge_batch_size=args.edge_batch_size,
