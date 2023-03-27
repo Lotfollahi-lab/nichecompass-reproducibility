@@ -9,8 +9,11 @@ python train_autotalker_reference_model.py \
 --mebocost_species mouse \
 --counts_key counts \
 --log_variational \
---n_epochs 1 \
---n_epochs_all_gps 1 \
+--n_epochs 60 \
+--n_epochs_all_gps 30 \
+--lambda_edge_recon 1. \
+--lambda_gene_expr_recon 0.01 \
+--lambda_cond_contrastive 0. \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 0. \
 --edge_batch_size 128 \
