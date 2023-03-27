@@ -195,8 +195,7 @@ parser.add_argument(
 parser.add_argument(
     "--cond_embed_injection",
     nargs='+',
-    default=["encoder",
-             "gene_expr_decoder"],
+    default=["gene_expr_decoder"],
     help="s. Autotalker class signature")
 parser.add_argument(
     "--n_cond_embed",
@@ -244,6 +243,11 @@ parser.add_argument(
     default=1.,
     help="s. Autotalker train method signature")
 parser.add_argument(
+    "--lambda_cond_contrastive",
+    type=float,
+    default=1.,
+    help="s. Autotalker train method signature")
+parser.add_argument(
     "--lambda_group_lasso",
     type=float,
     default=0.01,
@@ -269,7 +273,7 @@ args = parser.parse_args()
 if args.reference_batches == [None]:
     args.reference_batches = None
 if args.cond_embed_injection == [None]:
-    args.cond_embed_injection = None
+    args.cond_embed_injection = []
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -553,6 +557,7 @@ model.train(n_epochs=args.n_epochs,
             lr=args.lr,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
+            lambda_cond_contrastive=args.lambda_cond_contrastive,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
             edge_batch_size=args.edge_batch_size,
