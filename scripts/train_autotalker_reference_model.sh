@@ -11,8 +11,14 @@ batch19 batch20 \
 --mebocost_species mouse \
 --counts_key counts \
 --log_variational \
+--n_cond_embed 400 \
+--n_layers_encoder 1 \
 --n_epochs 40 \
 --n_epochs_all_gps 20 \
+--lambda_edge_recon 1000. \
+--lambda_gene_expr_recon 1. \
+--lambda_cond_contrastive 300. \
+--cond_contrastive_thresh 0.8 \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 0. \
 --edge_batch_size 128 \

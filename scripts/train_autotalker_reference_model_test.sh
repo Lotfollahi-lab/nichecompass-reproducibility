@@ -1,7 +1,7 @@
 python train_autotalker_reference_model.py \
 --dataset starmap_plus_mouse_cns \
 --reference_batches batch1 batch2 batch3 \
---n_neighbors 4 \
+--n_neighbors 12 \
 --filter_genes \
 --n_hvg 2000 \
 --nichenet_max_n_target_genes_per_gp 20000 \
@@ -11,12 +11,12 @@ python train_autotalker_reference_model.py \
 --log_variational \
 --n_cond_embed 300 \
 --n_layers_encoder 1 \
---n_epochs 60 \
---n_epochs_all_gps 30 \
---lambda_edge_recon 1. \
---lambda_gene_expr_recon 0.1 \
---lambda_cond_contrastive 1. \
---cond_contrastive_thresh 0.7 \
+--n_epochs 1 \
+--n_epochs_all_gps 1 \
+--lambda_edge_recon 1000. \
+--lambda_gene_expr_recon 1. \
+--lambda_cond_contrastive 300. \
+--cond_contrastive_thresh 0.8 \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 0. \
 --edge_batch_size 128 \
