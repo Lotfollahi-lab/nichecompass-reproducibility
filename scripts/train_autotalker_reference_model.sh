@@ -3,7 +3,7 @@ python train_autotalker_reference_model.py \
 --reference_batches batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 \
 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 \
 batch19 batch20 \
---n_neighbors 12 \
+--n_neighbors 4 \
 --filter_genes \
 --n_hvg 2000 \
 --nichenet_max_n_target_genes_per_gp 20000 \

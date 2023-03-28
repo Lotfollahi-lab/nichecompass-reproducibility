@@ -46,49 +46,6 @@ def none_or_value(value):
         return None
     return value
 
-# Dataset
-parser.add_argument(
-    "--dataset",
-    type=str,
-    help="Input dataset name. The adata file name has to be f'{dataset}.h5ad' "
-         "if `reference_batches` is `None`. If `reference_batches` is not "
-         "`None`, the adata file names have to be f'{dataset}_{batch}.h5ad' "
-         "for each batch in `reference_batches`.")
-parser.add_argument(
-    "--reference_batches",
-    nargs='+',
-    type=none_or_value,
-    default=None,
-    help="Batches of the input dataset used as reference. If not `None`, the "
-         "adata file names have to be f'{dataset}_{batch}.h5ad' for each batch"
-         " in `reference_batches`.")
-parser.add_argument(
-    "--n_neighbors",
-    type=int,
-    default=12,
-    help="Number of neighbors used to compute the spatial neighborhood graphs.")
-parser.add_argument(
-    "--spatial_key",
-    type=str,
-    default="spatial",
-    help="Key in `adata.obsm` where the spatial coordinates are stored.")
-parser.add_argument(
-    "--mapping_entity_key",
-    type=str,
-    default="mapping_entity",
-    help="Key in `adata.obsm` where the mapping entities will be stored.")
-parser.add_argument(
-    "--filter_genes",
-    action=argparse.BooleanOptionalAction,
-    default=False,
-    help="Indicator whether genes should be filtered.")
-parser.add_argument(
-    "--n_hvg",
-    type=int,
-    default=2000,
-    help="Number of highly variable genes that are kept if `filter_genes` is "
-         "`True`.")
-
 # Gene program mask
 parser.add_argument(
     "--nichenet_keep_target_genes_ratio",
@@ -98,17 +55,17 @@ parser.add_argument(
 parser.add_argument(
     "--nichenet_max_n_target_genes_per_gp",
     type=int,
-    default=50,
+    default=25344,
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
     "--include_mebocost_gps",
     action=argparse.BooleanOptionalAction,
-    default=False,
+    default=True,
     help="Indicator whether to include mebocost gene programs.")
 parser.add_argument(
     "--mebocost_species",
     type=str,
-    default="human",
+    default="mouse",
     help="Species that is used for the retrieval of mebocost gene programs.")
 parser.add_argument(
     "--gp_filter_mode",
@@ -136,32 +93,63 @@ parser.add_argument(
     default=0.9,
     help="Threshold for overall genes above which gene programs are combined.")
 
-# Model
+# Data
 parser.add_argument(
-    "--model_label",
+    "--dataset",
     type=str,
-    default="reference",
-    help="Label of the model under which it will be saved.")
+    help="Input dataset name. The adata file name has to be f'{dataset}.h5ad' "
+         "if `reference_batches` is `None`. If `reference_batches` is not "
+         "`None`, the adata file names have to be f'{dataset}_{batch}.h5ad' "
+         "for each batch in `reference_batches`.")
+parser.add_argument(
+    "--reference_batches",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="Batches of the input dataset used as reference. If not `None`, the "
+         "adata file names have to be f'{dataset}_{batch}.h5ad' for each batch"
+         " in `reference_batches`.")
 parser.add_argument(
     "--counts_key",
     type=none_or_value,
     default=None,
-    help="s. Autotalker class signature")
+    help="s. Autotalker class signature.")
+parser.add_argument(
+    "--condition_key",
+    type=str,
+    default="batch",
+    help="s. Autotalker class signature.")
+parser.add_argument(
+    "--n_neighbors",
+    type=int,
+    default=12,
+    help="Number of neighbors used to compute the spatial neighborhood graphs.")
+parser.add_argument(
+    "--spatial_key",
+    type=str,
+    default="spatial",
+    help="Key in `adata.obsm` where the spatial coordinates are stored.")
 parser.add_argument(
     "--adj_key",
     type=str,
     default="spatial_connectivities",
-    help="s. Autotalker class signature")
+    help="s. Autotalker class signature.")
 parser.add_argument(
-    "--gp_names_key",
+    "--mapping_entity_key",
     type=str,
-    default="autotalker_gp_names",
-    help="s. Autotalker class signature")
+    default="mapping_entity",
+    help="Key in `adata.obsm` where the mapping entities will be stored.")
 parser.add_argument(
-    "--active_gp_names_key",
-    type=str,
-    default="autotalker_active_gp_names",
-    help="s. Autotalker class signature")
+    "--filter_genes",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether genes should be filtered.")
+parser.add_argument(
+    "--n_hvg",
+    type=int,
+    default=2000,
+    help="Number of highly variable genes that are kept if `filter_genes` is "
+         "`True`.")
 parser.add_argument(
     "--gp_targets_mask_key",
     type=str,
@@ -173,14 +161,26 @@ parser.add_argument(
     default="autotalker_gp_sources",
     help="s. Autotalker class signature")
 parser.add_argument(
+    "--gp_names_key",
+    type=str,
+    default="autotalker_gp_names",
+    help="s. Autotalker class signature")
+
+# Model
+parser.add_argument(
+    "--model_label",
+    type=str,
+    default="reference",
+    help="Label of the model under which it will be saved.")
+parser.add_argument(
+    "--active_gp_names_key",
+    type=str,
+    default="autotalker_active_gp_names",
+    help="s. Autotalker class signature")
+parser.add_argument(
     "--latent_key",
     type=str,
     default="autotalker_latent",
-    help="s. Autotalker class signature")
-parser.add_argument(
-    "--condition_key",
-    type=str,
-    default="batch",
     help="s. Autotalker class signature")
 parser.add_argument(
     "--active_gp_thresh_ratio",
@@ -456,6 +456,10 @@ else:
     adata_reference.obsp[args.adj_key] = (
         adata_reference.obsp[args.adj_key].maximum(
             adata_reference.obsp[args.adj_key].T))
+    
+###############################################################################
+### 3.2 Filter Genes ###
+###############################################################################
 
 if args.filter_genes:
     print("\nFiltering genes...")
@@ -507,9 +511,9 @@ if args.filter_genes:
                 gp_dict_genes)].sort_values()])
     print(f"Keeping {len(adata_reference.var_names)} genes after filtering "
           "genes not in gp dict.")
-
+    
 ###############################################################################
-### 3.2 Add Gene Program Mask to Data ###
+### 3.3 Add Gene Program Mask to Data ###
 ###############################################################################
 
 # Add the gene program dictionary as binary masks to the adata for model 
@@ -529,12 +533,16 @@ add_gps_from_gp_dict_to_adata(
     max_target_genes_per_gp=None,
     filter_genes_not_in_masks=False)
 
-# Determine dimensionality of hidden encoder (in case n_layers_encoder > 1)
-n_hidden_encoder = len(adata_reference.uns[args.gp_names_key])
+###############################################################################
+### 4. Model ###
+###############################################################################
 
 ###############################################################################
-## 4. Initialize, Train & Save Model ##
+## 4.1 Initialize, Train & Save Model ##
 ###############################################################################
+
+# Determine dimensionality of hidden encoder (in case n_layers_encoder > 1)
+n_hidden_encoder = len(adata_reference.uns[args.gp_names_key])
 
 print("\nTraining model...")
 # Initialize model

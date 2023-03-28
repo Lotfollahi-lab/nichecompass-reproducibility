@@ -9,13 +9,13 @@ python train_autotalker_reference_model.py \
 --mebocost_species mouse \
 --counts_key counts \
 --log_variational \
---n_cond_embed 300 \
+--n_cond_embed 475 \
 --n_layers_encoder 1 \
 --n_epochs 1 \
 --n_epochs_all_gps 1 \
---lambda_edge_recon 1000. \
---lambda_gene_expr_recon 1. \
---lambda_cond_contrastive 300. \
+--lambda_edge_recon 10. \
+--lambda_gene_expr_recon 0.1 \
+--lambda_cond_contrastive 3. \
 --cond_contrastive_thresh 0.8 \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 0. \
