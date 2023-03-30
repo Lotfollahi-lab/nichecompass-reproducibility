@@ -477,14 +477,15 @@ if args.filter_genes:
 
     if args.counts_key is not None:
         hvg_layer = args.counts_key
-        if (adata.layers[args.counts_key].astype(int).sum() == 
-        adata.layers[args.counts_key].sum()): # raw counts
+        if (adata_reference.layers[args.counts_key].astype(int).sum() == 
+        adata_reference.layers[args.counts_key].sum()): # raw counts
             hvg_flavor = "seurat_v3"
-        else:
-            hvg_flavor = "seurat" # log normalized counts
+        else: # log normalized counts
+            hvg_flavor = "seurat"
     else:
         hvg_layer = None
-        if adata.X.astype(int).sum() == adata.X.sum(): # raw counts
+        if adata_reference.X.astype(int).sum() == adata_reference.X.sum():
+        # raw counts
             hvg_flavor = "seurat_v3"
         else: # log normalized counts
             hvg_flavor = "seurat"
