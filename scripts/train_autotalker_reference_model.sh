@@ -11,13 +11,13 @@ batch19 batch20 \
 --counts_key counts \
 --log_variational \
 --n_cond_embed 475 \
---n_layers_encoder 2 \
+--n_layers_encoder 1 \
 --n_epochs 40 \
 --n_epochs_all_gps 20 \
 --lambda_edge_recon 1000. \
 --lambda_gene_expr_recon 1. \
---lambda_cond_contrastive 300. \
---cond_contrastive_thresh 0.9 \
+--lambda_cond_contrastive 1000. \
+--contrastive_logits_ratio 0.1 \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 0. \
 --edge_batch_size 128 \

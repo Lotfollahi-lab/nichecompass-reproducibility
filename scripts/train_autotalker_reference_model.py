@@ -245,12 +245,12 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
-    default=1.,
+    default=1000.,
     help="s. Autotalker train method signature")
 parser.add_argument(
-    "--cond_contrastive_thresh",
+    "--contrastive_logits_ratio",
     type=float,
-    default=0.8,
+    default=0.1,
     help="s. Autotalker train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
@@ -572,7 +572,7 @@ model.train(n_epochs=args.n_epochs,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
             lambda_cond_contrastive=args.lambda_cond_contrastive,
-            cond_contrastive_thresh=args.cond_contrastive_thresh,
+            contrastive_logits_ratio=args.contrastive_logits_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
             edge_batch_size=args.edge_batch_size,
