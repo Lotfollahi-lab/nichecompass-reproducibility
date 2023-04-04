@@ -198,11 +198,6 @@ parser.add_argument(
     default=["gene_expr_decoder"],
     help="s. Autotalker class signature")
 parser.add_argument(
-    "--n_cond_embed",
-    type=int,
-    default=180,
-    help="s. Autotalker class signature")
-parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -255,12 +250,12 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_group_lasso",
     type=float,
-    default=0.01,
+    default=0.,
     help="s. Autotalker train method signature")
 parser.add_argument(
     "--lambda_l1_masked",
     type=float,
-    default=0.01,
+    default=0.,
     help="s. Autotalker train method signature")
 parser.add_argument(
     "--edge_batch_size",
@@ -545,6 +540,9 @@ add_gps_from_gp_dict_to_adata(
 # Determine dimensionality of hidden encoder (in case n_layers_encoder > 1)
 n_hidden_encoder = len(adata_reference.uns[args.gp_names_key])
 
+# Determine dimensionality of conditional embedding
+n_cond_embed = int(len(adata.var_names) / 2)
+
 print("\nTraining model...")
 # Initialize model
 model = Autotalker(adata_reference,
@@ -552,7 +550,7 @@ model = Autotalker(adata_reference,
                    adj_key=args.adj_key,
                    condition_key=args.condition_key,
                    cond_embed_injection=args.cond_embed_injection,
-                   n_cond_embed=args.n_cond_embed,
+                   n_cond_embed=n_cond_embed,
                    gp_names_key=args.gp_names_key,
                    active_gp_names_key=args.active_gp_names_key,
                    gp_targets_mask_key=args.gp_targets_mask_key,
@@ -585,4 +583,4 @@ print("\nSaving model...")
 model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",
            overwrite=True,
            save_adata=True,
-           adata_file_name=f"{args.dataset}_reference.h5ad")
+           adata_file_name=f"{args.dataset}_{model_label}.h5ad")
