@@ -317,11 +317,6 @@ print(f"Run timestamp: {current_timestamp}.")
 print("Script arguments:")
 print(sys.argv)
 
-# Set mlflow experiment
-experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
-mlflow_experiment_id = experiment.experiment_id
-mlflow.log_param("timestamp", current_timestamp)
-
 ###############################################################################
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
@@ -453,7 +448,7 @@ else:
 ## 4. Train Models ##
 ###############################################################################
     
-for i, (run_number, n_neighbors) in enumerate(zip(run_index,
+for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                                                   n_neighbors_list)):
     # Load data
     adata_batch_list = []
@@ -597,6 +592,31 @@ for i, (run_number, n_neighbors) in enumerate(zip(run_index,
 
     # Determine dimensionality of conditional embedding (in case injected)
     n_cond_embed = int(len(adata.var_names) / 2)
+    
+    # Set mlflow experiment
+    experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
+    mlflow_experiment_id = experiment.experiment_id
+    mlflow.log_param("timestamp", current_timestamp)
+
+    # Log dataset params
+    mlflow.log_param("dataset", args.dataset)
+    mlflow.log_param("run_number", run_number)
+    mlflow.log_param("n_neighbors", n_neighbors)
+    
+    # Log gp mask params
+    mlflow.log_param("nichenet_keep_target_genes_ratio",
+                     args.nichenet_keep_target_genes_ratio)
+    mlflow.log_param("nichenet_max_n_target_genes_per_gp",
+                     args.nichenet_max_n_target_genes_per_gp)
+    mlflow.log_param("include_mebocost_gps", args.include_mebocost_gps)
+    mlflow.log_param("mebocost_species", args.mebocost_species)
+    mlflow.log_param("gp_filter_mode", args.gp_filter_mode)
+    mlflow.log_param("combine_overlap_gps", args.combine_overlap_gps)
+    mlflow.log_param("overlap_thresh_source_genes",
+                     args.overlap_thresh_source_genes)
+    mlflow.log_param("overlap_thresh_target_genes",
+                     args.overlap_thresh_target_genes)
+    mlflow.log_param("overlap_thresh_genes", args.overlap_thresh_genes)
 
     start_time = time.time()
 
@@ -630,10 +650,10 @@ for i, (run_number, n_neighbors) in enumerate(zip(run_index,
                 contrastive_logits_ratio=args.contrastive_logits_ratio,
                 lambda_group_lasso=args.lambda_group_lasso,
                 lambda_l1_masked=args.lambda_l1_masked,
-                edge_batch_size=edge_batch_size_list[i],
-                node_batch_size=node_batch_size_list[i],
+                edge_batch_size=edge_batch_size_list[k],
+                node_batch_size=node_batch_size_list[k],
                 mlflow_experiment_id=mlflow_experiment_id,
-                seed=seeds[i],
+                seed=seeds[k],
                 verbose=True)
 
     # Measure time for model training
