@@ -538,10 +538,10 @@ add_gps_from_gp_dict_to_adata(
 ###############################################################################
 
 # Determine dimensionality of hidden encoder
-n_hidden_encoder = int(len(adata.var_names) / 2)
+n_hidden_encoder = int(len(adata_reference.var_names) / 2)
 
 # Determine dimensionality of conditional embedding
-n_cond_embed = int(len(adata.var_names) / 2)
+n_cond_embed = int(len(adata_reference.var_names) / 2)
 
 print("\nTraining model...")
 # Initialize model
