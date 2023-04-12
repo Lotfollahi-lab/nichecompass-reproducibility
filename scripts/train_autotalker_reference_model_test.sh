@@ -1,23 +1,29 @@
 python train_autotalker_reference_model.py \
---dataset starmap_plus_mouse_cns \
---reference_batches batch1 batch2 batch3 \
+--dataset seqfish_mouse_organogenesis_imputed \
+--reference_batches batch1 batch2 batch3 batch4 batch5 batch6 \
 --n_neighbors 12 \
 --filter_genes \
---n_hvg 2000 \
---nichenet_max_n_target_genes_per_gp 20000 \
+--n_hvg 4000 \
+--nichenet_keep_target_genes_ratio 0.01 \
+--nichenet_max_n_target_genes_per_gp 25344 \
 --include_mebocost_gps \
 --mebocost_species mouse \
---counts_key counts \
---log_variational \
---n_cond_embed 475 \
+--gp_filter_mode subset \
+--combine_overlap_gps \
+--overlap_thresh_source_genes 0.9 \
+--overlap_thresh_target_genes 0.9 \
+--overlap_thresh_genes 0.9 \
+--counts_key log_normalized_counts \
+--no-log_variational \
 --n_layers_encoder 1 \
---n_epochs 1 \
---n_epochs_all_gps 1 \
---lambda_edge_recon 10. \
---lambda_gene_expr_recon 0.1 \
---lambda_cond_contrastive 3. \
---cond_contrastive_thresh 0.8 \
---lambda_group_lasso 0. \
---lambda_l1_masked 0. \
+--n_epochs 40 \
+--n_epochs_all_gps 20 \
+--lr 0.001 \
+--lambda_edge_recon 1000. \
+--lambda_gene_expr_recon 1. \
+--lambda_cond_contrastive 1000. \
+--contrastive_logits_ratio 0.125 \
+--lambda_group_lasso 0.1 \
+--lambda_l1_masked 0.1 \
 --edge_batch_size 128 \
 --node_batch_size 16

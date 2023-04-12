@@ -701,6 +701,8 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     del(adata)
     del(model)
     gc.collect()
+    
+    mlflow.end_run()
 
 # Store final adata to disk
 adata_new.write(
