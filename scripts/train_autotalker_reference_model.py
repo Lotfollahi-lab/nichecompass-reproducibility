@@ -578,6 +578,21 @@ model.train(n_epochs=args.n_epochs,
             mlflow_experiment_id=mlflow_experiment_id,
             verbose=True)
 
+print("\nComputing neighbor graph...")
+# Use latent representation for UMAP generation
+sc.pp.neighbors(model.adata,
+                use_rep=args.latent_key,
+                key_added=args.latent_key)
+
+print("\nComputing UMAP embedding...")
+sc.tl.umap(model.adata,
+           neighbors_key=args.latent_key)
+
+# Store adata to disk
+model.adata.write(
+    f"{srt_data_gold_folder_path}/results/{args.dataset}_autotalker_"
+    f"{args.model_label}.h5ad")
+
 print("\nSaving model...")
 # Save trained model
 model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",

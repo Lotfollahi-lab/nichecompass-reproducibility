@@ -673,10 +673,13 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     adata_new.obsm[args.latent_key + f"_run{run_number}"] = (
         adata.obsm[args.latent_key])
 
+    print("\nComputing neighbor graph...")
     # Use latent representation for UMAP generation
     sc.pp.neighbors(adata_new,
                     use_rep=f"{args.latent_key}_run{run_number}",
                     key_added=f"{args.latent_key}_run{run_number}")
+
+    print("\nComputing UMAP embedding...")
     sc.tl.umap(adata_new,
                neighbors_key=f"{args.latent_key}_run{run_number}")
     adata_new.obsm[f"{args.latent_key}_run{run_number}_X_umap"] = (
