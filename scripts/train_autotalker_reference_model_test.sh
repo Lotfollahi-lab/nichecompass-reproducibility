@@ -1,7 +1,7 @@
 python train_autotalker_reference_model.py \
 --dataset seqfish_mouse_organogenesis_imputed \
 --reference_batches batch1 batch2 batch3 batch4 batch5 batch6 \
---n_neighbors 12 \
+--n_neighbors 4 \
 --filter_genes \
 --n_hvg 4000 \
 --nichenet_keep_target_genes_ratio 0.01 \
@@ -16,8 +16,8 @@ python train_autotalker_reference_model.py \
 --counts_key log_normalized_counts \
 --no-log_variational \
 --n_layers_encoder 1 \
---n_epochs 40 \
---n_epochs_all_gps 20 \
+--n_epochs 1 \
+--n_epochs_all_gps 1 \
 --lr 0.001 \
 --lambda_edge_recon 1000. \
 --lambda_gene_expr_recon 1. \
@@ -25,5 +25,5 @@ python train_autotalker_reference_model.py \
 --contrastive_logits_ratio 0.125 \
 --lambda_group_lasso 0.1 \
 --lambda_l1_masked 0.1 \
---edge_batch_size 128 \
---node_batch_size 16
+--edge_batch_size 512 \
+--node_batch_size 64

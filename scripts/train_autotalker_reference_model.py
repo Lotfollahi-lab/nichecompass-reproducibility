@@ -583,4 +583,4 @@ print("\nSaving model...")
 model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",
            overwrite=True,
            save_adata=True,
-           adata_file_name=f"{args.dataset}_{model_label}.h5ad")
+           adata_file_name=f"{args.dataset}_{args.model_label}.h5ad")
