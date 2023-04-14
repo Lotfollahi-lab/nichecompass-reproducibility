@@ -22,9 +22,9 @@ python train_autotalker_reference_model.py \
 --lr 0.001 \
 --lambda_edge_recon 1000. \
 --lambda_gene_expr_recon 1. \
---lambda_cond_contrastive 100. \
+--lambda_cond_contrastive 300. \
 --contrastive_logits_ratio 0.0078125 \
 --lambda_group_lasso 0. \
---lambda_l1_masked 1. \
+--lambda_l1_masked 0.3 \
 --edge_batch_size 128 \
 --node_batch_size 16
