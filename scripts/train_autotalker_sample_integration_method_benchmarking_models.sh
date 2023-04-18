@@ -13,8 +13,8 @@ do
     python train_autotalker_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
-    --edge_batch_size_list 256 256 128 128 128 128 64 64 64 64 \
-    --node_batch_size_list 32 32 16 16 16 16 8 8 8 8 \
+    --edge_batch_size_list 128 128 128 128 64 64 64 64 64 64 \
+    --node_batch_size_list 16 16 16 16 8 8 8 8 8 8 \
     --seeds 0 1 2 3 4 5 6 7 8 9 \
     --run_index 1 2 3 4 5 6 7 8 9 10 \
     --cell_type_key $cell_type_key \
@@ -41,7 +41,7 @@ do
     --model_label sample_integration_method_benchmarking \
     --active_gp_names_key autotalker_active_gp_names \
     --latent_key autotalker_latent \
-    --active_gp_thresh_ratio 0.03 \
+    --active_gp_thresh_ratio 0.05 \
     --gene_expr_recon_dist nb \
     --cond_embed_injection gene_expr_decoder \
     --log_variational \
@@ -50,10 +50,10 @@ do
     --n_epochs 40 \
     --n_epochs_all_gps 20 \
     --lr 0.001 \
-    --lambda_edge_recon 1. \
-    --lambda_gene_expr_recon 0.001 \
-    --lambda_cond_contrastive 1. \
-    --contrastive_logits_ratio 0.0125 \
+    --lambda_edge_recon 1000. \
+    --lambda_gene_expr_recon 1. \
+    --lambda_cond_contrastive 1000. \
+    --contrastive_logits_ratio 0.015625 \
     --lambda_group_lasso 0. \
     --lambda_l1_masked 0.
 done

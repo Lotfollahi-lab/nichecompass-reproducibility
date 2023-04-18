@@ -13,7 +13,7 @@ python train_autotalker_reference_model.py \
 --overlap_thresh_source_genes 0.9 \
 --overlap_thresh_target_genes 0.9 \
 --overlap_thresh_genes 0.9 \
---active_gp_thresh_ratio 0.03 \
+--active_gp_thresh_ratio 0.05 \
 --counts_key log_normalized_counts \
 --no-log_variational \
 --n_layers_encoder 1 \
@@ -22,9 +22,9 @@ python train_autotalker_reference_model.py \
 --lr 0.001 \
 --lambda_edge_recon 1000. \
 --lambda_gene_expr_recon 1. \
---lambda_cond_contrastive 300. \
+--lambda_cond_contrastive 100. \
 --contrastive_logits_ratio 0.0078125 \
 --lambda_group_lasso 0. \
---lambda_l1_masked 0.3 \
+--lambda_l1_masked 0.1 \
 --edge_batch_size 128 \
 --node_batch_size 16
