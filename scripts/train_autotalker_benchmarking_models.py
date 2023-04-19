@@ -64,12 +64,12 @@ parser.add_argument(
 parser.add_argument(
     "--edge_batch_size_list",
     nargs="+",
-    default="512 512 256 256 256 256 128 128 128 128",
+    default="256 256 256 256 128 128 64 64 64 64",
     help="Edge batch sizes per model training run.")
 parser.add_argument(
     "--node_batch_size_list",
     nargs="+",
-    default="64 64 32 32 32 32 16 16 16 16",
+    default="32 32 32 32 16 16 8 8 8 8",
     help="Node batch sizes per model training run.")
 parser.add_argument(
     "--seeds",
@@ -183,7 +183,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_hvg",
     type=int,
-    default=2000,
+    default=4000,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
 parser.add_argument(
@@ -221,7 +221,7 @@ parser.add_argument(
 parser.add_argument(
     "--active_gp_thresh_ratio",
     type=float,
-    default=0.03,
+    default=0.05,
     help="s. Autotalker class signature")
 parser.add_argument(
     "--gene_expr_recon_dist",
@@ -281,7 +281,7 @@ parser.add_argument(
 parser.add_argument(
     "--contrastive_logits_ratio",
     type=float,
-    default=0.1,
+    default=0.015625,
     help="s. Autotalker train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
