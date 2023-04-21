@@ -50,10 +50,10 @@ do
     --n_epochs 40 \
     --n_epochs_all_gps 20 \
     --lr 0.001 \
-    --lambda_edge_recon 1000. \
-    --lambda_gene_expr_recon 1. \
+    --lambda_edge_recon 100000. \
+    --lambda_gene_expr_recon 100. \
     --lambda_cond_contrastive 0. \
-    --contrastive_logits_ratio 0.015625 \
+    --contrastive_logits_ratio 0.03125 \
     --lambda_group_lasso 0. \
     --lambda_l1_masked 0.
 done

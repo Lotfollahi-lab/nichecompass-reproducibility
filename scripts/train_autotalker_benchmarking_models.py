@@ -437,8 +437,9 @@ if args.adata_new_name is None:
     adata_new.obs["cell_type"] = adata_original.obs[args.cell_type_key].values
     adata_new.obsm[args.spatial_key] = adata_original.obsm[args.spatial_key]
     adata_new.obs[args.condition_key] = adata_original.obs[args.condition_key]
-    adata_new.obs[args.mapping_entity_key] = (
-        adata_original.obs[args.mapping_entity_key])
+    if args.model_label == "sample_integration_method_benchmarking":
+        adata_new.obs[args.mapping_entity_key] = (
+            adata_original.obs[args.mapping_entity_key])
     del(adata_original)
 else:
     adata_new = ad.read_h5ad(
