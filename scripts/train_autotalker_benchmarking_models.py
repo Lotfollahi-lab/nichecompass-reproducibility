@@ -68,6 +68,7 @@ parser.add_argument(
     help="Edge batch sizes per model training run.")
 parser.add_argument(
     "--node_batch_size_list",
+    type=none_or_value,
     nargs="+",
     default="32 32 32 32 16 16 8 8 8 8",
     help="Node batch sizes per model training run.")
@@ -259,6 +260,11 @@ parser.add_argument(
     default=20,
     help="s. Autotalker train method signature")
 parser.add_argument(
+    "--n_epochs_no_cond_contrastive",
+    type=int,
+    default=5,
+    help="s. Autotalker train method signature")
+parser.add_argument(
     "--lr",
     type=float,
     default=0.001,
@@ -300,7 +306,8 @@ n_neighbors_list = [int(n_neighbors) for n_neighbors in args.n_neighbors_list]
 edge_batch_size_list = [
     int(edge_batch_size) for edge_batch_size in args.edge_batch_size_list]
 node_batch_size_list = [
-    int(node_batch_size) for node_batch_size in args.node_batch_size_list]
+    int(node_batch_size) if node_batch_size is not None else None for 
+    node_batch_size in args.node_batch_size_list]
 seeds = [int(seed) for seed in args.seeds]
 run_index = [int(run_idx) for run_idx in args.run_index]
 
@@ -587,12 +594,11 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
         max_target_genes_per_gp=None,
         filter_genes_not_in_masks=False)
 
-    # Determine dimensionality of hidden encoder (in case
-    # `args.n_layers_encoder` > 1)
+    # Determine dimensionality of hidden encoder
     n_hidden_encoder = len(adata.uns[args.gp_names_key])
 
     # Determine dimensionality of conditional embedding (in case injected)
-    n_cond_embed = int(len(adata.var_names) / 2)
+    n_cond_embed = len(adata.uns[args.gp_names_key])
     
     # Set mlflow experiment
     experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
@@ -644,6 +650,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     # Train model
     model.train(n_epochs=args.n_epochs,
                 n_epochs_all_gps=args.n_epochs_all_gps,
+                n_epochs_no_cond_contrastive=args.n_epochs_no_cond_contrastive,
                 lr=args.lr,
                 lambda_edge_recon=args.lambda_edge_recon,
                 lambda_gene_expr_recon=args.lambda_gene_expr_recon,

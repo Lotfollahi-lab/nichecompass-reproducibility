@@ -1,6 +1,30 @@
-datasets=("seqfish_mouse_organogenesis_sample2" "starmap_plus_mouse_cns_batch1" "starmap_plus_mouse_cns_subsample_20pct_batch1" "vizgen_merfish_mouse_liver" "vizgen_merfish_mouse_liver_subsample_10pct")
-dataset_reference_batches=("None" "None" "None" "None" "None")
-cell_type_keys=("celltype_mapped_refined" "Main_molecular_cell_type" "Main_molecular_cell_type" "Cell_Type" "Cell_Type")
+datasets=("seqfish_mouse_organogenesis_sample2" \
+          "starmap_plus_mouse_cns_batch1" \
+          "starmap_plus_mouse_cns_subsample_20pct_batch1" \
+          "vizgen_merfish_mouse_liver" \
+          "vizgen_merfish_mouse_liver_subsample_10pct" \
+          "nanostring_cosmx_human_nsclc" \
+          "nanostring_cosmx_human_nsclc_subsample_20pct" \
+          "slideseqv2_mouse_hippocampus" \
+          "slideseqv2_mouse_hippocampus_subsample_50pct")
+dataset_reference_batches=("None" \
+                           "None" \
+                           "None" \
+                           "None" \
+                           "None" \
+                           "None" \
+                           "None" \
+                           "None" \
+                           "None")
+cell_type_keys=("celltype_mapped_refined" \
+                "Main_molecular_cell_type" \
+                "Main_molecular_cell_type" \
+                "Cell_Type" \
+                "Cell_Type" \
+                "cell_type" \
+                "cell_type" \
+                "cell_type" \
+                "cell_type")
 
 len=${#datasets[@]}
 
@@ -13,8 +37,8 @@ do
     python train_autotalker_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
-    --edge_batch_size_list 256 256 256 256 128 128 64 64 64 64 \
-    --node_batch_size_list 32 32 32 32 16 16 8 8 8 8 \
+    --edge_batch_size_list 16384 16384 8192 8192 4096 4096 2048 2048 1024 1024 \
+    --node_batch_size_list None None None None None None None None None None \
     --seeds 0 1 2 3 4 5 6 7 8 9 \
     --run_index 1 2 3 4 5 6 7 8 9 10 \
     --cell_type_key $cell_type_key \
@@ -47,13 +71,14 @@ do
     --log_variational \
     --n_layers_encoder 1 \
     --conv_layer_encoder gcnconv \
-    --n_epochs 40 \
-    --n_epochs_all_gps 20 \
+    --n_epochs 100 \
+    --n_epochs_all_gps 25 \
+    --n_epochs_no_cond_contrastive 0 \
     --lr 0.001 \
-    --lambda_edge_recon 100000. \
+    --lambda_edge_recon 500000. \
     --lambda_gene_expr_recon 100. \
     --lambda_cond_contrastive 0. \
-    --contrastive_logits_ratio 0.03125 \
+    --contrastive_logits_ratio 0.125 \
     --lambda_group_lasso 0. \
     --lambda_l1_masked 0.
 done

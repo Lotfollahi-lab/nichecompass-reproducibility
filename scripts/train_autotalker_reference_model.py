@@ -223,6 +223,11 @@ parser.add_argument(
     default=20,
     help="s. Autotalker train method signature")
 parser.add_argument(
+    "--n_epochs_no_cond_contrastive",
+    type=int,
+    default=5,
+    help="s. Autotalker train method signature")
+parser.add_argument(
     "--lr",
     type=float,
     default=0.001,
@@ -538,10 +543,10 @@ add_gps_from_gp_dict_to_adata(
 ###############################################################################
 
 # Determine dimensionality of hidden encoder
-n_hidden_encoder = int(len(adata_reference.var_names) / 2)
+n_hidden_encoder = len(adata.uns[args.gp_names_key])
 
-# Determine dimensionality of conditional embedding
-n_cond_embed = int(len(adata_reference.var_names) / 2)
+# Determine dimensionality of conditional embedding (in case injected)
+n_cond_embed = len(adata.uns[args.gp_names_key])
 
 print("\nTraining model...")
 # Initialize model
@@ -566,6 +571,7 @@ model = Autotalker(adata_reference,
 # Train model
 model.train(n_epochs=args.n_epochs,
             n_epochs_all_gps=args.n_epochs_all_gps,
+            n_epochs_no_cond_contrastive=args.n_epochs_no_cond_contrastive,
             lr=args.lr,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
