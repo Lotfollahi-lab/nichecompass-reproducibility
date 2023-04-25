@@ -269,7 +269,7 @@ parser.add_argument(
     help="s. Autotalker train method signature")
 parser.add_argument(
     "--node_batch_size",
-    type=int,
+    type=none_or_value,
     default=16,
     help="s. Autotalker train method signature")
 
@@ -393,21 +393,21 @@ if args.reference_batches is not None:
     for batch in args.reference_batches:
         print(f"\nProcessing batch {batch}...")
         print("Loading data...")
-        adata = ad.read_h5ad(
+        adata_batch = ad.read_h5ad(
             f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
-        adata.obs[args.mapping_entity_key] = "reference"
+        adata_batch.obs[args.mapping_entity_key] = "reference"
         print("Computing spatial neighborhood graph...")
         # Compute (separate) spatial neighborhood graphs
-        sq.gr.spatial_neighbors(adata,
+        sq.gr.spatial_neighbors(adata_batch,
                                 coord_type="generic",
                                 spatial_key=args.spatial_key,
                                 n_neighs=args.n_neighbors)
         # Make adjacency matrix symmetric
-        adata.obsp[args.adj_key] = (
-            adata.obsp[args.adj_key].maximum(
-                adata.obsp[args.adj_key].T))
-        adata_batch_list.append(adata)
-    adata_reference = ad.concat(adata_batch_list, join="inner")
+        adata_batch.obsp[args.adj_key] = (
+            adata_batch.obsp[args.adj_key].maximum(
+                adata_batch.obsp[args.adj_key].T))
+        adata_batch_list.append(adata_batch)
+    adata = ad.concat(adata_batch_list, join="inner")
 
     # Combine spatial neighborhood graphs as disconnected components
     batch_connectivities = []
@@ -416,7 +416,7 @@ if args.reference_batches is not None:
         if i == 0: # first batch
             after_batch_connectivities_extension = sp.csr_matrix(
                 (adata_batch_list[0].shape[0],
-                (adata_reference.shape[0] -
+                (adata.shape[0] -
                 adata_batch_list[0].shape[0])))
             batch_connectivities.append(sp.hstack(
                 (adata_batch_list[0].obsp[args.adj_key],
@@ -424,7 +424,7 @@ if args.reference_batches is not None:
         elif i == (len(adata_batch_list) - 1): # last batch
             before_batch_connectivities_extension = sp.csr_matrix(
                 (adata_batch_list[i].shape[0],
-                (adata_reference.shape[0] -
+                (adata.shape[0] -
                 adata_batch_list[i].shape[0])))
             batch_connectivities.append(sp.hstack(
                 (before_batch_connectivities_extension,
@@ -434,7 +434,7 @@ if args.reference_batches is not None:
                 (adata_batch_list[i].shape[0], len_before_batch))
             after_batch_connectivities_extension = sp.csr_matrix(
                 (adata_batch_list[i].shape[0],
-                (adata_reference.shape[0] -
+                (adata.shape[0] -
                 adata_batch_list[i].shape[0] -
                 len_before_batch)))
             batch_connectivities.append(sp.hstack(
@@ -443,19 +443,19 @@ if args.reference_batches is not None:
                 after_batch_connectivities_extension)))
         len_before_batch += adata_batch_list[i].shape[0]
     connectivities = sp.vstack(batch_connectivities)
-    adata_reference.obsp[args.adj_key] = connectivities
+    adata.obsp[args.adj_key] = connectivities
 else:
-    adata_reference = ad.read_h5ad(
+    adata = ad.read_h5ad(
             f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
     # Compute (separate) spatial neighborhood graphs
-    sq.gr.spatial_neighbors(adata_reference,
+    sq.gr.spatial_neighbors(adata,
                             coord_type="generic",
                             spatial_key=args.spatial_key,
                             n_neighs=args.n_neighbors)
     # Make adjacency matrix symmetric
-    adata_reference.obsp[args.adj_key] = (
-        adata_reference.obsp[args.adj_key].maximum(
-            adata_reference.obsp[args.adj_key].T))
+    adata.obsp[args.adj_key] = (
+        adata.obsp[args.adj_key].maximum(
+            adata.obsp[args.adj_key].T))
     
 ###############################################################################
 ### 3.2 Filter Genes ###
@@ -469,49 +469,46 @@ if args.filter_genes:
     gp_dict_genes = get_unique_genes_from_gp_dict(
         gp_dict=combined_new_gp_dict,
         retrieved_gene_entities=["sources", "targets"])
-    print(f"Starting with {len(adata_reference.var_names)} genes.")
-    sc.pp.filter_genes(adata_reference,
+    print(f"Starting with {len(adata.var_names)} genes.")
+    sc.pp.filter_genes(adata,
                        min_cells=0)
-    print(f"Keeping {len(adata_reference.var_names)} genes after filtering "
-          "genes with expression in 0 cells.")
+    print(f"Keeping {len(adata.var_names)} genes after filtering genes with "
+          "expression in 0 cells.")
 
     if args.counts_key is not None:
         hvg_layer = args.counts_key
-        if (adata_reference.layers[args.counts_key].astype(int).sum() == 
-        adata_reference.layers[args.counts_key].sum()): # raw counts
+        if (adata.layers[args.counts_key].astype(int).sum() == 
+        adata.layers[args.counts_key].sum()): # raw counts
             hvg_flavor = "seurat_v3"
         else: # log normalized counts
             hvg_flavor = "seurat"
     else:
         hvg_layer = None
-        if adata_reference.X.astype(int).sum() == adata_reference.X.sum():
+        if adata.X.astype(int).sum() == adata.X.sum():
         # raw counts
             hvg_flavor = "seurat_v3"
         else: # log normalized counts
             hvg_flavor = "seurat"
 
     sc.pp.highly_variable_genes(
-        adata_reference,
+        adata,
         layer=hvg_layer,
         n_top_genes=args.n_hvg,
         flavor=hvg_flavor,
         batch_key=args.condition_key,
         subset=False)
 
-    adata_reference.var["gp_relevant"] = (
-        adata_reference.var.index.str.upper().isin(gp_relevant_genes))
-    adata_reference.var["keep_gene"] = (adata_reference.var["gp_relevant"] | 
-                                        adata_reference.var["highly_variable"])
-    adata_reference = (
-        adata_reference[:, adata_reference.var["keep_gene"] == True])
-    print(f"Keeping {len(adata_reference.var_names)} highly variable or gene "
-          "program relevant genes.")
-    adata_reference = (
-        adata_reference[:, adata_reference.var_names[
-            adata_reference.var_names.str.upper().isin(
+    adata.var["gp_relevant"] = (
+        adata.var.index.str.upper().isin(gp_relevant_genes))
+    adata.var["keep_gene"] = (adata.var["gp_relevant"] | 
+                              adata.var["highly_variable"])
+    adata = adata[:, adata.var["keep_gene"] == True]
+    print(f"Keeping {len(adata.var_names)} highly variable or gene program "
+          "relevant genes.")
+    adata = (adata[:, adata.var_names[adata.var_names.str.upper().isin(
                 gp_dict_genes)].sort_values()])
-    print(f"Keeping {len(adata_reference.var_names)} genes after filtering "
-          "genes not in gp dict.")
+    print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
+          "gp dict.")
     
 ###############################################################################
 ### 3.3 Add Gene Program Mask to Data ###
@@ -521,7 +518,7 @@ if args.filter_genes:
 # training
 add_gps_from_gp_dict_to_adata(
     gp_dict=combined_new_gp_dict,
-    adata=adata_reference,
+    adata=adata,
     genes_uppercase=True,
     gp_targets_mask_key=args.gp_targets_mask_key,
     gp_sources_mask_key=args.gp_sources_mask_key,
@@ -550,7 +547,7 @@ n_cond_embed = len(adata.uns[args.gp_names_key])
 
 print("\nTraining model...")
 # Initialize model
-model = Autotalker(adata_reference,
+model = Autotalker(adata,
                    counts_key=args.counts_key,
                    adj_key=args.adj_key,
                    condition_key=args.condition_key,

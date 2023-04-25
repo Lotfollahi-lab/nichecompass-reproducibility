@@ -98,7 +98,7 @@ latent_cluster_colors = {
     "None" : "#D3D3D3"
 }
 
-starmap_pluse_mouse_cns_cell_type_colors = {
+starmap_plus_mouse_cns_cell_type_colors = {
     "Vascular and leptomeningeal cells": "#FFD8B8", # Peach
     "Unannotated": "#F9CB9C", # Light Peach
     "Pericytes": "#FFB8A2", # Apricot
@@ -125,6 +125,7 @@ starmap_pluse_mouse_cns_cell_type_colors = {
     "Peptidergic neurons": "#DA627D", # Mauve
     "Ependymal cells": "#6C5B7B", # Purple
     "Dentate gyrus granule neurons": "#4ECDC4", # Mint
+    "Subcommissural organ hypendymal cells": "#65AADD", # Sky Blue 
 }
 
 seqfish_mouse_organogenesis_cell_type_colors = {

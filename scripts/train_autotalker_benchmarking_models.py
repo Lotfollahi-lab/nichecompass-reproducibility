@@ -671,28 +671,37 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     minutes, seconds = divmod(rem, 60)
     print(f"Duration of model training in run {run_number}: {int(hours)} "
           f"hours, {int(minutes)} minutes and {int(seconds)} seconds.")
+    
+    print("\nComputing neighbor graph...")
+    # Use latent representation for UMAP generation
+    sc.pp.neighbors(model.adata,
+                    use_rep=f"{args.latent_key}",
+                    key_added=f"{args.latent_key}")
+
+    print("\nComputing UMAP embedding...")
+    sc.tl.umap(model.adata,
+               neighbors_key=f"{args.latent_key}")
+    
+    # Store latent representation
+    adata_new.obsm[args.latent_key + f"_run{run_number}"] = (
+        model.adata.obsm[args.latent_key])
+    
+    # Store latent nearest neighbor graph
+    adata_new.obsp[f"{args.latent_key}_run{run_number}_connectivities"] = (
+        model.adata.obsp["connectivities"])
+    adata_new.obsp[f"{args.latent_key}_run{run_number}_distances"] = (
+        model.adata.obsp["distances"])
+
+    # Store UMAP features
+    adata_new.obsm[f"{args.latent_key}_run{run_number}_X_umap"] = (
+        model.adata.obsm["X_umap"])
+    adata_new.uns[f"{args.latent_key}_run{run_number}_umap"] = (
+        model.adata.uns["umap"])
 
     # Store model training duration
     adata_new.uns[
         f"autotalker_model_training_duration_run{run_number}"] = (
         elapsed_time)
-
-    # Store latent representation
-    adata_new.obsm[args.latent_key + f"_run{run_number}"] = (
-        adata.obsm[args.latent_key])
-
-    print("\nComputing neighbor graph...")
-    # Use latent representation for UMAP generation
-    sc.pp.neighbors(adata_new,
-                    use_rep=f"{args.latent_key}_run{run_number}",
-                    key_added=f"{args.latent_key}_run{run_number}")
-
-    print("\nComputing UMAP embedding...")
-    sc.tl.umap(adata_new,
-               neighbors_key=f"{args.latent_key}_run{run_number}")
-    adata_new.obsm[f"{args.latent_key}_run{run_number}_X_umap"] = (
-        adata_new.obsm["X_umap"])
-    del(adata_new.obsm["X_umap"])
 
     # Store intermediate adata to disk
     adata_new.write(
