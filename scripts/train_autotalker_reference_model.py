@@ -203,6 +203,11 @@ parser.add_argument(
     default=True,
     help="s. Autotalker class signature") # counts as input
 parser.add_argument(
+    "--node_label_method",
+    type=str,
+    default="one-hop-attention",
+    help="s. Autotalker class signature")
+parser.add_argument(
     "--n_layers_encoder",
     type=int,
     default=1,
@@ -563,7 +568,8 @@ model = Autotalker(adata,
                    n_layers_encoder=args.n_layers_encoder,
                    conv_layer_encoder=args.conv_layer_encoder,
                    n_hidden_encoder=n_hidden_encoder,
-                   log_variational=args.log_variational)
+                   log_variational=args.log_variational,
+                   node_label_method=args.node_label_method)
 
 # Train model
 model.train(n_epochs=args.n_epochs,

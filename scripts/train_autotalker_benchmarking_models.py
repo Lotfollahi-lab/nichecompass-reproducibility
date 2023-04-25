@@ -336,12 +336,14 @@ gp_data_folder_path = "../datasets/gp_data" # gene program data
 srt_data_folder_path = "../datasets/srt_data" # spatially-resolved
                                               # transcriptomics data
 srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
+srt_data_results_folder_path = f"{srt_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
 os.makedirs(model_artifacts_folder_path, exist_ok=True)
 os.makedirs(figure_folder_path, exist_ok=True)
+os.makedirs(srt_data_results_folder_path, exist_ok=True)
 
 ###############################################################################
 ## 2. Prepare Gene Program Mask ##
@@ -705,8 +707,8 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
     # Store intermediate adata to disk
     adata_new.write(
-        f"{srt_data_gold_folder_path}/results/{args.dataset}_autotalker_"
-        f"{args.model_label}.h5ad")
+    f"{srt_data_results_folder_path}/sample_integration_method_benchmarking/"
+    f"{args.dataset}_autotalker_{args.model_label}.h5ad") 
 
     print("\nSaving model...")
     # Save trained model
@@ -726,5 +728,5 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
 # Store final adata to disk
 adata_new.write(
-    f"{srt_data_gold_folder_path}/results/{args.dataset}_autotalker_"
-    f"{args.model_label}.h5ad") 
+    f"{srt_data_results_folder_path}/sample_integration_method_benchmarking/"
+    f"{args.dataset}_autotalker_{args.model_label}.h5ad") 

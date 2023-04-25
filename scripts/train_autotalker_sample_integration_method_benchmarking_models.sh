@@ -1,21 +1,21 @@
-datasets=("seqfish_mouse_organogenesis" \
-          "seqfish_mouse_organogenesis_subsample_1pct" \
-          "seqfish_mouse_organogenesis_subsample_5pct" \
-          "seqfish_mouse_organogenesis_subsample_10pct" \
-          "seqfish_mouse_organogenesis_subsample_25pct" \
-          "seqfish_mouse_organogenesis_subsample_50pct")
-dataset_reference_batches=("batch1 batch2 batch3 batch4 batch5 batch6" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6")
-cell_type_keys=("celltype_mapped_refined" \
-                "celltype_mapped_refined" \
-                "celltype_mapped_refined" \
-                "celltype_mapped_refined" \
-                "celltype_mapped_refined" \
-                "celltype_mapped_refined")
+datasets=("starmap_plus_mouse_cns" \
+          "starmap_plus_mouse_cns_subsample_1pct" \
+          "starmap_plus_mouse_cns_subsample_5pct" \
+          "starmap_plus_mouse_cns_subsample_10pct" \
+          "starmap_plus_mouse_cns_subsample_25pct" \
+          "starmap_plus_mouse_cns_subsample_50pct")
+dataset_reference_batches=("batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20")
+cell_type_keys=("Main_molecular_cell_type" \
+                "Main_molecular_cell_type" \
+                "Main_molecular_cell_type" \
+                "Main_molecular_cell_type" \
+                "Main_molecular_cell_type" \
+                "Main_molecular_cell_type")
 
 len=${#datasets[@]}
 
@@ -28,7 +28,7 @@ do
     python train_autotalker_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
-    --edge_batch_size_list 131072 131072 8192 8192 4096 4096 4096 4096 2048 2048 \
+    --edge_batch_size_list 2048 2048 1024 1024 512 512 256 256 128 128 \
     --node_batch_size_list None None None None None None None None None None \
     --seeds 0 1 2 3 4 5 6 7 8 9 \
     --run_index 1 2 3 4 5 6 7 8 9 10 \
@@ -74,24 +74,24 @@ do
     --lambda_l1_masked 0.
 done
 
-datasets=("starmap_plus_mouse_cns" \
-          "starmap_plus_mouse_cns_subsample_1pct" \
-          "starmap_plus_mouse_cns_subsample_5pct" \
-          "starmap_plus_mouse_cns_subsample_10pct" \
-          "starmap_plus_mouse_cns_subsample_25pct" \
-          "starmap_plus_mouse_cns_subsample_50pct")
-dataset_reference_batches=("batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20" \
-                           "batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 batch19 batch20")
-cell_type_keys=("Main_molecular_cell_type" \
-                "Main_molecular_cell_type" \
-                "Main_molecular_cell_type" \
-                "Main_molecular_cell_type" \
-                "Main_molecular_cell_type" \
-                "Main_molecular_cell_type")
+datasets=("seqfish_mouse_organogenesis" \
+          "seqfish_mouse_organogenesis_subsample_1pct" \
+          "seqfish_mouse_organogenesis_subsample_5pct" \
+          "seqfish_mouse_organogenesis_subsample_10pct" \
+          "seqfish_mouse_organogenesis_subsample_25pct" \
+          "seqfish_mouse_organogenesis_subsample_50pct")
+dataset_reference_batches=("batch1 batch2 batch3 batch4 batch5 batch6" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6" \
+                           "batch1 batch2 batch3 batch4 batch5 batch6")
+cell_type_keys=("celltype_mapped_refined" \
+                "celltype_mapped_refined" \
+                "celltype_mapped_refined" \
+                "celltype_mapped_refined" \
+                "celltype_mapped_refined" \
+                "celltype_mapped_refined")
 
 len=${#datasets[@]}
 
@@ -104,7 +104,7 @@ do
     python train_autotalker_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
-    --edge_batch_size_list 2048 2048 2048 2048 1024 1024 512 512 256 256 \
+    --edge_batch_size_list 131072 131072 8192 8192 4096 4096 4096 4096 2048 2048 \
     --node_batch_size_list None None None None None None None None None None \
     --seeds 0 1 2 3 4 5 6 7 8 9 \
     --run_index 1 2 3 4 5 6 7 8 9 10 \

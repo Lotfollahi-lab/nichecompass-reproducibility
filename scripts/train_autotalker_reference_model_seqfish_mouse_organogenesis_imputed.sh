@@ -28,6 +28,7 @@ python train_autotalker_reference_model.py \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --no-log_variational \
+--node_label_method one-hop-attention \
 --n_layers_encoder 1 \
 --conv_layer_encoder gcnconv \
 --n_epochs 100 \

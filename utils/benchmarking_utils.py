@@ -1,7 +1,16 @@
+import matplotlib.pyplot as plt
+import scanpy as sc
+
+from autotalker.benchmarking import compute_clisis, compute_cas
+
 def compute_latent_space_comparison(dataset,
+                                    run_number,
+                                    srt_data_results_folder_path,
                                     cell_type_colors,
-                                    dataset_title_string="STARmap PLUS Mouse CNS",
-                                    cell_type_key="cell_type",
+                                    dataset_title_string,
+                                    cell_type_key,
+                                    condition_key,
+                                    figure_folder_path,
                                     cell_type_groups=None,
                                     spot_size=0.03,
                                     included_models=["Autotalker",
@@ -9,7 +18,7 @@ def compute_latent_space_comparison(dataset,
                                                      "scVI"],
                                     save_fig=True):
     fig = plt.figure(constrained_layout=True, figsize=(25, 15))
-    suptitle = plt.suptitle(f"One-Shot Integration: Latent Space Comparison ({dataset_title_string})",
+    suptitle = plt.suptitle(f"Sample Integration: Latent Space Comparison ({dataset_title_string})",
                             fontsize=35,
                             y=1.085)
     subfigs = fig.subfigures(nrows=2, ncols=1, hspace=0.15, wspace=0.05)
@@ -23,12 +32,15 @@ def compute_latent_space_comparison(dataset,
                                "GraphST",
                                "scVI"]):
         if model in included_models:
-            adata = sc.read_h5ad(f"{srt_data_gold_folder_path}/{dataset}_{model.lower()}_oneshot_integrated.h5ad")
-
+            adata = sc.read_h5ad(f"{srt_data_results_folder_path}/{dataset}_{model.lower()}_sample_integration_method_benchmarking.h5ad")
+            
+            # Get UMAP features from specified run
+            adata.obsm["X_umap"] = adata.obsm[f"{model.lower()}_latent_run{run_number}_X_umap"]
+            
             # Plot UMAP with batch annotations
             sc.pl.umap(adata,
                        color=[condition_key],
-                       size=240000/len(adata_reference),
+                       size=240000/len(adata),
                        ax=axs_0[i],
                        show=False,
                        legend_loc="right margin" if i == 0 else None)
@@ -45,7 +57,7 @@ def compute_latent_space_comparison(dataset,
             sc.pl.umap(adata,
                        color=[cell_type_key],
                        palette=cell_type_colors,
-                       size=240000/len(adata_reference),
+                       size=240000/len(adata),
                        ax=axs_1[i],
                        show=False,
                        legend_loc="right margin" if i == 0 else None)
@@ -74,7 +86,7 @@ def compute_latent_space_comparison(dataset,
         axs_1[i].set_title(model, fontsize=20, pad=10)
         
     if save_fig:
-        fig.savefig(f"{figure_folder_path}/latent_comparison"
+        fig.savefig(f"{figure_folder_path}/method_comparison_{dataset}_run{run_number}_latent"
                     f"{'_' + cell_type_groups.replace(' ', '_').lower() if cell_type_groups is not None else ''}.svg",
                     bbox_inches="tight",
                     bbox_extra_artists=(suptitle, lgd_0, lgd_1),
@@ -82,53 +94,71 @@ def compute_latent_space_comparison(dataset,
     plt.show()
 
     
-def compute_batch_integration_metrics(included_models=["Autotalker",
+def compute_batch_integration_metrics(dataset,
+                                      condition_key,
+                                      cell_type_key,
+                                      srt_data_results_folder_path,
+                                      metric_artifacts_folder_path,
+                                      spatial_key="spatial",
+                                      latent_key="latent",
+                                      included_models=["Autotalker",
                                                        "GraphST",
-                                                       "scVI"],
-                                      cell_type_key="cell_type"):
+                                                       "scVI"]):
+    metrics_dict = {"Dataset": [],
+                    "Model": [],
+                    "Run": [],
+                    "CAS": [],
+                    "CLISIS": [],
+                    "ASW": [],
+                    "ILISI": []}
     for model in included_models:
         # Load model-specific data
-        adata = sc.read_h5ad(f"{srt_data_gold_folder_path}/{dataset}_{model.lower()}_oneshot_integrated.h5ad")
+        adata = sc.read_h5ad(f"{srt_data_results_folder_path}/{dataset}_{model.lower()}_sample_integration_method_benchmarking.h5ad")
+        
+        metrics_dict["Dataset"].append(dataset)
+        metrics_dict["Model"].append(model)
+        
+        spatial_knng_key = f"{model.lower()}_spatial_connectivities"
 
-        # Compute metrics
-        metrics_dict = {}
+        # Compute metrics per run
+        for run_number in range(1, 11):
+            metrics_dict["Run"].append(run_number)
+            latent_knng_key = f"{model.lower()}_{latent_key}_run{run_number}_connectivities"
 
-        # Spatial conservation metrics
-        metrics_dict["cas"] = compute_cas(
-            adata=adata,
-            cell_type_key=cell_type_key,
-            condition_key=condition_key,
-            spatial_knng_key=spatial_knng_key,
-            latent_knng_key=latent_knng_key,
-            spatial_key=spatial_key,
-            latent_key=f"{model.lower()}_{latent_key}")
-        metrics_dict["clisis"] = compute_clisis(
-            adata=adata,
-            cell_type_key=cell_type_key,
-            condition_key=condition_key,
-            spatial_knng_key=spatial_knng_key,
-            latent_knng_key=latent_knng_key,
-            spatial_key=spatial_key,
-            latent_key=f"{model.lower()}_{latent_key}")
+            # Spatial conservation metrics
+            metrics_dict["CAS"].append(compute_cas(
+                adata=adata,
+                cell_type_key=cell_type_key,
+                condition_key=condition_key,
+                spatial_knng_key=spatial_knng_key,
+                latent_knng_key=latent_knng_key,
+                spatial_key=spatial_key,
+                latent_key=f"{model.lower()}_{latent_key}"))
+            metrics_dict["CLISIS"].append(compute_clisis(
+                adata=adata,
+                cell_type_key=cell_type_key,
+                condition_key=condition_key,
+                spatial_knng_key=spatial_knng_key,
+                latent_knng_key=latent_knng_key,
+                spatial_key=spatial_key,
+                latent_key=f"{model.lower()}_{latent_key}"))
 
-        # Batch correction metrics
-        metrics_dict["asw"] = scib.me.silhouette_batch(
-            adata=adata,
-            batch_key=condition_key,
-            label_key=cell_type_key,
-            embed=f"{model.lower()}_{latent_key}")
-        metrics_dict["ilisi"] = scib.me.ilisi_graph(
-            adata=adata,
-            batch_key=condition_key,
-            type_="embed",
-            use_rep=f"{model.lower()}_{latent_key}")
-            #type_="knn")
+            # Batch correction metrics
+            metrics_dict["ASW"].append(scib.me.silhouette_batch(
+                adata=adata,
+                batch_key=condition_key,
+                label_key=cell_type_key,
+                embed=f"{model.lower()}_{latent_key}"))
+            metrics_dict["ILISI"].append(scib.me.ilisi_graph(
+                adata=adata,
+                batch_key=condition_key,
+                type_="embed",
+                use_rep=f"{model.lower()}_{latent_key}"))
 
-        print(metrics_dict)
+        metric_df = pd.DataFrame(metrics_dict)
 
         # Store metrics to disk
-        with open(f"{metric_artifacts_folder_path}/metrics_{model.lower()}_oneshot_integrated.pickle", "wb") as f:
-            pickle.dump(metrics_dict, f)
+        metric_df.to_csv(f"{metric_artifacts_folder_path}/method_comparison_metrics.csv")
             
             
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
