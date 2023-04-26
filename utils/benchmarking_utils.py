@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 import scanpy as sc
+import scib
 
 from autotalker.benchmarking import compute_clisis, compute_cas
 
@@ -118,12 +120,16 @@ def compute_batch_integration_metrics(dataset,
         metrics_dict["Dataset"].append(dataset)
         metrics_dict["Model"].append(model)
         
-        spatial_knng_key = f"{model.lower()}_spatial_connectivities"
+        # Compute spatial nearest neighbor graph once, then use precomputed one
+        spatial_knng_key = f"{model.lower()}_spatial"
 
         # Compute metrics per run
         for run_number in range(1, 11):
             metrics_dict["Run"].append(run_number)
-            latent_knng_key = f"{model.lower()}_{latent_key}_run{run_number}_connectivities"
+            
+            # Use precomputed latent nearest neighbor graph
+            latent_knng_run_key = f"{model.lower()}_{latent_key}_run{run_number}"
+            latent_run_key = f"{model.lower()}_{latent_key}_run{run_number}"
 
             # Spatial conservation metrics
             metrics_dict["CAS"].append(compute_cas(
@@ -131,29 +137,29 @@ def compute_batch_integration_metrics(dataset,
                 cell_type_key=cell_type_key,
                 condition_key=condition_key,
                 spatial_knng_key=spatial_knng_key,
-                latent_knng_key=latent_knng_key,
+                latent_knng_key=latent_knng_run_key,
                 spatial_key=spatial_key,
-                latent_key=f"{model.lower()}_{latent_key}"))
+                latent_key=latent_run_key))
             metrics_dict["CLISIS"].append(compute_clisis(
                 adata=adata,
                 cell_type_key=cell_type_key,
                 condition_key=condition_key,
                 spatial_knng_key=spatial_knng_key,
-                latent_knng_key=latent_knng_key,
+                latent_knng_key=latent_knng_run_key,
                 spatial_key=spatial_key,
-                latent_key=f"{model.lower()}_{latent_key}"))
+                latent_key=latent_run_key))
 
             # Batch correction metrics
             metrics_dict["ASW"].append(scib.me.silhouette_batch(
                 adata=adata,
                 batch_key=condition_key,
                 label_key=cell_type_key,
-                embed=f"{model.lower()}_{latent_key}"))
+                embed=latent_run_key))
             metrics_dict["ILISI"].append(scib.me.ilisi_graph(
                 adata=adata,
                 batch_key=condition_key,
                 type_="embed",
-                use_rep=f"{model.lower()}_{latent_key}"))
+                use_rep=latent_run_key))
 
         metric_df = pd.DataFrame(metrics_dict)
 
