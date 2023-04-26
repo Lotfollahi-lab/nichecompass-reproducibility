@@ -240,6 +240,11 @@ parser.add_argument(
     default=True,
     help="s. Autotalker class signature") # counts as input
 parser.add_argument(
+    "--node_label_method",
+    type=str,
+    default="one-hop-attention",
+    help="s. Autotalker class signature")
+parser.add_argument(
     "--n_layers_encoder",
     type=int,
     default=1,
@@ -647,7 +652,8 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                        n_layers_encoder=args.n_layers_encoder,
                        conv_layer_encoder=args.conv_layer_encoder,
                        n_hidden_encoder=n_hidden_encoder,
-                       log_variational=args.log_variational)
+                       log_variational=args.log_variational,
+                       node_label_method=args.node_label_method)
 
     # Train model
     model.train(n_epochs=args.n_epochs,
@@ -690,9 +696,9 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     
     # Store latent nearest neighbor graph
     adata_new.obsp[f"{args.latent_key}_run{run_number}_connectivities"] = (
-        model.adata.obsp["connectivities"])
+        model.adata.obsp[f"{args.latent_key}_connectivities"])
     adata_new.obsp[f"{args.latent_key}_run{run_number}_distances"] = (
-        model.adata.obsp["distances"])
+        model.adata.obsp[f"{args.latent_key}_distances"])
 
     # Store UMAP features
     adata_new.obsm[f"{args.latent_key}_run{run_number}_X_umap"] = (
