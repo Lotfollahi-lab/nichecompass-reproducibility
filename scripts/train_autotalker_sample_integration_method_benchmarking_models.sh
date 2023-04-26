@@ -60,6 +60,7 @@ do
     --gene_expr_recon_dist nb \
     --cond_embed_injection gene_expr_decoder \
     --log_variational \
+    --node_label_method one-hop-attention \
     --n_layers_encoder 1 \
     --conv_layer_encoder gcnconv \
     --n_epochs 100 \
@@ -136,6 +137,7 @@ do
     --gene_expr_recon_dist nb \
     --cond_embed_injection gene_expr_decoder \
     --log_variational \
+    --node_label_method one-hop-attention \
     --n_layers_encoder 1 \
     --conv_layer_encoder gcnconv \
     --n_epochs 100 \
