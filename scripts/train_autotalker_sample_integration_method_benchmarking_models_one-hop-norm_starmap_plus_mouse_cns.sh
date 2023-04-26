@@ -53,7 +53,7 @@ do
     --gp_targets_mask_key autotalker_gp_targets \
     --gp_sources_mask_key autotalker_gp_sources \
     --gp_names_key autotalker_gp_names \
-    --model_label sample_integration_method_benchmarking \
+    --model_label one_hop_norm_sample_integration_method_benchmarking \
     --active_gp_names_key autotalker_active_gp_names \
     --latent_key autotalker_latent \
     --active_gp_thresh_ratio 0.05 \
