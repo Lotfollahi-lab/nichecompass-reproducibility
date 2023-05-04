@@ -23,6 +23,7 @@ from datetime import datetime
 
 import anndata as ad
 import mlflow
+import numpy as np
 import scanpy as sc
 import scipy.sparse as sp
 import squidpy as sq
@@ -482,14 +483,14 @@ if args.filter_genes:
 
     if args.counts_key is not None:
         hvg_layer = args.counts_key
-        if (adata.layers[args.counts_key].astype(int).sum() == 
+        if (adata.layers[args.counts_key].astype(int).astype(np.float32).sum() == 
         adata.layers[args.counts_key].sum()): # raw counts
             hvg_flavor = "seurat_v3"
         else: # log normalized counts
             hvg_flavor = "seurat"
     else:
         hvg_layer = None
-        if adata.X.astype(int).sum() == adata.X.sum():
+        if adata.X.astype(int).astype(np.float32).sum() == adata.X.sum():
         # raw counts
             hvg_flavor = "seurat_v3"
         else: # log normalized counts

@@ -551,13 +551,13 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
               "genes with expression in 0 cells.")
 
         if args.counts_key is not None:
-            if (adata.layers[args.counts_key].astype(int).sum() == 
-            adata.layers[args.counts_key].sum()): # raw counts
+            if (adata.layers[args.counts_key].astype(int).astype(
+            np.float32).sum() == adata.layers[args.counts_key].sum()): # raw counts
                 hvg_flavor = "seurat_v3"
             else:
                 hvg_flavor = "seurat" # log normalized counts
         else:
-            if adata.X.astype(int).sum() == adata.X.sum(): # raw counts
+            if adata.X.astype(int).astype(np.float32).sum() == adata.X.sum(): # raw counts
                 hvg_flavor = "seurat_v3"
             else: # log normalized counts
                 hvg_flavor = "seurat"
