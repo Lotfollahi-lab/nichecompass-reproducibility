@@ -215,3 +215,29 @@ vizgen_merfish_mouse_liver_cell_type_colors = {
     "Erythroid-progenitor_Hepatocyte_Neutrophil_Pre-B-cell" : "#EF5A9D",
     "Neutrophil" : "#C594BF",
     "Pre-B-cell" : "#DFCDE4"}
+
+spatial_atac_rna_seq_mouse_embryo_and_brain_rna_colors = {
+    "R5" : "#635547",
+    "R0" : "#DABE99",
+    "R3" : "#9e6762",
+    "R1" : "#FACB12",
+    "R4" : "#c19f70",
+    "R7" : "#0F4A9C",
+    "R2" : "#F397C0",
+    "R8" : "#F397C0",
+    "R12" : "#EF5A9D",
+    "R10" : "#EF5A9D",
+    "R9" : "#C594BF",
+    "R11" : "#DFCDE4",
+    "R6" : "#139992",
+    "R13" : "#3F84AA"}
+
+spatial_atac_rna_seq_mouse_embryo_and_brain_atac_colors = {
+    "A0" : "#635547",
+    "A4" : "#DABE99",
+    "A5" : "#9e6762",
+    "A1" : "#FACB12",
+    "A6" : "#c19f70",
+    "A7" : "#0F4A9C",
+    "A2" : "#F397C0",
+    "A3" : "#F397C0"}
