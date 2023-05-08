@@ -39,6 +39,6 @@ python train_autotalker_reference_model.py \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0.125 \
 --lambda_group_lasso 0. \
---lambda_l1_masked 0. \
+--lambda_l1_masked 10. \
 --edge_batch_size 256 \
 --node_batch_size None
