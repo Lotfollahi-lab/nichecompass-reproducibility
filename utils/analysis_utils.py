@@ -91,16 +91,36 @@ def cluster_and_plot_cell_type_latent_clusters(adata,
                                                latent_cluster_colors,
                                                condition_key,
                                                save_fig,
-                                               figure_folder_path):
-    # Compute latent Leiden clustering with cell-type-specific resolution
-    sc.tl.leiden(adata=adata,
-                 resolution=cell_type_latent_resolution,
-                 key_added=cell_type_latent_cluster_key,
-                 neighbors_key=latent_knng_key)
+                                               figure_folder_path,
+                                               cell_type_specific_clustering=False):    
+    if not cell_type_specific_clustering:
+        # Compute latent Leiden clustering with cell-type-specific resolution
+        sc.tl.leiden(adata=adata,
+                     resolution=cell_type_latent_resolution,
+                     key_added=cell_type_latent_cluster_key,
+                     neighbors_key=latent_knng_key)
+        
+        # Filter for cell type
+        cell_type_adata = adata[adata.obs[cell_type_key] == cell_type]
+    
+    else:
+        # Filter for cell type
+        cell_type_adata = adata[adata.obs[cell_type_key] == cell_type].copy()
+        
+        # Use latent representation for UMAP generation
+        sc.pp.neighbors(cell_type_adata,
+                        use_rep=f"autotalker_latent",
+                        key_added=latent_knng_key)
 
-    # Filter for cell type
-    cell_type_adata = adata[adata.obs[cell_type_key] == cell_type]
-
+        sc.tl.umap(cell_type_adata,
+                   neighbors_key=latent_knng_key)
+        
+        # Compute latent Leiden clustering with cell-type-specific resolution
+        sc.tl.leiden(adata=cell_type_adata,
+                     resolution=cell_type_latent_resolution,
+                     key_added=cell_type_latent_cluster_key,
+                     neighbors_key=latent_knng_key)
+        
     # Only keep latent clusters for cell type and set rest to NaN
     adata.obs[cell_type_latent_cluster_key] = np.nan
     adata.obs.loc[adata.obs[cell_type_key] == cell_type, cell_type_latent_cluster_key] = (
@@ -194,7 +214,7 @@ def get_differential_analysis_results(analysis_label,
                                       plot_category,
                                       plot_group,
                                       random_seed,
-                                      comparison_cats=None,
+                                      comparison_cats="rest",
                                       selected_gps=None,
                                       n_top_up_gps=3,
                                       n_top_down_gps=3,

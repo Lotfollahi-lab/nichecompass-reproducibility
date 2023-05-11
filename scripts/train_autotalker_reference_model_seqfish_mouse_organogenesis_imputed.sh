@@ -1,3 +1,5 @@
+python waiting_script.py &&
+
 python train_autotalker_reference_model.py \
 --dataset seqfish_mouse_organogenesis_imputed \
 --reference_batches batch1 batch2 batch3 batch4 batch5 batch6 \
@@ -24,7 +26,7 @@ python train_autotalker_reference_model.py \
 --model_label reference \
 --active_gp_names_key autotalker_active_gp_names \
 --latent_key autotalker_latent \
---active_gp_thresh_ratio 0.03 \
+--active_gp_thresh_ratio 0.1 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --no-log_variational \
@@ -39,6 +41,6 @@ python train_autotalker_reference_model.py \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0.125 \
 --lambda_group_lasso 0. \
---lambda_l1_masked 10. \
+--lambda_l1_masked 0. \
 --edge_batch_size 256 \
 --node_batch_size None
