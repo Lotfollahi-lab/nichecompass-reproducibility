@@ -59,7 +59,7 @@ def plot_physical_latent_for_cell_types(adata,
                palette=cell_type_colors,
                groups=cell_types,
                size=1280000/len(adata),
-               title="Autotalker Latent Space",
+               title="NicheCompass Latent Space",
                ax=ax4,
                show=False)
 
@@ -75,24 +75,20 @@ def plot_physical_latent_for_cell_types(adata,
     plt.subplots_adjust(wspace=0., hspace=0.85)
     if save_fig:
         fig.savefig(f"{figure_folder_path}/"
-                    f"{'_'.join(cell_types).replace('/', '_').replace(' ', '_').lower()}_physical_latent_space.png",
+                    f"{'_'.join(cell_types).replace('/', '_').replace(' ', '_').lower()}_physical_latent_space.svg",
                     bbox_extra_artists=(lgd, title),
                     bbox_inches="tight")
     plt.show()
     
-    
-def cluster_and_plot_cell_type_latent_clusters(adata,
-                                               cell_type_latent_resolution,
-                                               cell_type_latent_cluster_key,
-                                               latent_knng_key,
-                                               cell_type_key,
-                                               cell_type,
-                                               groups,
-                                               latent_cluster_colors,
-                                               condition_key,
-                                               save_fig,
-                                               figure_folder_path,
-                                               cell_type_specific_clustering=False):    
+
+def compute_cell_type_latent_clusters(adata,
+                                      latent_key,
+                                      cell_type_latent_resolution,
+                                      cell_type_latent_cluster_key,
+                                      latent_knng_key,
+                                      cell_type_key,
+                                      cell_type,
+                                      cell_type_specific_clustering=False):    
     if not cell_type_specific_clustering:
         # Compute latent Leiden clustering with cell-type-specific resolution
         sc.tl.leiden(adata=adata,
@@ -102,18 +98,14 @@ def cluster_and_plot_cell_type_latent_clusters(adata,
         
         # Filter for cell type
         cell_type_adata = adata[adata.obs[cell_type_key] == cell_type]
-    
     else:
         # Filter for cell type
         cell_type_adata = adata[adata.obs[cell_type_key] == cell_type].copy()
         
-        # Use latent representation for UMAP generation
+        # Use latent representation to compute cell-type-specific nearest neighbor graph
         sc.pp.neighbors(cell_type_adata,
-                        use_rep=f"autotalker_latent",
+                        use_rep=latent_key,
                         key_added=latent_knng_key)
-
-        sc.tl.umap(cell_type_adata,
-                   neighbors_key=latent_knng_key)
         
         # Compute latent Leiden clustering with cell-type-specific resolution
         sc.tl.leiden(adata=cell_type_adata,
@@ -126,6 +118,16 @@ def cluster_and_plot_cell_type_latent_clusters(adata,
     adata.obs.loc[adata.obs[cell_type_key] == cell_type, cell_type_latent_cluster_key] = (
         cell_type_adata.obs[cell_type_latent_cluster_key])
     
+    
+def plot_cell_type_latent_clusters(adata,
+                                   cell_type_latent_cluster_key,
+                                   cell_type,
+                                   groups,
+                                   condition_key,
+                                   latent_cluster_colors,
+                                   save_fig,
+                                   file_path):
+    """Plot cell-type-specific latent clusters."""
     # Create plot of cell type annotations in physical and latent space
     fig = plt.figure(figsize=(12, 14))
     title = fig.suptitle(t=f"{cell_type.replace('_', ' ').title()} Latent Clusters in Latent and Physical Space",
@@ -194,211 +196,127 @@ def cluster_and_plot_cell_type_latent_clusters(adata,
     # Adjust, save and display plot
     plt.subplots_adjust(wspace=0.2, hspace=0.25)
     if save_fig:
-        latent_cluster_str = "latent_clusters" if groups is None else "latent_cluster_" + groups
-        fig.savefig(f"{figure_folder_path}/{cell_type.replace('/', '_').replace(' ', '_').lower()}"
-                    f"_res_{cell_type_latent_resolution}_{latent_cluster_str}_physical_latent_space.png",
+        fig.savefig(file_path,
                     bbox_extra_artists=(lgd, title),
                     bbox_inches="tight")
     plt.show()
-    
-    
-def get_differential_analysis_results(analysis_label,
-                                      model,
-                                      adata,
-                                      cell_type_key,
-                                      cell_type_colors,
-                                      latent_cluster_colors,
-                                      cat_key,
-                                      selected_cats,
-                                      differential_gp_scores_key,
-                                      plot_category,
-                                      plot_group,
-                                      random_seed,
-                                      comparison_cats="rest",
-                                      selected_gps=None,
-                                      n_top_up_gps=3,
-                                      n_top_down_gps=3,
-                                      feature_spaces=["latent"], # "physical_embryo1", "physical_embryo2", "physical_embryo3"
-                                      save_figs=False,
-                                      figure_folder_path=""):
-    # Compute gene program enrichments and retrieve top up- and downregulated gene programs
-    top_unique_gps = model.compute_differential_gp_scores(cat_key=cat_key,
-                                                          adata=adata,
-                                                          selected_gps=selected_gps,
-                                                          selected_cats=selected_cats,
-                                                          gp_scores_weight_normalization=False,
-                                                          comparison_cats=comparison_cats,
-                                                          n_sample=10000,
-                                                          key_added=differential_gp_scores_key,
-                                                          n_top_up_gps_retrieved=n_top_up_gps,
-                                                          n_top_down_gps_retrieved=n_top_down_gps,
-                                                          seed=random_seed)
-
-    # Display top upregulated gene programs
-    top_up_gp_df = model.adata.uns[differential_gp_scores_key][:n_top_up_gps]
-    display(top_up_gp_df)
-
-    # Display top downregulated gene programs
-    top_down_gp_df = model.adata.uns[differential_gp_scores_key][-n_top_down_gps:][::-1]
-    display(top_down_gp_df)
-
-    # Filter adata for GP dotplot
-    if comparison_cats != "rest":
-        adata_subset = model.adata[model.adata.obs[cat_key].isin(selected_cats + comparison_cats)]
-    else:
-        adata_subset = model.adata
-    
-    # Create GP dotplot
-    sc.tl.dendrogram(adata_subset, groupby=cat_key)
-    fig = sc.pl.dotplot(adata_subset,
-                        top_unique_gps,
-                        groupby=cat_key,
-                        dendrogram=True, 
-                        title=f"{analysis_label.replace('_', ' ').title()} Differential GP Scores",
-                        swap_axes=True,
-                        return_fig=True)
-    # Save and display plot
-    if save_figs:
-        fig.savefig(f"{figure_folder_path}/{analysis_label}_differential_gp_scores.png")
-    fig.show()
-
-    # Inspect top up- and downregulated gene programs
-    gp_summary_df = model.get_gp_summary()
-    display(gp_summary_df[gp_summary_df["gp_name"].isin(top_unique_gps)])
-
-    top_cats = top_up_gp_df["category"].append(top_down_gp_df["category"]).to_list()
-    top_gps = top_up_gp_df["gene_program"].append(top_down_gp_df["gene_program"]).to_list()
-
-    top_cats = top_up_gp_df["category"].append(top_down_gp_df["category"]).to_list()
-    top_gps = top_up_gp_df["gene_program"].append(top_down_gp_df["gene_program"]).to_list()
-
-    get_cat_gp_score_gene_expr_summary(analysis_label=analysis_label,
-                                       model=model,
-                                       cell_type_key=cell_type_key,
-                                       cell_type_colors=cell_type_colors,
-                                       latent_cluster_colors=latent_cluster_colors,
-                                       cats=top_cats,
-                                       gps=top_gps,
-                                       plot_category=plot_category,
-                                       plot_group=plot_group,
-                                       adata=adata,
-                                       feature_spaces=feature_spaces,
-                                       plot_types=["gene_categories", "individual_genes"],
-                                       save_figs=save_figs,
-                                       figure_folder_path=figure_folder_path)
-    
-    return top_unique_gps
 
 
-def get_cat_gp_score_gene_expr_summary(analysis_label,
-                                       model,
-                                       cell_type_key,
-                                       cell_type_colors,
-                                       latent_cluster_colors,
-                                       cats,
-                                       gps,
-                                       plot_category,
-                                       plot_group,
-                                       adata=None,
-                                       feature_spaces=["latent", "physical_embryo1", "physical_embryo2", "physical_embryo3"],
-                                       plot_types=["gene_categories", "individual_genes"],
-                                       n_top_genes_per_gp=5,
-                                       save_figs=False,
-                                       figure_folder_path=""):
+def generate_gp_info_plots(analysis_label,
+                           differential_gp_test_results_key,
+                           model,
+                           cell_type_key,
+                           cell_type_colors,
+                           latent_cluster_colors,
+                           plot_category,
+                           plot_group,
+                           log_bayes_factor_thresh,
+                           adata=None,
+                           feature_spaces=["latent", "physical_embryo1", "physical_embryo2", "physical_embryo3"],
+                           plot_types=["gene_categories", "top_genes"],
+                           n_top_genes_per_gp=5,
+                           save_figs=False,
+                           figure_folder_path=""):
     
     if adata is None:
         adata = model.adata.copy()
+        
+    cats = adata.uns[differential_gp_test_results_key]["category"]
+    gps = adata.uns[differential_gp_test_results_key]["gene_program"]
     
     for gp in gps:
         gp_gene_importances_df = model.compute_gp_gene_importances(selected_gp=gp)
         
-        pos_sign_target_genes = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
-            (gp_gene_importances_df["gene_entity"] == "target"), "gene"].tolist()
-        pos_sign_source_genes = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
-            (gp_gene_importances_df["gene_entity"] == "source"), "gene"].tolist()
-        neg_sign_target_genes = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
-            (gp_gene_importances_df["gene_entity"] == "target"), "gene"].tolist()
-        neg_sign_source_genes = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
-            (gp_gene_importances_df["gene_entity"] == "source"), "gene"].tolist()
+        if "gene_categories" in plot_types:
+            pos_sign_target_genes = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
+                (gp_gene_importances_df["gene_entity"] == "target"), "gene"].tolist()
+            pos_sign_source_genes = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
+                (gp_gene_importances_df["gene_entity"] == "source"), "gene"].tolist()
+            neg_sign_target_genes = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
+                (gp_gene_importances_df["gene_entity"] == "target"), "gene"].tolist()
+            neg_sign_source_genes = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
+                (gp_gene_importances_df["gene_entity"] == "source"), "gene"].tolist()
+
+            pos_sign_target_gene_importances = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
+                (gp_gene_importances_df["gene_entity"] == "target"), "gene_importance"].values.reshape(1, -1)
+            pos_sign_source_gene_importances = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
+                (gp_gene_importances_df["gene_entity"] == "source"), "gene_importance"].values.reshape(1, -1)
+            neg_sign_target_gene_importances = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
+                (gp_gene_importances_df["gene_entity"] == "target"), "gene_importance"].values.reshape(1, -1)
+            neg_sign_source_gene_importances = gp_gene_importances_df.loc[
+                (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
+                (gp_gene_importances_df["gene_entity"] == "source"), "gene_importance"].values.reshape(1, -1)
+
+            pos_sign_target_gene_expr = adata[:, pos_sign_target_genes].X.toarray()
+            pos_sign_source_gene_expr = adata[:, pos_sign_source_genes].X.toarray()
+            neg_sign_target_gene_expr = adata[:, neg_sign_target_genes].X.toarray()
+            neg_sign_source_gene_expr = adata[:, neg_sign_source_genes].X.toarray()
+
+            adata.obs[f"{gp}_pos_sign_target_gene_weighted_mean_gene_expr"] = (
+                np.mean(pos_sign_target_gene_expr * pos_sign_target_gene_importances, axis=1))
+            adata.obs[f"{gp}_pos_sign_source_gene_weighted_mean_gene_expr"] = (
+                np.mean(pos_sign_source_gene_expr * pos_sign_source_gene_importances, axis=1))
+            adata.obs[f"{gp}_neg_sign_target_gene_weighted_mean_gene_expr"] = (
+                np.mean(neg_sign_target_gene_expr * neg_sign_target_gene_importances, axis=1))
+            adata.obs[f"{gp}_neg_sign_source_gene_weighted_mean_gene_expr"] = (
+                np.mean(neg_sign_source_gene_expr * neg_sign_source_gene_importances, axis=1))
+
+            adata.uns[f"{gp}_gene_category_importances"] = np.array([pos_sign_target_gene_importances.sum(),
+                                                                     pos_sign_source_gene_importances.sum(),
+                                                                     neg_sign_target_gene_importances.sum(),
+                                                                     neg_sign_source_gene_importances.sum()])
         
-        pos_sign_target_gene_importances = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
-            (gp_gene_importances_df["gene_entity"] == "target"), "gene_importance"].values.reshape(1, -1)
-        pos_sign_source_gene_importances = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] > 0) &
-            (gp_gene_importances_df["gene_entity"] == "source"), "gene_importance"].values.reshape(1, -1)
-        neg_sign_target_gene_importances = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
-            (gp_gene_importances_df["gene_entity"] == "target"), "gene_importance"].values.reshape(1, -1)
-        neg_sign_source_gene_importances = gp_gene_importances_df.loc[
-            (gp_gene_importances_df["gene_weight_sign_corrected"] < 0) &
-            (gp_gene_importances_df["gene_entity"] == "source"), "gene_importance"].values.reshape(1, -1)
-        
-        pos_sign_target_gene_expr = adata[:, pos_sign_target_genes].X.toarray()
-        pos_sign_source_gene_expr = adata[:, pos_sign_source_genes].X.toarray()
-        neg_sign_target_gene_expr = adata[:, neg_sign_target_genes].X.toarray()
-        neg_sign_source_gene_expr = adata[:, neg_sign_source_genes].X.toarray()
-        
-        adata.obs[f"{gp}_pos_sign_target_gene_weighted_mean_gene_expr"] = (
-            np.mean(pos_sign_target_gene_expr * pos_sign_target_gene_importances, axis=1))
-        adata.obs[f"{gp}_pos_sign_source_gene_weighted_mean_gene_expr"] = (
-            np.mean(pos_sign_source_gene_expr * pos_sign_source_gene_importances, axis=1))
-        adata.obs[f"{gp}_neg_sign_target_gene_weighted_mean_gene_expr"] = (
-            np.mean(neg_sign_target_gene_expr * neg_sign_target_gene_importances, axis=1))
-        adata.obs[f"{gp}_neg_sign_source_gene_weighted_mean_gene_expr"] = (
-            np.mean(neg_sign_source_gene_expr * neg_sign_source_gene_importances, axis=1))
-        
-        adata.uns[f"{gp}_gene_category_importances"] = np.array([pos_sign_target_gene_importances.sum(),
-                                                                 pos_sign_source_gene_importances.sum(),
-                                                                 neg_sign_target_gene_importances.sum(),
-                                                                 neg_sign_source_gene_importances.sum()])
-        
-        adata.uns["n_top_genes"] = n_top_genes_per_gp
-        adata.uns[f"{gp}_top_genes"] = gp_gene_importances_df["gene"][:n_top_genes_per_gp]
-        adata.uns[f"{gp}_top_gene_importances"] = gp_gene_importances_df["gene_importance"][:n_top_genes_per_gp]
-        adata.uns[f"{gp}_top_gene_signs"] = np.where(gp_gene_importances_df["gene_weight_sign_corrected"] > 0, "+", "-")
-        adata.uns[f"{gp}_top_gene_entities"] = gp_gene_importances_df["gene_entity"]
+        if "top_genes" in plot_types:
+            adata.uns["n_top_genes"] = n_top_genes_per_gp
+            adata.uns[f"{gp}_top_genes"] = gp_gene_importances_df["gene"][:n_top_genes_per_gp]
+            adata.uns[f"{gp}_top_gene_importances"] = gp_gene_importances_df["gene_importance"][:n_top_genes_per_gp]
+            adata.uns[f"{gp}_top_gene_signs"] = np.where(gp_gene_importances_df["gene_weight_sign_corrected"] > 0, "+", "-")
+            adata.uns[f"{gp}_top_gene_entities"] = gp_gene_importances_df["gene_entity"]
         
     for feature_space in feature_spaces:
         for plot_type in plot_types:
-            plot_cat_gp_score_gene_expr_summary(adata=adata,
-                                                cell_type_key=cell_type_key,
-                                                cell_type_colors=cell_type_colors,
-                                                latent_cluster_colors=latent_cluster_colors,
-                                                cats=cats,
-                                                gps=gps,
-                                                plot_type=plot_type,
-                                                plot_category=plot_category,
-                                                plot_group=plot_group,
-                                                feature_space=feature_space,
-                                                suptitle=f"{analysis_label.replace('_', ' ').title()} Differential GPs: "
-                                                         f"GP Scores and {'Weighted Mean ' if plot_type == 'gene_categories' else ''}"
-                                                         f"Gene Expression of {plot_type.replace('_', ' ').title()} in {feature_space.replace('_', ' ').title()} Space",
-                                                cat_title=f"Differential GP \n {plot_category.replace('_', ' ').title()}",
-                                                save_fig=save_figs,
-                                                figure_folder_path=figure_folder_path,
-                                                fig_name=f"{analysis_label}_gp_scores_{'weighted_mean_' if plot_type == 'gene_categories' else ''}gene_expr_"
-                                                         f"{feature_space}_space")
+            plot_gp_info_plots(adata=adata,
+                               cell_type_key=cell_type_key,
+                               cell_type_colors=cell_type_colors,
+                               latent_cluster_colors=latent_cluster_colors,
+                               cats=cats,
+                               gps=gps,
+                               plot_type=plot_type,
+                               plot_category=plot_category,
+                               plot_group=plot_group,
+                               feature_space=feature_space,
+                               suptitle=f"{analysis_label.replace('_', ' ').title()} Enriched GPs: "
+                                        f"GP Scores and {'Weighted Mean ' if plot_type == 'gene_categories' else ''}"
+                                        f"Gene Expression of {plot_type.replace('_', ' ').title()} in {feature_space.replace('_', ' ').title()} Feature Space",
+                               cat_title=f"Enriched GP Category in \n {plot_category.replace('_', ' ').title()}",
+                               save_fig=save_figs,
+                               figure_folder_path=figure_folder_path,
+                               fig_name=f"{analysis_label}_log_bayes_factor_thresh_{log_bayes_factor_thresh}_enriched_gps_gp_scores_" \
+                                        f"{'weighted_mean_gene_expr' if plot_type == 'gene_categories' else 'top_genes_gene_expr'}_" \
+                                        f"{feature_space}_space")
             
-def plot_cat_gp_score_gene_expr_summary(adata,
-                                        cell_type_key,
-                                        cell_type_colors,
-                                        latent_cluster_colors,
-                                        cats,
-                                        gps,
-                                        plot_type,
-                                        plot_category,
-                                        plot_group,
-                                        feature_space,
-                                        suptitle,
-                                        cat_title,
-                                        save_fig,
-                                        figure_folder_path,
-                                        fig_name):
+def plot_gp_info_plots(adata,
+                       cell_type_key,
+                       cell_type_colors,
+                       latent_cluster_colors,
+                       cats,
+                       gps,
+                       plot_type,
+                       plot_category,
+                       plot_group,
+                       feature_space,
+                       suptitle,
+                       cat_title,
+                       save_fig,
+                       figure_folder_path,
+                       fig_name):
     if plot_category == cell_type_key:
         palette = cell_type_colors
     else:
@@ -408,7 +326,7 @@ def plot_cat_gp_score_gene_expr_summary(adata,
         ncols = 6
         fig_width = 36
         wspace = 0.155
-    elif plot_type == "individual_genes":
+    elif plot_type == "top_genes":
         ncols = 2 + adata.uns["n_top_genes"]
         fig_width = 12 + (6 * adata.uns["n_top_genes"])
         wspace = 0.3
@@ -418,7 +336,7 @@ def plot_cat_gp_score_gene_expr_summary(adata,
 
     title = fig.suptitle(t=suptitle,
                          x=0.55,
-                         y=(1.1 if len(gps) == 1 else 0.94),
+                         y=(1.1 if len(gps) == 1 else 0.925),
                          fontsize=20)
     for i, gp in enumerate(gps):
         if feature_space == "latent":
@@ -490,7 +408,7 @@ def plot_cat_gp_score_gene_expr_summary(adata,
                     axs[i, j+2].yaxis.label.set_visible(False)
                 else:
                     axs[i, j+2].set_visible(False)
-        elif plot_type == "individual_genes":
+        elif plot_type == "top_genes":
             for j in range(len(adata.uns[f"{gp}_top_genes"])):
                 if feature_space == "latent":
                     sc.pl.umap(adata,
@@ -520,7 +438,7 @@ def plot_cat_gp_score_gene_expr_summary(adata,
     # Save and display plot
     plt.subplots_adjust(wspace=wspace, hspace=0.275)
     if save_fig:
-        fig.savefig(f"{figure_folder_path}/{fig_name}.png",
+        fig.savefig(f"{figure_folder_path}/{fig_name}.svg",
                     bbox_extra_artists=(title,),
                     bbox_inches="tight")
     plt.show()
@@ -537,11 +455,13 @@ def add_sub_cell_type(row,
 
 def add_cell_type_latent_cluster_emphasis(row,
                                           cell_type_latent_cluster_key,
-                                          latent_cluster,
-                                          comparison_latent_clusters):  
-    for comparison_latent_cluster in comparison_latent_clusters:
-        if row[cell_type_latent_cluster_key] == latent_cluster:
+                                          selected_latent_clusters,
+                                          comparison_latent_clusters):
+    """Add cell type latent cluster emphasis column for plotting."""
+    for selected_latent_cluster in selected_latent_clusters:
+        if row[cell_type_latent_cluster_key] == selected_latent_cluster:
             return row[cell_type_latent_cluster_key]
+    for comparison_latent_cluster in comparison_latent_clusters:
         if row[cell_type_latent_cluster_key] == comparison_latent_cluster:
             return "-1"
     return np.nan
@@ -569,3 +489,26 @@ def store_top_gps_summary(model,
     # Write to disk
     top_gps_summary_df.to_csv(f"{file_path}")
     return top_gps_summary_df
+
+def create_differential_gps_dotplot(adata,
+                                    groupby_key,
+                                    title,
+                                    save_fig,
+                                    file_path):
+    
+    # Retrieve differential gene programs
+    differential_gps = [col for col in model.adata.obs.columns if col.endswith("_GP")]
+    
+    # Create grouped dotplot
+    fig = sc.pl.dotplot(adata,
+                        differential_gps,
+                        groupby=groupby_key,
+                        dendrogram=True, 
+                        title=title,
+                        swap_axes=True,
+                        return_fig=True)
+    
+    # Save and display plot
+    if save_fig:
+        fig.savefig(file_path)
+    fig.show()
