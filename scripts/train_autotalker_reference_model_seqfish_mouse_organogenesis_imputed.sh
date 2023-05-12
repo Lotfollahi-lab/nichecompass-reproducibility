@@ -7,7 +7,7 @@ python train_autotalker_reference_model.py \
 --filter_genes \
 --n_hvg 2000 \
 --nichenet_keep_target_genes_ratio 0.01 \
---nichenet_max_n_target_genes_per_gp 25344 \
+--nichenet_max_n_target_genes_per_gp 1000 \
 --include_mebocost_gps \
 --mebocost_species mouse \
 --gp_filter_mode subset \
@@ -41,6 +41,6 @@ python train_autotalker_reference_model.py \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0.125 \
 --lambda_group_lasso 0. \
---lambda_l1_masked 0. \
+--lambda_l1_masked 30. \
 --edge_batch_size 256 \
 --node_batch_size None
