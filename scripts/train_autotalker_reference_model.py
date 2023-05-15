@@ -47,6 +47,11 @@ def none_or_value(value):
         return None
     return value
 
+def none_or_int(value):
+    if value == "None":
+        return None
+    return int(value)
+
 # Gene program mask
 parser.add_argument(
     "--nichenet_keep_target_genes_ratio",
@@ -117,7 +122,7 @@ parser.add_argument(
     help="s. Autotalker class signature.")
 parser.add_argument(
     "--condition_key",
-    type=str,
+    type=none_or_value,
     default="batch",
     help="s. Autotalker class signature.")
 parser.add_argument(
@@ -199,6 +204,11 @@ parser.add_argument(
     default=["gene_expr_decoder"],
     help="s. Autotalker class signature")
 parser.add_argument(
+    "--n_cond_embed",
+    type=none_or_int,
+    default=None,
+    help="s. Autotalker train method signature")
+parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -218,6 +228,11 @@ parser.add_argument(
     type=str,
     default="gcnconv",
     help="s. Autotalker class signature")
+parser.add_argument(
+    "--n_hidden_encoder",
+    type=none_or_int,
+    default=None,
+    help="s. Autotalker train method signature")
 parser.add_argument(
     "--n_epochs",
     type=int,
@@ -545,12 +560,6 @@ add_gps_from_gp_dict_to_adata(
 ## 4.1 Initialize, Train & Save Model ##
 ###############################################################################
 
-# Determine dimensionality of hidden encoder
-n_hidden_encoder = len(adata.uns[args.gp_names_key])
-
-# Determine dimensionality of conditional embedding (in case injected)
-n_cond_embed = len(adata.uns[args.gp_names_key])
-
 print("\nTraining model...")
 # Initialize model
 model = Autotalker(adata,
@@ -558,7 +567,7 @@ model = Autotalker(adata,
                    adj_key=args.adj_key,
                    condition_key=args.condition_key,
                    cond_embed_injection=args.cond_embed_injection,
-                   n_cond_embed=n_cond_embed,
+                   n_cond_embed=args.n_cond_embed,
                    gp_names_key=args.gp_names_key,
                    active_gp_names_key=args.active_gp_names_key,
                    gp_targets_mask_key=args.gp_targets_mask_key,
@@ -568,7 +577,7 @@ model = Autotalker(adata,
                    gene_expr_recon_dist=args.gene_expr_recon_dist,
                    n_layers_encoder=args.n_layers_encoder,
                    conv_layer_encoder=args.conv_layer_encoder,
-                   n_hidden_encoder=n_hidden_encoder,
+                   n_hidden_encoder=args.n_hidden_encoder,
                    log_variational=args.log_variational,
                    node_label_method=args.node_label_method)
 

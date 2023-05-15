@@ -241,3 +241,103 @@ spatial_atac_rna_seq_mouse_embryo_and_brain_atac_colors = {
     "A7" : "#0F4A9C",
     "A2" : "#F397C0",
     "A3" : "#F397C0"}
+
+visium_human_heart_colors = {
+    "Adip1" : "#FFD8B8", # Peach
+    "Adip2" : "#F9CB9C", # Light Peach
+    "Adip3" : "#FFB8A2", # Apricot
+    "Adip4" : "#F08CAE", # Pink
+    "B" : "#F49FAD", # Pale Pink
+    "B_cells" : "#E7F0A4", # Pale Canary
+    "B_follicular" : "#C7F2C2", # Light Green
+    "B_memory" : "#97E6A1", # Soft Green
+    "B_plasma" : "#FE938C", # Coral
+    "CD4+T_cytox" : "#A5DEE4", # Pale Blue
+    "CD4+T_tem" : "#5CA4A9", # Blue-Green
+    "CD4T" : "#6B5B95", # Lavender
+    "CD4T_Tfh" : "#F9A03F", # Orange
+    "CD4T_Th1" : "#F7DB6A", # Light Yellow
+    "CD4T_naive" : "#EEBB4D", # Light Amber
+    "CD4T_reg" : "#D6E4B2", # Pale Green
+    "CD8+T_cytox" : "#A8DADC", # Pale Cyan
+    "CD8+T_tem" : "#3D5A80", # Dark Blue
+    "CD8T" : "#3E3F8A", # Navy Blue
+    "CD14+Mo" : "#218380", # Teal
+    "CD16+Mo" : "#90BE6D", # Soft Green-Yellow
+    "DC" : "#FFD369", # Yellow
+    "DOCK4+MØ1" : "#ED553B", # Red-Orange
+    "DOCK4+MØ2" : "#DA627D", # Mauve
+    "EC1_cap" : "#6C5B7B", # Purple
+    "EC2_cap" : "#4ECDC4", # Mint
+    "EC3_cap" : "#65AADD", # Sky Blue
+    "EC4_immune" : "#8FBFE0", # Powder Blue
+    "EC5_art" : "#A2D2FF", # Pale Sky Blue
+    "EC6_ven" : "#F3C969", # Light Amber-Yellow
+    "EC7_atria" : "#EE6C4D", # Light Red-Orange
+    "EC8_ln" : "#EC4E20", # Bright Red
+    "FB1" : "#D64161", # Dark Pink
+    "FB2" : "#FF7A5A", # Bright Coral
+    "FB3" : "#E7A977", # Light Coral
+    "FB4" : "#FECE44", # Bright Yellow
+    "FB5" : "#FFC55F", # Yellow-Orange
+    "IL17RA+Mo" : "#F89E7B", # Light Coral-Orange
+    "ILC" : "#7ECEFD", # Baby Blue
+    "LYVE1+MØ1" : "#C9B1BD", # Pale Mauve
+    "LYVE1+MØ2" : "#E6A0C4", # Light Pink
+    "LYVE1+MØ3" : "#E36BAE", # Bright Pink
+    "MAIT" : "#8B5B6E", # Mauve-Brown
+    "Mast" : "#748CAB", # Blue-Gray
+    "Meso" : "#E5E5E5", # Light Gray
+    "Mo_pi" : "#C4C4C4", # Gray
+    "MØ_AgP" : "#A4A4A4", # Dark Gray
+    "MØ_mod" : "#4D4D4D", # Charcoal
+    "NC1" : "#F8B195", # Dusty Peach
+    "NC2" : "#F67280", # Salmon Pink
+    "NC3" : "#C06C84", # Rose
+    "NC4": "#6C5B7B", # Muted Purple
+    "NC5": "#355C7D", # Dark Slate Blue
+    "NC6": "#6C7B95", # Gray-Blue
+    "NK": "#D6BCC0", # Light Mauve
+    "NKT": "#D5B9B2", # Dusty Rose
+    "NK_ITGAD": "#A56C7B", # Muted Rose
+    "NØ": "#F4A261", # Light Orange
+    "PC1_vent": "#F29E4C", # Bright Orange
+    "PC2_atria": "#E76F51", # Coral-Red
+    "PC3_str": "#DA627D", # Mauve
+    "SMC1_basic": "#9B4DCA", # Lavender-Purple
+    "SMC2_art": "#8A5B5C", # Brownish Red
+    "gdT": "#9A8478", # Beige
+    "vCM1": "#FF8C42", # Tangerine
+    "vCM2": "#F9A11F", # Bright Orange-Yellow
+    "vCM3": "#FACC15", # Golden Yellow
+    "vCM4": "#E2E062", # Pale Lime
+    "vCM5": "#BADE92", # Soft Lime
+}
+
+batch_colors = {
+    "batch1" : "#FFD8B8", # Peach
+    "batch2" : "#355C7D", # Dark Slate Blue
+    "batch3" : "#E76F51", # Coral-Red
+    "batch4" : "#F08CAE", # Pink
+    "batch5" : "#F49FAD", # Pale Pink
+    "batch6" : "#E7F0A4", # Pale Canary
+    "batch7" : "#C7F2C2", # Light Green
+    "batch8" : "#97E6A1", # Soft Green
+    "batch9" : "#FE938C", # Coral
+    "batch10" : "#A5DEE4", # Pale Blue
+    "batch11" : "#5CA4A9", # Blue-Green
+    "batch12" : "#6B5B95", # Lavender
+    "batch13" : "#F9A03F", # Orange
+    "batch14" : "#F7DB6A", # Light Yellow
+    "batch15" : "#EEBB4D", # Light Amber
+    "batch16" : "#D6E4B2", # Pale Green
+    "batch17" : "#A8DADC", # Pale Cyan
+    "batch18" : "#3D5A80", # Dark Blue
+    "batch19" : "#3E3F8A", # Navy Blue
+    "batch20" : "#218380", # Teal
+}
+
+mapping_entity_colors = {
+    "reference" : "#FFD8B8", # Peach
+    "query" : "#355C7D", # Dark Slate Blue
+}

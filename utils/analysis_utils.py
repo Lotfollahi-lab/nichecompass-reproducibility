@@ -3,6 +3,100 @@ import numpy as np
 import scanpy as sc
 from matplotlib import gridspec
 
+def plot_latent(adata,
+                dataset_label,
+                color_by,
+                color_palette,
+                groups,
+                save_fig,
+                file_path):
+    """Plot features in latent space."""
+    fig = sc.pl.umap(adata,
+                     color=[color_by],
+                     palette=color_palette,
+                     groups=groups,
+                     size=320000/len(adata),
+                     return_fig=True)
+    fig.set_size_inches(12, 8)
+    plt.title(f"{dataset_label}: NicheCompass Latent "
+              f"{color_by.replace('_', ' ').title()} Annotations",
+              size=20,
+              pad=15)
+
+    if save_fig:
+        fig.savefig(file_path,
+                    bbox_inches="tight")
+    else:
+        fig.show()
+        
+        
+def plot_latent_clusters(adata,
+                         latent_cluster_key,
+                         groups,
+                         condition_key,
+                         conditions,
+                         latent_cluster_colors,
+                         size,
+                         spot_size,
+                         save_fig,
+                         file_path):
+    """Plot latent clusters in latent and physical space."""
+    # Create plot of cell type annotations in physical and latent space
+    fig = plt.figure(figsize=(12, 14))
+    title = fig.suptitle(t=f"NicheCompass Latent Clusters in Latent and Physical Space",
+                         y=0.96,
+                         x=0.55,
+                         fontsize=20)
+    spec1 = gridspec.GridSpec(ncols=1,
+                              nrows=2,
+                              width_ratios=[1],
+                              height_ratios=[3, 2])
+    spec2 = gridspec.GridSpec(ncols=3,
+                              nrows=2,
+                              width_ratios=[1, 1, 1],
+                              height_ratios=[3, 2])
+    axs = []
+    axs.append(fig.add_subplot(spec1[0]))
+    axs.append(fig.add_subplot(spec2[3]))
+    axs.append(fig.add_subplot(spec2[4]))
+    axs.append(fig.add_subplot(spec2[5]))
+    sc.pl.umap(adata=adata,
+               color=[latent_cluster_key],
+               groups=groups,
+               palette=latent_cluster_colors,
+               size=size,
+               title=f"Latent Clusters in Latent Space",
+               ax=axs[0],
+               show=False)
+    for idx, condition in enumerate(conditions):
+        sc.pl.spatial(adata=adata[adata.obs[condition_key] == condition],
+                      color=[latent_cluster_key],
+                      groups=groups,                  
+                      palette=latent_cluster_colors,
+                      spot_size=spot_size,
+                      title="Latent Clusters in \n Physical Space \n"
+                            f"(Condition: {condition})",
+                      legend_loc=None,
+                      ax=axs[idx+1],
+                      show=False)
+    
+    # Create and position shared legend
+    handles, labels = axs[0].get_legend_handles_labels()
+    lgd = fig.legend(handles,
+                     labels,
+                     loc="center left",
+                     bbox_to_anchor=(0.98, 0.5))
+    axs[0].get_legend().remove()
+
+    # Adjust, save and display plot
+    plt.subplots_adjust(wspace=0.2, hspace=0.25)
+    if save_fig:
+        fig.savefig(file_path,
+                    bbox_extra_artists=(lgd, title),
+                    bbox_inches="tight")
+    plt.show()
+
+
 def plot_physical_latent_for_cell_types(adata,
                                         cell_types,
                                         sample_key,
@@ -81,6 +175,17 @@ def plot_physical_latent_for_cell_types(adata,
     plt.show()
     
 
+def compute_latent_clusters(adata,
+                            latent_resolution,
+                            latent_cluster_key,
+                            latent_knng_key):    
+
+    sc.tl.leiden(adata=adata,
+                 resolution=latent_resolution,
+                 key_added=latent_cluster_key,
+                 neighbors_key=latent_knng_key)
+    
+    
 def compute_cell_type_latent_clusters(adata,
                                       latent_key,
                                       cell_type_latent_resolution,
@@ -209,8 +314,8 @@ def generate_gp_info_plots(analysis_label,
                            cell_type_colors,
                            latent_cluster_colors,
                            plot_category,
-                           plot_group,
                            log_bayes_factor_thresh,
+                           n_top_enriched_gps=5,
                            adata=None,
                            feature_spaces=["latent", "physical_embryo1", "physical_embryo2", "physical_embryo3"],
                            plot_types=["gene_categories", "top_genes"],
@@ -221,8 +326,8 @@ def generate_gp_info_plots(analysis_label,
     if adata is None:
         adata = model.adata.copy()
         
-    cats = adata.uns[differential_gp_test_results_key]["category"]
-    gps = adata.uns[differential_gp_test_results_key]["gene_program"]
+    cats = adata.uns[differential_gp_test_results_key]["category"][:n_top_enriched_gps]
+    gps = adata.uns[differential_gp_test_results_key]["gene_program"][:n_top_enriched_gps]
     
     for gp in gps:
         gp_gene_importances_df = model.compute_gp_gene_importances(selected_gp=gp)
@@ -290,9 +395,8 @@ def generate_gp_info_plots(analysis_label,
                                gps=gps,
                                plot_type=plot_type,
                                plot_category=plot_category,
-                               plot_group=plot_group,
                                feature_space=feature_space,
-                               suptitle=f"{analysis_label.replace('_', ' ').title()} Enriched GPs: "
+                               suptitle=f"{analysis_label.replace('_', ' ').title()} Top {n_top_enriched_gps} Enriched GPs: "
                                         f"GP Scores and {'Weighted Mean ' if plot_type == 'gene_categories' else ''}"
                                         f"Gene Expression of {plot_type.replace('_', ' ').title()} in {feature_space.replace('_', ' ').title()} Feature Space",
                                cat_title=f"Enriched GP Category in \n {plot_category.replace('_', ' ').title()}",
@@ -310,7 +414,6 @@ def plot_gp_info_plots(adata,
                        gps,
                        plot_type,
                        plot_category,
-                       plot_group,
                        feature_space,
                        suptitle,
                        cat_title,
@@ -336,14 +439,14 @@ def plot_gp_info_plots(adata,
 
     title = fig.suptitle(t=suptitle,
                          x=0.55,
-                         y=(1.1 if len(gps) == 1 else 0.925),
+                         y=(1.1 if len(gps) == 1 else 0.93),
                          fontsize=20)
     for i, gp in enumerate(gps):
         if feature_space == "latent":
             sc.pl.umap(adata,
                        color=plot_category,
                        palette=palette,
-                       groups=plot_group,
+                       groups=cats[i],
                        ax=axs[i, 0],
                        title=cat_title,
                        legend_loc="on data",
@@ -359,7 +462,7 @@ def plot_gp_info_plots(adata,
             sc.pl.spatial(adata=adata[adata.obs["sample"] == feature_space.split("_")[1]],
                           color=plot_category,
                           palette=palette,
-                          groups=plot_group,
+                          groups=cats[i],
                           ax=axs[i, 0],
                           spot_size=0.03,
                           title=cat_title,
