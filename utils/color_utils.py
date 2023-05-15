@@ -240,7 +240,21 @@ spatial_atac_rna_seq_mouse_embryo_and_brain_atac_colors = {
     "A6" : "#c19f70",
     "A7" : "#0F4A9C",
     "A2" : "#F397C0",
-    "A3" : "#F397C0"}
+    "A3" : "#F397C0",
+    "C6" : "#635547",
+    "C2" : "#DABE99",
+    "C5" : "#9e6762",
+    "C0" : "#FACB12",
+    "C4" : "#c19f70",
+    "C7" : "#0F4A9C",
+    "C10" : "#F397C0",
+    "C3" : "#A5DEE4",
+    "C1" : "#5CA4A9",
+    "C9" : "#6B5B95",
+    "C8" : "#F7DB6A",
+    "C11" : "#D6E4B2",
+    "C12" : "#218380",
+    "C13" : "#ED553B"}
 
 visium_human_heart_colors = {
     "Adip1" : "#FFD8B8", # Peach
@@ -315,26 +329,27 @@ visium_human_heart_colors = {
 }
 
 batch_colors = {
-    "batch1" : "#FFD8B8", # Peach
-    "batch2" : "#355C7D", # Dark Slate Blue
-    "batch3" : "#E76F51", # Coral-Red
-    "batch4" : "#F08CAE", # Pink
-    "batch5" : "#F49FAD", # Pale Pink
-    "batch6" : "#E7F0A4", # Pale Canary
-    "batch7" : "#C7F2C2", # Light Green
-    "batch8" : "#97E6A1", # Soft Green
-    "batch9" : "#FE938C", # Coral
-    "batch10" : "#A5DEE4", # Pale Blue
-    "batch11" : "#5CA4A9", # Blue-Green
-    "batch12" : "#6B5B95", # Lavender
-    "batch13" : "#F9A03F", # Orange
-    "batch14" : "#F7DB6A", # Light Yellow
-    "batch15" : "#EEBB4D", # Light Amber
-    "batch16" : "#D6E4B2", # Pale Green
-    "batch17" : "#A8DADC", # Pale Cyan
-    "batch18" : "#3D5A80", # Dark Blue
-    "batch19" : "#3E3F8A", # Navy Blue
-    "batch20" : "#218380", # Teal
+    "batch1": "#FFD8B8", # Peach
+    "batch2": "#355C7D", # Dark Slate Blue
+    "batch3": "#E76F51", # Coral-Red
+    "batch4": "#F08CAE", # Pink
+    "batch5": "#F49FAD", # Pale Pink
+    "batch6": "#E7F0A4", # Pale Canary
+    "batch7": "#C7F2C2", # Light Green
+    "batch8": "#97E6A1", # Soft Green
+    "batch9": "#FE938C", # Coral
+    "batch10": "#A5DEE4", # Pale Blue
+    "batch11": "#5CA4A9", # Blue-Green
+    "batch12": "#6B5B95", # Lavender
+    "batch13": "#F9A03F", # Orange
+    "batch14": "#F7DB6A", # Light Yellow
+    "batch15": "#EEBB4D", # Light Amber
+    "batch16": "#D6E4B2", # Pale Green
+    "batch17": "#A8DADC", # Pale Cyan
+    "batch18": "#3D5A80", # Dark Blue
+    "batch19": "#3E3F8A", # Navy Blue
+    "batch20": "#218380", # Teal
+    "p22": "#FFD8B8", # Peach
 }
 
 mapping_entity_colors = {

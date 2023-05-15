@@ -3,6 +3,7 @@ import numpy as np
 import scanpy as sc
 from matplotlib import gridspec
 
+
 def plot_latent(adata,
                 dataset_label,
                 color_by,
@@ -30,20 +31,24 @@ def plot_latent(adata,
         fig.show()
         
         
-def plot_latent_clusters(adata,
-                         latent_cluster_key,
-                         groups,
-                         condition_key,
-                         conditions,
-                         latent_cluster_colors,
-                         size,
-                         spot_size,
-                         save_fig,
-                         file_path):
+def plot_latent_clusters_in_latent_and_physical_space(
+        adata,
+        plot_label,
+        latent_cluster_key,
+        groups,
+        condition_key,
+        conditions,
+        latent_cluster_colors,
+        size,
+        spot_size,
+        save_fig,
+        file_path):
     """Plot latent clusters in latent and physical space."""
+    ncols = min(3, len(conditions))
     # Create plot of cell type annotations in physical and latent space
     fig = plt.figure(figsize=(12, 14))
-    title = fig.suptitle(t=f"NicheCompass Latent Clusters in Latent and Physical Space",
+    title = fig.suptitle(t=f"NicheCompass {plot_label} " \
+                           "in Latent and Physical Space",
                          y=0.96,
                          x=0.55,
                          fontsize=20)
@@ -51,30 +56,28 @@ def plot_latent_clusters(adata,
                               nrows=2,
                               width_ratios=[1],
                               height_ratios=[3, 2])
-    spec2 = gridspec.GridSpec(ncols=3,
+    spec2 = gridspec.GridSpec(ncols=ncols,
                               nrows=2,
-                              width_ratios=[1, 1, 1],
+                              width_ratios=[1] * ncols,
                               height_ratios=[3, 2])
     axs = []
     axs.append(fig.add_subplot(spec1[0]))
-    axs.append(fig.add_subplot(spec2[3]))
-    axs.append(fig.add_subplot(spec2[4]))
-    axs.append(fig.add_subplot(spec2[5]))
     sc.pl.umap(adata=adata,
                color=[latent_cluster_key],
                groups=groups,
                palette=latent_cluster_colors,
                size=size,
-               title=f"Latent Clusters in Latent Space",
+               title=f"{plot_label} in Latent Space",
                ax=axs[0],
                show=False)
     for idx, condition in enumerate(conditions):
+        axs.append(fig.add_subplot(spec2[ncols + idx]))
         sc.pl.spatial(adata=adata[adata.obs[condition_key] == condition],
                       color=[latent_cluster_key],
                       groups=groups,                  
                       palette=latent_cluster_colors,
                       spot_size=spot_size,
-                      title="Latent Clusters in \n Physical Space \n"
+                      title=f"{plot_label} in \n Physical Space \n"
                             f"(Condition: {condition})",
                       legend_loc=None,
                       ax=axs[idx+1],
@@ -315,7 +318,7 @@ def generate_gp_info_plots(analysis_label,
                            latent_cluster_colors,
                            plot_category,
                            log_bayes_factor_thresh,
-                           n_top_enriched_gps=5,
+                           n_top_enriched_gps=10,
                            adata=None,
                            feature_spaces=["latent", "physical_embryo1", "physical_embryo2", "physical_embryo3"],
                            plot_types=["gene_categories", "top_genes"],
