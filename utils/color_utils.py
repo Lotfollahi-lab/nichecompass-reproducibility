@@ -350,6 +350,12 @@ batch_colors = {
     "batch19": "#3E3F8A", # Navy Blue
     "batch20": "#218380", # Teal
     "p22": "#FFD8B8", # Peach
+    "embryo1_z2": "#FFD8B8", # Peach
+    "embryo1_z5": "#355C7D", # Dark Slate Blue
+    "embryo2_z2": "#E76F51", # Coral-Red
+    "embryo2_z5": "#F08CAE", # Pink
+    "embryo3_z2": "#F49FAD", # Pale Pink
+    "embryo3_z5": "#E7F0A4", # Pale Canary
 }
 
 mapping_entity_colors = {

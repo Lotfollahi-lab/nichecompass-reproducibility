@@ -36,15 +36,15 @@ def plot_latent_clusters_in_latent_and_physical_space(
         plot_label,
         latent_cluster_key,
         groups,
-        condition_key,
-        conditions,
+        sample_key,
+        samples,
         latent_cluster_colors,
         size,
         spot_size,
         save_fig,
         file_path):
     """Plot latent clusters in latent and physical space."""
-    ncols = min(3, len(conditions))
+    ncols = min(3, len(samples))
     # Create plot of cell type annotations in physical and latent space
     fig = plt.figure(figsize=(12, 14))
     title = fig.suptitle(t=f"NicheCompass {plot_label} " \
@@ -70,15 +70,15 @@ def plot_latent_clusters_in_latent_and_physical_space(
                title=f"{plot_label} in Latent Space",
                ax=axs[0],
                show=False)
-    for idx, condition in enumerate(conditions):
+    for idx, sample in enumerate(samples):
         axs.append(fig.add_subplot(spec2[ncols + idx]))
-        sc.pl.spatial(adata=adata[adata.obs[condition_key] == condition],
+        sc.pl.spatial(adata=adata[adata.obs[sample_key] == sample],
                       color=[latent_cluster_key],
                       groups=groups,                  
                       palette=latent_cluster_colors,
                       spot_size=spot_size,
                       title=f"{plot_label} in \n Physical Space \n"
-                            f"(Condition: {condition})",
+                            f"(Sample: {sample})",
                       legend_loc=None,
                       ax=axs[idx+1],
                       show=False)
