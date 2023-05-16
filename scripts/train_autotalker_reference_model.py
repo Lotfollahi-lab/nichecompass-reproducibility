@@ -318,11 +318,12 @@ mlflow.log_param("timestamp", current_timestamp)
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-model_artifacts_folder_path = f"../artifacts/{args.dataset}/models/" \
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
                               f"{current_timestamp}"
-gp_data_folder_path = "../datasets/gp_data" # gene program data
-srt_data_folder_path = "../datasets/srt_data" # spatially-resolved
-                                              # transcriptomics data
+gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
+srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
+                                                       # transcriptomics data
 srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"

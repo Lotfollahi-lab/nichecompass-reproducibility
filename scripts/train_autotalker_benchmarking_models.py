@@ -15,6 +15,7 @@
 
 import sys
 sys.path.append("../../autotalker")
+sys.path.append("../../../autotalker")
 
 import argparse
 import gc
@@ -48,6 +49,11 @@ def none_or_value(value):
     if value == "None":
         return None
     return value
+
+def none_or_int(value):
+    if value == "None":
+        return None
+    return int(value)
 
 # Benchmarking-specific
 parser.add_argument(
@@ -235,6 +241,11 @@ parser.add_argument(
     default=["gene_expr_decoder"],
     help="s. Autotalker class signature")
 parser.add_argument(
+    "--n_cond_embed",
+    type=none_or_int,
+    default=None,
+    help="s. Autotalker train method signature")
+parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -254,6 +265,11 @@ parser.add_argument(
     type=str,
     default="gcnconv",
     help="s. Autotalker class signature")
+parser.add_argument(
+    "--n_hidden_encoder",
+    type=none_or_int,
+    default=None,
+    help="s. Autotalker train method signature")
 parser.add_argument(
     "--n_epochs",
     type=int,
@@ -333,13 +349,14 @@ print(sys.argv)
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-model_artifacts_folder_path = f"../artifacts/{args.dataset}/models/" \
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
                               f"{current_timestamp}"
-figure_folder_path = f"../../figures/{args.dataset}/{args.model_label}/" \
+figure_folder_path = f"{root_dir}/figures/{args.dataset}/{args.model_label}/" \
                      f"{current_timestamp}"
-gp_data_folder_path = "../datasets/gp_data" # gene program data
-srt_data_folder_path = "../datasets/srt_data" # spatially-resolved
-                                              # transcriptomics data
+gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
+srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
+                                                       # transcriptomics data
 srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
 srt_data_results_folder_path = f"{srt_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
@@ -600,12 +617,6 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
         max_source_genes_per_gp=None,
         max_target_genes_per_gp=None,
         filter_genes_not_in_masks=False)
-
-    # Determine dimensionality of hidden encoder
-    n_hidden_encoder = len(adata.uns[args.gp_names_key])
-
-    # Determine dimensionality of conditional embedding (in case injected)
-    n_cond_embed = len(adata.uns[args.gp_names_key])
     
     # Set mlflow experiment
     experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
@@ -641,7 +652,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                        adj_key=args.adj_key,
                        condition_key=args.condition_key,
                        cond_embed_injection=args.cond_embed_injection,
-                       n_cond_embed=n_cond_embed,
+                       n_cond_embed=args.n_cond_embed,
                        gp_names_key=args.gp_names_key,
                        active_gp_names_key=args.active_gp_names_key,
                        gp_targets_mask_key=args.gp_targets_mask_key,
@@ -651,7 +662,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                        gene_expr_recon_dist=args.gene_expr_recon_dist,
                        n_layers_encoder=args.n_layers_encoder,
                        conv_layer_encoder=args.conv_layer_encoder,
-                       n_hidden_encoder=n_hidden_encoder,
+                       n_hidden_encoder=args.n_hidden_encoder,
                        log_variational=args.log_variational,
                        node_label_method=args.node_label_method)
 
