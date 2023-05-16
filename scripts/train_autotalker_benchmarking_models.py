@@ -213,7 +213,7 @@ parser.add_argument(
 parser.add_argument(
     "--model_label",
     type=str,
-    default="individual_sample_method_benchmarking",
+    default="single_sample_method_benchmarking",
     help="Label of the models under which they will be saved.")
 parser.add_argument(
     "--active_gp_names_key",
@@ -365,7 +365,7 @@ omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
 os.makedirs(model_artifacts_folder_path, exist_ok=True)
 os.makedirs(figure_folder_path, exist_ok=True)
-os.makedirs(srt_data_results_folder_path, exist_ok=True)
+os.makedirs(f"{srt_data_results_folder_path}/{args.model_label}", exist_ok=True)
 
 ###############################################################################
 ## 2. Prepare Gene Program Mask ##
@@ -724,7 +724,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
     # Store intermediate adata to disk
     adata_new.write(
-    f"{srt_data_results_folder_path}/sample_integration_method_benchmarking/"
+    f"{srt_data_results_folder_path}/{args.model_label}/"
     f"{args.dataset}_autotalker_{args.model_label}.h5ad") 
 
     print("\nSaving model...")
@@ -745,5 +745,5 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
 # Store final adata to disk
 adata_new.write(
-    f"{srt_data_results_folder_path}/sample_integration_method_benchmarking/"
+    f"{srt_data_results_folder_path}/{args.model_label}/"
     f"{args.dataset}_autotalker_{args.model_label}.h5ad") 
