@@ -1,4 +1,4 @@
-datasets=("nanostring_cosmx_human_nsclc")
+datasets=("nanostring_cosmx_human_nsclc_subsample_20pct")
 dataset_reference_batches=("None")
 cell_type_keys=("cell_type")
 
@@ -10,6 +10,7 @@ do
     cell_type_key=${cell_type_keys[i]}
     reference_batches=${dataset_reference_batches[i]}
     
+    python ../wait.py
     python ../train_autotalker_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
