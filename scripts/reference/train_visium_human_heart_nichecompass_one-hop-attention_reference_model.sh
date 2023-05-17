@@ -1,0 +1,48 @@
+python waiting_script.py &&
+
+python train_nichecompass_reference_model.py \
+--dataset visium_human_heart \
+--reference_batches batch1 batch2 batch3 \
+--n_neighbors 6 \
+--filter_genes \
+--n_hvg 3000 \
+--nichenet_keep_target_genes_ratio 0.01 \
+--nichenet_max_n_target_genes_per_gp 1000 \
+--include_mebocost_gps \
+--mebocost_species human \
+--gp_filter_mode subset \
+--combine_overlap_gps \
+--overlap_thresh_source_genes 0.9 \
+--overlap_thresh_target_genes 0.9 \
+--overlap_thresh_genes 0.9 \
+--counts_key counts \
+--condition_key batch \
+--spatial_key spatial \
+--adj_key spatial_connectivities \
+--mapping_entity_key mapping_entity \
+--gp_targets_mask_key nichecompass_gp_targets \
+--gp_sources_mask_key nichecompass_gp_sources \
+--gp_names_key nichecompass_gp_names \
+--model_label reference \
+--active_gp_names_key nichecompass_active_gp_names \
+--latent_key nichecompass_latent \
+--active_gp_thresh_ratio 0.1 \
+--gene_expr_recon_dist nb \
+--cond_embed_injection gene_expr_decoder \
+--n_cond_embed None \
+--log_variational \
+--node_label_method one-hop-attention \
+--n_layers_encoder 1 \
+--n_hidden_encoder None \
+--conv_layer_encoder gcnconv \
+--n_epochs 100 \
+--n_epochs_all_gps 25 \
+--n_epochs_no_cond_contrastive 0 \
+--lambda_edge_recon 500000. \
+--lambda_gene_expr_recon 200. \
+--lambda_cond_contrastive 0. \
+--contrastive_logits_ratio 0.125 \
+--lambda_group_lasso 0. \
+--lambda_l1_masked 30. \
+--edge_batch_size 256 \
+--node_batch_size None
