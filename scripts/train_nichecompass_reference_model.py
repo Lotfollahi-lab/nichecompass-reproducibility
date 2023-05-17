@@ -25,13 +25,13 @@ import scanpy as sc
 import scipy.sparse as sp
 import squidpy as sq
 
-from autotalker.models import Autotalker
-from autotalker.utils import (add_gps_from_gp_dict_to_adata,
-                              extract_gp_dict_from_mebocost_es_interactions,
-                              extract_gp_dict_from_nichenet_ligand_target_mx,
-                              extract_gp_dict_from_omnipath_lr_interactions,
-                              filter_and_combine_gp_dict_gps,
-                              get_unique_genes_from_gp_dict)
+from nichecompass.models import NicheCompass
+from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
+                                extract_gp_dict_from_mebocost_es_interactions,
+                                extract_gp_dict_from_nichenet_ligand_target_mx,
+                                extract_gp_dict_from_omnipath_lr_interactions,
+                                filter_and_combine_gp_dict_gps,
+                                get_unique_genes_from_gp_dict)
 
 ###############################################################################
 ### 1.2 Define Parameters ###
@@ -116,12 +116,12 @@ parser.add_argument(
     "--counts_key",
     type=none_or_value,
     default=None,
-    help="s. Autotalker class signature.")
+    help="s. NicheCompass class signature.")
 parser.add_argument(
     "--condition_key",
     type=none_or_value,
     default="batch",
-    help="s. Autotalker class signature.")
+    help="s. NicheCompass class signature.")
 parser.add_argument(
     "--n_neighbors",
     type=int,
@@ -136,7 +136,7 @@ parser.add_argument(
     "--adj_key",
     type=str,
     default="spatial_connectivities",
-    help="s. Autotalker class signature.")
+    help="s. NicheCompass class signature.")
 parser.add_argument(
     "--mapping_entity_key",
     type=str,
@@ -157,17 +157,17 @@ parser.add_argument(
     "--gp_targets_mask_key",
     type=str,
     default="nichecompass_gp_targets",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--gp_sources_mask_key",
     type=str,
     default="nichecompass_gp_sources",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--gp_names_key",
     type=str,
     default="nichecompass_gp_names",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 
 # Model
 parser.add_argument(
@@ -179,117 +179,117 @@ parser.add_argument(
     "--active_gp_names_key",
     type=str,
     default="nichecompass_active_gp_names",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--latent_key",
     type=str,
     default="nichecompass_latent",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--active_gp_thresh_ratio",
     type=float,
     default=0.03,
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--gene_expr_recon_dist",
     type=str,
     default="nb",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--cond_embed_injection",
     nargs='+',
     default=["gene_expr_decoder"],
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--n_cond_embed",
     type=none_or_int,
     default=None,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
     default=True,
-    help="s. Autotalker class signature") # counts as input
+    help="s. NicheCompass class signature") # counts as input
 parser.add_argument(
     "--node_label_method",
     type=str,
     default="one-hop-attention",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--n_layers_encoder",
     type=int,
     default=1,
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--conv_layer_encoder",
     type=str,
     default="gcnconv",
-    help="s. Autotalker class signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--n_hidden_encoder",
     type=none_or_int,
     default=None,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs",
     type=int,
     default=40,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
     type=int,
     default=20,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_no_cond_contrastive",
     type=int,
     default=5,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lr",
     type=float,
     default=0.001,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
     default=1000.,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
     default=1.,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
     default=1000.,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--contrastive_logits_ratio",
     type=float,
     default=0.1,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
     type=float,
     default=0.,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_l1_masked",
     type=float,
     default=0.,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--edge_batch_size",
     type=int,
     default=128,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 parser.add_argument(
     "--node_batch_size",
     type=none_or_value,
     default=16,
-    help="s. Autotalker train method signature")
+    help="s. NicheCompass train method signature")
 
 args = parser.parse_args()
 
@@ -322,11 +322,13 @@ gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
 srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
                                                        # transcriptomics data
 srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
+srt_data_results_folder_path = f"{srt_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
 os.makedirs(model_artifacts_folder_path, exist_ok=True)
+os.makedirs(f"{srt_data_results_folder_path}/{args.model_label}", exist_ok=True)
 
 ###############################################################################
 ## 2. Gene Program Mask ##
@@ -369,7 +371,7 @@ if args.filter_genes:
 # Mebocost gene programs
 if args.include_mebocost_gps:
     mebocost_gp_dict = extract_gp_dict_from_mebocost_es_interactions(
-    dir_path=f"{gp_data_folder_path}/metabolite_enzyme_sensor_gps/",
+    dir_path=f"{gp_data_folder_path}/metabolite_enzyme_sensor_gps",
     species=args.mebocost_species,
     genes_uppercase=True,
     plot_gp_gene_count_distributions=False)
@@ -560,24 +562,24 @@ add_gps_from_gp_dict_to_adata(
 
 print("\nTraining model...")
 # Initialize model
-model = Autotalker(adata,
-                   counts_key=args.counts_key,
-                   adj_key=args.adj_key,
-                   condition_key=args.condition_key,
-                   cond_embed_injection=args.cond_embed_injection,
-                   n_cond_embed=args.n_cond_embed,
-                   gp_names_key=args.gp_names_key,
-                   active_gp_names_key=args.active_gp_names_key,
-                   gp_targets_mask_key=args.gp_targets_mask_key,
-                   gp_sources_mask_key=args.gp_sources_mask_key,
-                   latent_key=args.latent_key,
-                   active_gp_thresh_ratio=args.active_gp_thresh_ratio,
-                   gene_expr_recon_dist=args.gene_expr_recon_dist,
-                   n_layers_encoder=args.n_layers_encoder,
-                   conv_layer_encoder=args.conv_layer_encoder,
-                   n_hidden_encoder=args.n_hidden_encoder,
-                   log_variational=args.log_variational,
-                   node_label_method=args.node_label_method)
+model = NicheCompass(adata,
+                     counts_key=args.counts_key,
+                     adj_key=args.adj_key,
+                     condition_key=args.condition_key,
+                     cond_embed_injection=args.cond_embed_injection,
+                     n_cond_embed=args.n_cond_embed,
+                     gp_names_key=args.gp_names_key,
+                     active_gp_names_key=args.active_gp_names_key,
+                     gp_targets_mask_key=args.gp_targets_mask_key,
+                     gp_sources_mask_key=args.gp_sources_mask_key,
+                     latent_key=args.latent_key,
+                     active_gp_thresh_ratio=args.active_gp_thresh_ratio,
+                     gene_expr_recon_dist=args.gene_expr_recon_dist,
+                     n_layers_encoder=args.n_layers_encoder,
+                     conv_layer_encoder=args.conv_layer_encoder,
+                     n_hidden_encoder=args.n_hidden_encoder,
+                     log_variational=args.log_variational,
+                     node_label_method=args.node_label_method)
 
 # Train model
 model.train(n_epochs=args.n_epochs,
@@ -607,7 +609,7 @@ sc.tl.umap(model.adata,
 
 # Store adata to disk
 model.adata.write(
-    f"{srt_data_gold_folder_path}/results/{args.dataset}_nichecompass_"
+    f"{srt_data_results_folder_path}/{args.model_label}/{args.dataset}_nichecompass_"
     f"{args.model_label}.h5ad")
 
 print("\nSaving model...")

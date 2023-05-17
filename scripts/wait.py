@@ -2,8 +2,8 @@ import os
 import time
 
 # Define the command to check whether the first script is still running
-CHECK_COMMAND = "pgrep -f train_autotalker_benchmarking_models.py"
-CHECK_COMMAND_2 = "pgrep -f train_autotalker_reference_model.py"
+CHECK_COMMAND = "pgrep -f train_nichecompass_benchmarking_models.py"
+CHECK_COMMAND_2 = "pgrep -f train_nichecompass_reference_model.py"
 
 # Wait for the first script to finish
 while True:
