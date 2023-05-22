@@ -1,7 +1,7 @@
 python ../wait.py
 python ../train_nichecompass_reference_model.py \
---dataset vizgen_merfish_human_colon_cancer \
---reference_batches batch1 batch2 \
+--dataset vizgen_merfish_human_ovarian_cancer \
+--reference_batches batch1 batch2 batch3 batch4 \
 --n_neighbors 12 \
 --no-filter_genes \
 --nichenet_keep_target_genes_ratio 0.01 \
@@ -21,14 +21,14 @@ python ../train_nichecompass_reference_model.py \
 --gp_targets_mask_key nichecompass_gp_targets \
 --gp_sources_mask_key nichecompass_gp_sources \
 --gp_names_key nichecompass_gp_names \
---model_label one-hop-norm_reference \
+--model_label one-hop-attention_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
 --active_gp_thresh_ratio 0.1 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --no-log_variational \
---node_label_method one-hop-norm \
+--node_label_method one-hop-attention \
 --n_layers_encoder 1 \
 --conv_layer_encoder gcnconv \
 --n_epochs 100 \
@@ -40,5 +40,5 @@ python ../train_nichecompass_reference_model.py \
 --contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 30. \
---edge_batch_size 64 \
+--edge_batch_size 1024 \
 --node_batch_size None
