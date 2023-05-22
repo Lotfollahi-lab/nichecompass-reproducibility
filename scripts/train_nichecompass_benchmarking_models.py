@@ -26,6 +26,7 @@ import numpy as np
 import scanpy as sc
 import scipy.sparse as sp
 import squidpy as sq
+import torch
 
 from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
@@ -470,8 +471,9 @@ if args.adata_new_name is None:
     del(adata_original)
 else:
     adata_new = ad.read_h5ad(
-        f"{srt_data_gold_folder_path}/results/{args.adata_new_name}.h5ad")
-
+        f"{srt_data_results_folder_path}/{args.model_label}/"
+        f"{args.adata_new_name}")
+    
 ###############################################################################
 ## 4. Train Models ##
 ###############################################################################
@@ -736,6 +738,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     del(adata)
     del(model)
     gc.collect()
+    torch.cuda.empty_cache()
     
     mlflow.end_run()
 

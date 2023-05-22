@@ -22,7 +22,7 @@ do
     --nichenet_keep_target_genes_ratio 0.01 \
     --nichenet_max_n_target_genes_per_gp 25344 \
     --include_mebocost_gps \
-    --mebocost_species human \
+    --mebocost_species mouse \
     --gp_filter_mode subset \
     --combine_overlap_gps \
     --overlap_thresh_source_genes 0.9 \
