@@ -1,70 +1,0 @@
-Run timestamp: 10032023_145839.
-Script arguments:
-['train_autotalker_reference_model.py', '--dataset=nanostring_cosmx_human_liver_sample1', '--nichenet_max_n_target_genes_per_gp=20000', '--n_epochs=20', '--n_epochs_all_gps=10', '--lambda_group_lasso=0.', '--lambda_l1_masked=0.', '--edge_batch_size=256', '--node_batch_size=32']
-
-Loading data...
-
-Computing the spatial neighborhood graph...
-
-Preparing the gene program mask...
-Number of gene programs before filtering and combining: 1588.
-Number of gene programs after filtering and combining: 1461.
-
-Training model...
---- INITIALIZING NEW NETWORK MODULE: VARIATIONAL GENE PROGRAM GRAPH AUTOENCODER ---
-LOSS -> include_edge_recon_loss: True, include_gene_expr_recon_loss: True, gene_expr_recon_dist: nb
-NODE LABEL METHOD -> one-hop-attention
-ACTIVE GP THRESHOLD RATIO -> 0.03
-LOG VARIATIONAL -> True
-CONDITIONAL EMBEDDING INJECTION -> ['gene_expr_decoder', 'graph_decoder']
-GRAPH ENCODER -> n_input: 1000, n_cond_embed_input: 0, n_layers: 1, n_hidden: 989, n_latent: 989, n_addon_latent: 0, conv_layer: gcnconv, n_attention_heads: 0, dropout_rate: 0.0
-COSINE SIM GRAPH DECODER -> n_cond_embed_input: 180, n_output: 989, dropout_rate: 0.0
-MASKED GENE EXPRESSION DECODER -> n_input: 989, n_cond_embed_input: 180, n_addon_input: 0, n_output: 2000
-
---- INITIALIZING TRAINER ---
-Number of training nodes: 299589
-Number of validation nodes: 33288
-Number of training edges: 1955199
-Number of validation edges: 217244
-
---- MODEL TRAINING ---
-Epoch 1/20 |█-------------------| 5.0% train_global_loss: 1028.9484; train_optim_loss: 1028.9484; val_global_loss: 1023.0385; val_optim_loss: 1023.0385
-Epoch 2/20 |██------------------| 10.0% train_global_loss: 1013.6482; train_optim_loss: 1013.6482; val_global_loss: 1020.6522; val_optim_loss: 1020.6522
-Epoch 3/20 |███-----------------| 15.0% train_global_loss: 1010.1280; train_optim_loss: 1010.1280; val_global_loss: 1020.4091; val_optim_loss: 1020.4091
-Epoch 4/20 |████----------------| 20.0% train_global_loss: 1008.3043; train_optim_loss: 1008.3043; val_global_loss: 1017.3558; val_optim_loss: 1017.3558
-Epoch 5/20 |█████---------------| 25.0% train_global_loss: 1006.5291; train_optim_loss: 1006.5291; val_global_loss: 1017.1816; val_optim_loss: 1017.1816
-Epoch 6/20 |██████--------------| 30.0% train_global_loss: 1005.4318; train_optim_loss: 1005.4318; val_global_loss: 1016.8172; val_optim_loss: 1016.8172
-Epoch 7/20 |███████-------------| 35.0% train_global_loss: 1004.7635; train_optim_loss: 1004.7635; val_global_loss: 1018.1176; val_optim_loss: 1018.1176
-Epoch 8/20 |████████------------| 40.0% train_global_loss: 1004.1507; train_optim_loss: 1004.1507; val_global_loss: 1018.3993; val_optim_loss: 1018.3993
-Epoch 9/20 |█████████-----------| 45.0% train_global_loss: 1003.5208; train_optim_loss: 1003.5208; val_global_loss: 1019.7991; val_optim_loss: 1019.7991
-
-Reducing learning rate: metric has not improved more than 0.0 in the last 3 epochs.
-New learning rate is 0.0001.
-
-Epoch 10/20 |██████████----------| 50.0% train_global_loss: 1000.4131; train_optim_loss: 1000.4131; val_global_loss: 1015.8812; val_optim_loss: 1015.8812
-Epoch 11/20 |███████████---------| 55.0% train_global_loss: 1000.9309; train_optim_loss: 1000.9309; val_global_loss: 1009.1874; val_optim_loss: 1009.1874
-Epoch 12/20 |████████████--------| 60.0% train_global_loss: 1000.6908; train_optim_loss: 1000.6908; val_global_loss: 1009.4801; val_optim_loss: 1009.4801
-Epoch 13/20 |█████████████-------| 65.0% train_global_loss: 1000.7690; train_optim_loss: 1000.7690; val_global_loss: 1010.0285; val_optim_loss: 1010.0285
-Epoch 14/20 |██████████████------| 70.0% train_global_loss: 1000.7158; train_optim_loss: 1000.7158; val_global_loss: 1009.0924; val_optim_loss: 1009.0924
-Epoch 15/20 |███████████████-----| 75.0% train_global_loss: 1000.3730; train_optim_loss: 1000.3730; val_global_loss: 1009.1434; val_optim_loss: 1009.1434
-Epoch 16/20 |████████████████----| 80.0% train_global_loss: 1000.3424; train_optim_loss: 1000.3424; val_global_loss: 1009.0518; val_optim_loss: 1009.0518
-Epoch 17/20 |█████████████████---| 85.0% train_global_loss: 1000.1626; train_optim_loss: 1000.1626; val_global_loss: 1007.8568; val_optim_loss: 1007.8568
-Epoch 18/20 |██████████████████--| 90.0% train_global_loss: 1000.3749; train_optim_loss: 1000.3749; val_global_loss: 1008.3348; val_optim_loss: 1008.3348
-Epoch 19/20 |███████████████████-| 95.0% train_global_loss: 1000.2186; train_optim_loss: 1000.2186; val_global_loss: 1007.9750; val_optim_loss: 1007.9750
-Epoch 20/20 |████████████████████| 100.0% train_global_loss: 1000.0335; train_optim_loss: 1000.0335; val_global_loss: 1008.1777; val_optim_loss: 1008.1777
-
-
-Reducing learning rate: metric has not improved more than 0.0 in the last 3 epochs.
-New learning rate is 1e-05.
-
-Model training finished after 1684 min 39 sec.
-Using best model state, which was in epoch 17.
-
---- MODEL EVALUATION ---
-Val AUROC score: 0.9818
-Val AUPRC score: 0.9781
-Val best accuracy score: 0.9372
-Val best F1 score: 0.9382
-Val MSE score: 4.1589
-
-Saving model...

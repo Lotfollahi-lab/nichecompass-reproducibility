@@ -3,7 +3,7 @@ import pandas as pd
 import scanpy as sc
 import scib
 
-from autotalker.benchmarking import compute_clisis, compute_cas
+from nichecompass.benchmarking import compute_clisis, compute_cas
 
 def compute_latent_space_comparison(dataset,
                                     run_number,
@@ -15,7 +15,7 @@ def compute_latent_space_comparison(dataset,
                                     figure_folder_path,
                                     cell_type_groups=None,
                                     spot_size=0.03,
-                                    included_models=["Autotalker",
+                                    included_models=["NicheCompass",
                                                      "GraphST",
                                                      "scVI"],
                                     save_fig=True):
@@ -30,7 +30,7 @@ def compute_latent_space_comparison(dataset,
     axs_1 = subfigs[1].subplots(nrows=1, ncols=3)
     
     # Load model-specific data
-    for i, model in enumerate(["Autotalker",
+    for i, model in enumerate(["NicheCompass",
                                "GraphST",
                                "scVI"]):
         if model in included_models:
@@ -103,7 +103,7 @@ def compute_batch_integration_metrics(dataset,
                                       metric_artifacts_folder_path,
                                       spatial_key="spatial",
                                       latent_key="latent",
-                                      included_models=["Autotalker",
+                                      included_models=["NicheCompass",
                                                        "GraphST",
                                                        "scVI"]):
     metrics_dict = {"Dataset": [],
