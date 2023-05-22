@@ -1,0 +1,82 @@
+adata = model.adata.copy()
+
+for key in model.adata.uns.keys():
+    if "autotalker" in key:
+        adata.uns[key.replace("autotalker", "nichecompass")] = model.adata.uns[key]
+        try:
+            del(adata.uns[key])
+        except:
+            continue
+        
+for key in model.adata.obsm.keys():
+    if "autotalker" in key:
+        adata.obsm[key.replace("autotalker", "nichecompass")] = model.adata.obsm[key]
+        try:
+            del(adata.obsm[key])
+        except:
+            continue
+            
+for key in model.adata.varm.keys():
+    if "autotalker" in key:
+        adata.varm[key.replace("autotalker", "nichecompass")] = model.adata.varm[key]
+        try:
+            del(adata.varm[key])
+        except:
+            continue
+            
+for key in model.adata.obsp.keys():
+    if "autotalker" in key:
+        adata.obsp[key.replace("autotalker", "nichecompass")] = model.adata.obsp[key]
+        try:
+            del(adata.obsp[key])
+        except:
+            continue
+            
+model.adata = adata
+
+
+adata_atac = model.adata_atac.copy()
+
+for key in model.adata_atac.uns.keys():
+    if "autotalker" in key:
+        adata_atac.uns[key.replace("autotalker", "nichecompass")] = model.adata_atac.uns[key]
+        try:
+            del(adata_atac.uns[key])
+        except:
+            continue
+        
+for key in model.adata_atac.obsm.keys():
+    if "autotalker" in key:
+        adata_atac.obsm[key.replace("autotalker", "nichecompass")] = model.adata_atac.obsm[key]
+        try:
+            del(adata_atac.obsm[key])
+        except:
+            continue
+            
+for key in model.adata_atac.varm.keys():
+    if "autotalker" in key:
+        adata_atac.varm[key.replace("autotalker", "nichecompass")] = model.adata_atac.varm[key]
+        try:
+            del(adata_atac.varm[key])
+        except:
+            continue
+            
+for key in model.adata_atac.obsp.keys():
+    if "autotalker" in key:
+        adata_atac.obsp[key.replace("autotalker", "nichecompass")] = model.adata_atac.obsp[key]
+        try:
+            del(adata_atac.obsp[key])
+        except:
+            continue
+            
+model.adata_atac = adata_atac
+
+
+for att in dir(model):
+    if type(getattr(model, att)) == type("str"):
+        if "autotalker" in getattr(model, att):
+            setattr(model, att, getattr(model, att).replace("autotalker", "nichecompass"))
+            
+for att in dir(model):
+    if type(getattr(model, att)) == type("str"):
+        print(getattr(model, att))
