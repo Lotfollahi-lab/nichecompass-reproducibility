@@ -44,5 +44,5 @@ batch19 batch20 \
 --contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 30. \
---edge_batch_size 1024 \
+--edge_batch_size 512 \
 --node_batch_size None
