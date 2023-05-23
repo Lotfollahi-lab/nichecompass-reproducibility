@@ -1,4 +1,4 @@
-setwd("~/workspace/projects/autotalker-reproducibility")
+setwd("~/workspace/projects/nichecompass-reproducibility")
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
