@@ -356,6 +356,18 @@ batch_colors = {
     "embryo2_z5": "#F08CAE", # Pink
     "embryo3_z2": "#F49FAD", # Pale Pink
     "embryo3_z5": "#E7F0A4", # Pale Canary
+    "patient1": "#FFD8B8", # Peach
+    "patient2": "#355C7D", # Dark Slate Blue
+    "embryo1": "#FFD8B8", # Peach
+    "embryo2": "#355C7D", # Dark Slate Blue
+    "embryo3": "#E76F51", # Coral-Red
+    "lung5_rep1": "#FFD8B8", # Peach
+    "lung5_rep2": "#355C7D", # Dark Slate Blue
+    "lung5_rep3": "#E76F51", # Coral-Red
+    "lung6": "#F08CAE", # Pink
+    "lung9_rep2": "#F49FAD", # Pale Pink
+    "lung12": "#E7F0A4", # Pale Canary
+    "lung13": "#C7F2C2", # Light Green
 }
 
 mapping_entity_colors = {

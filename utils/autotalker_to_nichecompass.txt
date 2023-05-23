@@ -74,13 +74,56 @@ for key in model.adata_atac.obsp.keys():
             
 model.adata_atac = adata_atac
 
-### Model ###
-
 for att in dir(model):
-    if type(getattr(model, att)) == type("str"):
+    if isinstance(getattr(model, att), str):
         if "autotalker" in getattr(model, att):
             setattr(model, att, getattr(model, att).replace("autotalker", "nichecompass"))
+    if isinstance(getattr(model, att), dict):
+        new_dict = {}
+        for key, val in getattr(model, att).items():
+            if isinstance(key, str):
+                key = key.replace("autotalker", "nichecompass")
+            if isinstance(val, str):
+                val = val.replace("autotalker", "nichecompass")
+            new_dict[key] = val
+        setattr(model, att, new_dict)
             
 for att in dir(model):
-    if type(getattr(model, att)) == type("str"):
+    if isinstance(getattr(model, att), str):
         print(getattr(model, att))
+        
+# Save trained model
+model.save(dir_path=model_dir_path,
+           overwrite=True,
+           save_adata=True,
+           adata_file_name="seqfish_mouse_organogenesis_imputed_reference.h5ad")
+           
+print("\nSaving model...")
+# Save trained model
+model.save(dir_path=model_artifacts_folder_path + "/reference",
+           overwrite=True,
+           save_adata=True,
+           adata_file_name=f"{dataset}_reference.h5ad",
+           save_adata_atac=True,
+           adata_atac_file_name=f"{dataset}_reference_atac.h5ad")
+
+"""
+import pickle
+with open(f"{model_artifacts_folder_path}/reference/attr.pkl", "rb") as file:
+    attr_dict = pickle.load(file)
+
+new_attr_dict = {}
+for key, val in attr_dict.items():
+    if isinstance(key, str):
+        key = key.replace("autotalker", "nichecompass")
+    if isinstance(val, str):
+        val = val.replace("autotalker", "nichecompass")
+    if isinstance(val, dict):
+        for nested_key, nested_val in val.items():
+            if isinstance(nested_key, str):
+                nested_key = nested_key.replace("autotalker", "nichecompass")
+            if isinstance(nested_val, str):
+                nested_val = nested_val.replace("autotalker", "nichecompass")
+            val[nested_key] = nested_val
+    new_attr_dict[key] = val
+"""

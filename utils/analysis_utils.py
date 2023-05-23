@@ -405,7 +405,7 @@ def generate_gp_info_plots(analysis_label,
                                cat_title=f"Enriched GP Category in \n {plot_category.replace('_', ' ').title()}",
                                save_fig=save_figs,
                                figure_folder_path=figure_folder_path,
-                               fig_name=f"{analysis_label}_log_bayes_factor_thresh_{log_bayes_factor_thresh}_enriched_gps_gp_scores_" \
+                               fig_name=f"{analysis_label}_log_bayes_factor_{log_bayes_factor_thresh}_enriched_gps_gp_scores_" \
                                         f"{'weighted_mean_gene_expr' if plot_type == 'gene_categories' else 'top_genes_gene_expr'}_" \
                                         f"{feature_space}_space")
             
