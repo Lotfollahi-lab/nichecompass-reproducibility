@@ -324,7 +324,8 @@ def generate_gp_info_plots(analysis_label,
                            plot_types=["gene_categories", "top_genes"],
                            n_top_genes_per_gp=5,
                            save_figs=False,
-                           figure_folder_path=""):
+                           figure_folder_path="",
+                           spot_size=30):
     
     if adata is None:
         adata = model.adata.copy()
@@ -399,6 +400,7 @@ def generate_gp_info_plots(analysis_label,
                                plot_type=plot_type,
                                plot_category=plot_category,
                                feature_space=feature_space,
+                               spot_size=spot_size,
                                suptitle=f"{analysis_label.replace('_', ' ').title()} Top {n_top_enriched_gps} Enriched GPs: "
                                         f"GP Scores and {'Weighted Mean ' if plot_type == 'gene_categories' else ''}"
                                         f"Gene Expression of {plot_type.replace('_', ' ').title()} in {feature_space.replace('_', ' ').title()} Feature Space",
@@ -418,6 +420,7 @@ def plot_gp_info_plots(adata,
                        plot_type,
                        plot_category,
                        feature_space,
+                       spot_size,
                        suptitle,
                        cat_title,
                        save_fig,
@@ -462,20 +465,20 @@ def plot_gp_info_plots(adata,
                        title=f"{gp[:gp.index('_')]}\n{gp[gp.index('_') + 1: gp.rindex('_')].replace('_', ' ')}\n{gp[gps[i].rindex('_') + 1:]} score",
                        show=False)
         elif "physical" in feature_space:
-            sc.pl.spatial(adata=adata[adata.obs["sample"] == feature_space.split("_")[1]],
+            sc.pl.spatial(adata=adata[adata.obs["batch"] == feature_space.split("_")[1]],
                           color=plot_category,
                           palette=palette,
                           groups=cats[i],
                           ax=axs[i, 0],
-                          spot_size=0.03,
+                          spot_size=spot_size,
                           title=cat_title,
                           legend_loc="on data",
                           na_in_legend=False,
                           show=False)
-            sc.pl.spatial(adata=adata[adata.obs["sample"] == feature_space.split("_")[1]],
+            sc.pl.spatial(adata=adata[adata.obs["batch"] == feature_space.split("_")[1]],
                           color=gps[i],
                           color_map="RdBu",
-                          spot_size=0.03,
+                          spot_size=spot_size,
                           title=f"{gps[i].split('_', 1)[0]}\n{gps[i].split('_', 1)[1]}",
                           legend_loc=None,
                           ax=axs[i, 1],
@@ -507,7 +510,7 @@ def plot_gp_info_plots(adata,
                                       legend_loc="on data",
                                       na_in_legend=False,
                                       groups=cats[i],
-                                      spot_size=0.03,
+                                      spot_size=spot_size,
                                       title=f"Weighted mean gene expression \n {gene_category.replace('_', ' ')} ({adata.uns[f'{gp}_gene_category_importances'][j]:.2f})",
                                       show=False)                        
                     axs[i, j+2].xaxis.label.set_visible(False)
@@ -526,14 +529,14 @@ def plot_gp_info_plots(adata,
                                title=f"{adata.uns[f'{gp}_top_genes'][j]}: {adata.uns[f'{gp}_top_gene_importances'][j]:.2f} ({adata.uns[f'{gp}_top_gene_entities'][j][0]}; {adata.uns[f'{gp}_top_gene_signs'][j]})",
                                show=False)
                 elif "physical" in feature_space:
-                    sc.pl.spatial(adata=adata[adata.obs["sample"] == feature_space.split("_")[1]],
+                    sc.pl.spatial(adata=adata[adata.obs["batch"] == feature_space.split("_")[1]],
                                   color=adata.uns[f"{gp}_top_genes"][j],
                                   color_map=("Blues" if adata.uns[f"{gp}_top_gene_signs"][j] == "+" else "Reds"),
                                   legend_loc="on data",
                                   na_in_legend=False,
                                   ax=axs[i, 2+j],
                                   # groups=cats[i],
-                                  spot_size=0.03,
+                                  spot_size=spot_size,
                                   title=f"{adata.uns[f'{gp}_top_genes'][j]}: {adata.uns[f'{gp}_top_gene_importances'][j]:.2f} ({adata.uns[f'{gp}_top_gene_entities'][j][0]}; {adata.uns[f'{gp}_top_gene_signs'][j]})",
                                   show=False)
                 axs[i, 2+j].xaxis.label.set_visible(False)
