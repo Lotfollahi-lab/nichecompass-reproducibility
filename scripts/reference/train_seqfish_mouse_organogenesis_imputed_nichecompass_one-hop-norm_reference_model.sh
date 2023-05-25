@@ -6,7 +6,7 @@ python ../train_nichecompass_reference_model.py \
 --filter_genes \
 --n_hvg 4000 \
 --nichenet_keep_target_genes_ratio 0.01 \
---nichenet_max_n_target_genes_per_gp 1000 \
+--nichenet_max_n_target_genes_per_gp 100 \
 --include_mebocost_gps \
 --mebocost_species mouse \
 --gp_filter_mode subset \
@@ -25,7 +25,7 @@ python ../train_nichecompass_reference_model.py \
 --model_label one-hop-norm_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
---active_gp_thresh_ratio 0.1 \
+--active_gp_thresh_ratio 0. \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --n_cond_embed None \
@@ -39,10 +39,10 @@ python ../train_nichecompass_reference_model.py \
 --n_epochs_no_cond_contrastive 0 \
 --lr 0.001 \
 --lambda_edge_recon 500000. \
---lambda_gene_expr_recon 100. \
---lambda_cond_contrastive 0. \
---contrastive_logits_ratio 0. \
---lambda_group_lasso 0. \
---lambda_l1_masked 10. \
+--lambda_gene_expr_recon 300. \
+--lambda_cond_contrastive 100000. \
+--contrastive_logits_ratio 0.015625 \
+--lambda_group_lasso 10. \
+--lambda_l1_masked 0. \
 --edge_batch_size 4096 \
 --node_batch_size None
