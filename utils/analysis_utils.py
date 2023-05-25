@@ -322,7 +322,7 @@ def generate_gp_info_plots(analysis_label,
                            adata=None,
                            feature_spaces=["latent", "physical_embryo1", "physical_embryo2", "physical_embryo3"],
                            plot_types=["gene_categories", "top_genes"],
-                           n_top_genes_per_gp=5,
+                           n_top_genes_per_gp=3,
                            save_figs=False,
                            figure_folder_path="",
                            spot_size=30):
@@ -383,11 +383,26 @@ def generate_gp_info_plots(analysis_label,
                                                                      neg_sign_source_gene_importances.sum()])
         
         if "top_genes" in plot_types:
-            adata.uns["n_top_genes"] = n_top_genes_per_gp
-            adata.uns[f"{gp}_top_genes"] = gp_gene_importances_df["gene"][:n_top_genes_per_gp]
-            adata.uns[f"{gp}_top_gene_importances"] = gp_gene_importances_df["gene_importance"][:n_top_genes_per_gp]
-            adata.uns[f"{gp}_top_gene_signs"] = np.where(gp_gene_importances_df["gene_weight_sign_corrected"] > 0, "+", "-")
-            adata.uns[f"{gp}_top_gene_entities"] = gp_gene_importances_df["gene_entity"]
+            gp_source_genes_gene_importances_df = gp_gene_importances_df[
+                gp_gene_importances_df["gene_entity"] == "source"]
+            
+            gp_target_genes_gene_importances_df = gp_gene_importances_df[
+                gp_gene_importances_df["gene_entity"] == "target"]
+            
+            adata.uns["n_top_source_genes"] = n_top_genes_per_gp
+            adata.uns[f"{gp}_source_genes_top_genes"] = gp_source_genes_gene_importances_df["gene"][:n_top_genes_per_gp]
+            adata.uns[f"{gp}_source_genes_top_gene_importances"] = gp_source_genes_gene_importances_df["gene_importance"][:n_top_genes_per_gp]
+            adata.uns[f"{gp}_source_genes_top_gene_signs"] = np.where(gp_source_genes_gene_importances_df["gene_weight_sign_corrected"] > 0, "+", "-")
+            adata.uns["n_top_target_genes"] = n_top_genes_per_gp
+            adata.uns[f"{gp}_target_genes_top_genes"] = gp_target_genes_gene_importances_df["gene"][:n_top_genes_per_gp]
+            adata.uns[f"{gp}_target_genes_top_gene_importances"] = gp_target_genes_gene_importances_df["gene_importance"][:n_top_genes_per_gp]
+            adata.uns[f"{gp}_target_genes_top_gene_signs"] = np.where(gp_target_genes_gene_importances_df["gene_weight_sign_corrected"] > 0, "+", "-")
+            
+            #adata.uns["n_top_genes"] = n_top_genes_per_gp
+            #adata.uns[f"{gp}_top_genes"] = gp_gene_importances_df["gene"][:n_top_genes_per_gp]
+            #adata.uns[f"{gp}_top_gene_importances"] = gp_gene_importances_df["gene_importance"][:n_top_genes_per_gp]
+            #adata.uns[f"{gp}_top_gene_signs"] = np.where(gp_gene_importances_df["gene_weight_sign_corrected"] > 0, "+", "-")
+            #adata.uns[f"{gp}_top_gene_entities"] = gp_gene_importances_df["gene_entity"]
         
     for feature_space in feature_spaces:
         for plot_type in plot_types:
@@ -526,7 +541,10 @@ def plot_gp_info_plots(adata,
                                ax=axs[i, 2+j],
                                legend_loc="on data",
                                na_in_legend=False,
-                               title=f"{adata.uns[f'{gp}_top_genes'][j]}: {adata.uns[f'{gp}_top_gene_importances'][j]:.2f} ({adata.uns[f'{gp}_top_gene_entities'][j][0]}; {adata.uns[f'{gp}_top_gene_signs'][j]})",
+                               title=f"{adata.uns[f'{gp}_top_genes'][j]}: "
+                                     f"{adata.uns[f'{gp}_top_gene_importances'][j]:.2f} "
+                                     f"({adata.uns[f'{gp}_top_gene_entities'][j][0]}; "
+                                     f"{adata.uns[f'{gp}_top_gene_signs'][j]})",
                                show=False)
                 elif "physical" in feature_space:
                     sc.pl.spatial(adata=adata[adata.obs["batch"] == feature_space.split("_")[1]],
@@ -537,7 +555,10 @@ def plot_gp_info_plots(adata,
                                   ax=axs[i, 2+j],
                                   # groups=cats[i],
                                   spot_size=spot_size,
-                                  title=f"{adata.uns[f'{gp}_top_genes'][j]}: {adata.uns[f'{gp}_top_gene_importances'][j]:.2f} ({adata.uns[f'{gp}_top_gene_entities'][j][0]}; {adata.uns[f'{gp}_top_gene_signs'][j]})",
+                                  title=f"{adata.uns[f'{gp}_top_genes'][j]}: "
+                                        f"{adata.uns[f'{gp}_top_gene_importances'][j]:.2f} "
+                                        f"({adata.uns[f'{gp}_top_gene_entities'][j][0]}; "
+                                        f"{adata.uns[f'{gp}_top_gene_signs'][j]})",
                                   show=False)
                 axs[i, 2+j].xaxis.label.set_visible(False)
                 axs[i, 2+j].yaxis.label.set_visible(False)
