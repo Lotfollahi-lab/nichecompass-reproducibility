@@ -233,12 +233,12 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=40,
+    default=100,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
     type=int,
-    default=20,
+    default=25,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_no_cond_contrastive",
@@ -253,22 +253,22 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=1000.,
+    default=500000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=1.,
+    default=100.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
-    default=1000.,
+    default=100000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--contrastive_logits_ratio",
     type=float,
-    default=0.1,
+    default=0.0078125,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
@@ -283,12 +283,12 @@ parser.add_argument(
 parser.add_argument(
     "--edge_batch_size",
     type=int,
-    default=128,
+    default=256,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--node_batch_size",
-    type=none_or_value,
-    default=16,
+    type=none_or_int,
+    default=None,
     help="s. NicheCompass train method signature")
 
 args = parser.parse_args()
