@@ -16,6 +16,7 @@ incompatible with rest): <br>
 ```conda activate nichecompass-reproducibility```
 
 5) Clone the nichecompass repository and navigate into it: <br>
+```cd ..``` <br>
 ```git clone https://github.com/sebastianbirk/nichecompass.git``` <br>
 ```cd nichecompass```
 
