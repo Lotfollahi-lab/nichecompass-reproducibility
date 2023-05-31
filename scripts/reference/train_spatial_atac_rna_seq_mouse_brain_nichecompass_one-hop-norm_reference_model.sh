@@ -28,7 +28,7 @@ python ../train_nichecompass_reference_model.py \
 --model_label one-hop-norm_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
---active_gp_thresh_ratio 0.01 \
+--active_gp_thresh_ratio 0. \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder chrom_access_decoder \
 --n_cond_embed None \
@@ -46,7 +46,7 @@ python ../train_nichecompass_reference_model.py \
 --lambda_chrom_access_recon 100. \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0. \
---lambda_group_lasso 5. \
---lambda_l1_masked 30. \
+--lambda_group_lasso 0. \
+--lambda_l1_masked 10. \
 --edge_batch_size 4096 \
 --node_batch_size None

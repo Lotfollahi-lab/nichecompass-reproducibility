@@ -669,7 +669,7 @@ if args.include_atac_modality:
         adata,
         adata_atac)
 
-    adata_atac = add_multimodal_mask_to_adata(
+    adata, adata_atac = add_multimodal_mask_to_adata(
         adata=adata,
         adata_atac=adata_atac,
         gene_peak_mapping_dict=gene_peak_dict)
