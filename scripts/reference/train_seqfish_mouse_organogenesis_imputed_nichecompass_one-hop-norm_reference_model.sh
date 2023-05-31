@@ -4,7 +4,7 @@ python ../train_nichecompass_reference_model.py \
 --reference_batches batch1 batch2 batch3 batch4 batch5 batch6 \
 --n_neighbors 12 \
 --filter_genes \
---n_hvg 3000 \
+--n_hvg 4000 \
 --nichenet_keep_target_genes_ratio 0.01 \
 --nichenet_max_n_target_genes_per_gp 1000 \
 --include_mebocost_gps \
@@ -39,10 +39,10 @@ python ../train_nichecompass_reference_model.py \
 --n_epochs_no_cond_contrastive 0 \
 --lr 0.001 \
 --lambda_edge_recon 500000. \
---lambda_gene_expr_recon 100. \
---lambda_cond_contrastive 0. \
+--lambda_gene_expr_recon 300. \
+--lambda_cond_contrastive 30000. \
 --contrastive_logits_ratio 0.00390625 \
---lambda_group_lasso 5. \
+--lambda_group_lasso 3. \
 --lambda_l1_masked 0. \
 --edge_batch_size 4096 \
 --node_batch_size None

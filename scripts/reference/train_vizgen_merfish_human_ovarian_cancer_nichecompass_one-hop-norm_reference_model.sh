@@ -5,7 +5,7 @@ python ../train_nichecompass_reference_model.py \
 --n_neighbors 12 \
 --no-filter_genes \
 --nichenet_keep_target_genes_ratio 0.01 \
---nichenet_max_n_target_genes_per_gp 25344 \
+--nichenet_max_n_target_genes_per_gp 1000 \
 --include_mebocost_gps \
 --mebocost_species human \
 --gp_filter_mode subset \
@@ -27,15 +27,17 @@ python ../train_nichecompass_reference_model.py \
 --active_gp_thresh_ratio 0. \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
---no-log_variational \
+--n_cond_embed None \
+--log_variational \
 --node_label_method one-hop-norm \
 --n_layers_encoder 1 \
+--n_hidden_encoder None \
 --conv_layer_encoder gcnconv \
 --n_epochs 100 \
 --n_epochs_all_gps 25 \
 --n_epochs_no_cond_contrastive 0 \
 --lambda_edge_recon 500000. \
---lambda_gene_expr_recon 300. \
+--lambda_gene_expr_recon 100. \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \

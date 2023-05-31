@@ -27,10 +27,13 @@ import squidpy as sq
 
 from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
+                                add_multimodal_mask_to_adata,
                                 extract_gp_dict_from_mebocost_es_interactions,
                                 extract_gp_dict_from_nichenet_ligand_target_mx,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
+                                generate_multimodal_pairing_dict,
+                                get_gene_annotations,
                                 get_unique_genes_from_gp_dict)
 
 ###############################################################################
@@ -168,6 +171,22 @@ parser.add_argument(
     type=str,
     default="nichecompass_gp_names",
     help="s. NicheCompass class signature")
+parser.add_argument(
+    "--include_atac_modality",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether to include atac modality.")
+parser.add_argument(
+    "--filter_peaks",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether peaks should be filtered.")
+parser.add_argument(
+    "--min_cell_peak_thresh_ratio",
+    type=float,
+    default=0.0005,
+    help="Ratio of cells in which peaks need to be detected to not be "
+         "discarded.")
 
 # Model
 parser.add_argument(
@@ -261,6 +280,11 @@ parser.add_argument(
     default=100.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
+    "--lambda_chrom_access_recon",
+    type=float,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
     default=100000.,
@@ -297,6 +321,11 @@ if args.reference_batches == [None]:
     args.reference_batches = None
 if args.cond_embed_injection == [None]:
     args.cond_embed_injection = []
+    
+if args.include_atac_modality:
+    save_adata_atac = True
+else:
+    save_adata_atac = False
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -309,7 +338,42 @@ print(sys.argv)
 # Set mlflow experiment
 experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
 mlflow_experiment_id = experiment.experiment_id
+
+# Track params that are not part of model
 mlflow.log_param("timestamp", current_timestamp)
+mlflow.log_param("nichenet_keep_target_genes_ratio",
+                 args.nichenet_keep_target_genes_ratio)
+mlflow.log_param("nichenet_max_n_target_genes_per_gp",
+                 args.nichenet_max_n_target_genes_per_gp)
+mlflow.log_param("include_mebocost_gps",
+                 args.include_mebocost_gps)
+if args.include_mebocost_gps:
+    mlflow.log_param("mebocost_species",
+                     args.mebocost_species)
+mlflow.log_param("gp_filter_mode",
+                 args.gp_filter_mode)
+mlflow.log_param("combine_overlap_gps",
+                 args.combine_overlap_gps)
+mlflow.log_param("overlap_thresh_source_genes",
+                 args.overlap_thresh_source_genes)
+mlflow.log_param("overlap_thresh_target_genes",
+                 args.overlap_thresh_target_genes)
+mlflow.log_param("overlap_thresh_genes",
+                 args.overlap_thresh_genes)
+mlflow.log_param("reference_batches",
+                 args.reference_batches)
+mlflow.log_param("n_neighbors",
+                 args.n_neighbors)
+mlflow.log_param("filter_genes",
+                 args.filter_genes)
+mlflow.log_param("n_hvg",
+                 args.n_hvg)
+mlflow.log_param("include_atac_modality",
+                 args.include_atac_modality)
+if args.include_atac_modality:
+    mlflow.log_param("filter_peaks", args.filter_peaks)
+    mlflow.log_param("min_cell_peak_thresh_ratio",
+                     args.min_cell_peak_thresh_ratio)
 
 ###############################################################################
 ### 1.3 Configure Paths and Create Directories ###
@@ -319,6 +383,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
                               f"{current_timestamp}"
 gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
+ga_data_folder_path = f"{root_dir}/datasets/ga_data" # gene annotation data
 srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
                                                        # transcriptomics data
 srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
@@ -327,6 +392,8 @@ nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
+gtf_file_path = ga_data_folder_path + \
+                "/gencode.vM32.chr_patch_hapl_scaff.annotation.gtf.gz"
 os.makedirs(model_artifacts_folder_path, exist_ok=True)
 os.makedirs(f"{srt_data_results_folder_path}/{args.model_label}", exist_ok=True)
 
@@ -409,6 +476,7 @@ print(f"Number of gene programs after filtering and combining: "
 ### 3.1 Load Data & Compute Spatial Neighbor Graph ###
 ###############################################################################
 
+# RNA-seq data
 adata_batch_list = []
 if args.reference_batches is not None:
     for batch in args.reference_batches:
@@ -477,11 +545,28 @@ else:
     adata.obsp[args.adj_key] = (
         adata.obsp[args.adj_key].maximum(
             adata.obsp[args.adj_key].T))
+
+# ATAC data (if included)
+if args.include_atac_modality:
+    adata_atac_batch_list = []
+    if args.reference_batches is not None:
+        for batch in args.reference_batches:
+            print(f"\nProcessing ATAC batch {batch}...")
+            print("Loading data...")
+            adata_atac_batch = ad.read_h5ad(
+                f"{srt_data_gold_folder_path}/{args.dataset}_{batch}_atac.h5ad")
+        adata_atac = ad.concat(adata_atac_batch_list, join="inner")
+    else:
+        adata_atac = ad.read_h5ad(
+            f"{srt_data_gold_folder_path}/{args.dataset}_atac.h5ad")
+else:
+    adata_atac = None
     
 ###############################################################################
-### 3.2 Filter Genes ###
+### 3.2 Filter Omics Features ###
 ###############################################################################
 
+# RNA-seq data
 if args.filter_genes:
     print("\nFiltering genes...")
     # Filter genes and only keep ligand, receptor, metabolitye enzyme, 
@@ -530,9 +615,32 @@ if args.filter_genes:
                 gp_dict_genes)].sort_values()])
     print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
           "gp dict.")
-    
+
+# ATAC data (if included)
+if args.include_atac_modality:
+    if args.filter_peaks:
+        print("\nFiltering peaks...")
+        print(f"Starting with {len(adata_atac.var_names)} peaks.")
+        # Filter out peaks that are rarely detected to reduce GPU footprint of model
+        min_cells = int(adata_atac.shape[0] * args.min_cell_peak_thresh_ratio)
+        sc.pp.filter_genes(adata_atac, min_cells=min_cells)
+        print(f"Keeping {len(adata_atac.var_names)} peaks after filtering "
+              " peaks with counts in less than "
+              f"{int(adata_atac.shape[0] * args.min_cell_peak_thresh_ratio)} "
+              "cells.")
+
 ###############################################################################
-### 3.3 Add Gene Program Mask to Data ###
+### 3.3 Annotate Genes (If ATAC Modality Incl.) ###
+###############################################################################
+
+if args.include_atac_modality:
+    adata, adata_atac = get_gene_annotations(
+        adata=adata,
+        adata_atac=adata_atac,
+        gtf_file_path=gtf_file_path)
+
+###############################################################################
+### 3.4 Add Gene Program Mask to Data ###
 ###############################################################################
 
 # Add the gene program dictionary as binary masks to the adata for model 
@@ -553,6 +661,23 @@ add_gps_from_gp_dict_to_adata(
     filter_genes_not_in_masks=False)
 
 ###############################################################################
+### 3.5 Add Chromatin Accessibility Mask to Data (If ATAC Modality Incl.) ###
+###############################################################################
+
+if args.include_atac_modality:
+    gene_peak_dict = generate_multimodal_pairing_dict(
+        adata,
+        adata_atac)
+
+    adata_atac = add_multimodal_mask_to_adata(
+        adata=adata,
+        adata_atac=adata_atac,
+        gene_peak_mapping_dict=gene_peak_dict)
+
+    print(f"Keeping {len(adata_atac.var_names)} peaks after filtering peaks "
+          "with no matching genes in gp mask.")
+
+###############################################################################
 ### 4. Model ###
 ###############################################################################
 
@@ -563,6 +688,7 @@ add_gps_from_gp_dict_to_adata(
 print("\nTraining model...")
 # Initialize model
 model = NicheCompass(adata,
+                     adata_atac,
                      counts_key=args.counts_key,
                      adj_key=args.adj_key,
                      condition_key=args.condition_key,
@@ -588,6 +714,7 @@ model.train(n_epochs=args.n_epochs,
             lr=args.lr,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
+            lambda_chrom_access_recon=args.lambda_chrom_access_recon,
             lambda_cond_contrastive=args.lambda_cond_contrastive,
             contrastive_logits_ratio=args.contrastive_logits_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
@@ -609,12 +736,14 @@ sc.tl.umap(model.adata,
 
 # Store adata to disk
 model.adata.write(
-    f"{srt_data_results_folder_path}/{args.model_label}/{args.dataset}_nichecompass_"
-    f"{args.model_label}.h5ad")
+    f"{srt_data_results_folder_path}/{args.model_label}/{args.dataset}_"
+    f"nichecompass_{args.model_label}.h5ad")
 
 print("\nSaving model...")
 # Save trained model
 model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",
            overwrite=True,
            save_adata=True,
-           adata_file_name=f"{args.dataset}_{args.model_label}.h5ad")
+           adata_file_name=f"{args.dataset}_{args.model_label}.h5ad",
+           save_adata_atac=save_adata_atac,
+           adata_atac_file_name=f"{args.dataset}_{args.model_label}_atac.h5ad")
