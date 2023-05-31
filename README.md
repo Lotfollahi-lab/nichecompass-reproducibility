@@ -1,8 +1,7 @@
 # NicheCompass Reproducibility
 
 ## Installation
-1) Clone the nichecompass-reproducibility repository and navigate into it:
-
+1) Clone the nichecompass-reproducibility repository and navigate into it: <br>
 ```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git```
 ```cd nichecompass-reproducibility```
 
