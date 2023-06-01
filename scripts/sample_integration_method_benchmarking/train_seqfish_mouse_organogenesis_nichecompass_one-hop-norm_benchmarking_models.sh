@@ -25,10 +25,11 @@ do
     cell_type_key=${cell_type_keys[i]}
     reference_batches=${dataset_reference_batches[i]}
     
-    python train_nichecompass_benchmarking_models.py \
+    python ../wait.py
+    python ../train_nichecompass_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
-    --edge_batch_size_list 131072 131072 131072 131072 131072 131072 131072 131072 131072 131072 \
+    --edge_batch_size_list 8192 8192 4096 4096 2048 2048 1024 1024 1024 1024 \
     --node_batch_size_list None None None None None None None None None None \
     --seeds 0 1 2 3 4 5 6 7 8 9 \
     --run_index 1 2 3 4 5 6 7 8 9 10 \
@@ -53,15 +54,15 @@ do
     --gp_targets_mask_key nichecompass_gp_targets \
     --gp_sources_mask_key nichecompass_gp_sources \
     --gp_names_key nichecompass_gp_names \
-    --model_label one-hop-attention_sample_integration_method_benchmarking \
+    --model_label one-hop-norm_sample_integration_method_benchmarking \
     --active_gp_names_key nichecompass_active_gp_names \
     --latent_key nichecompass_latent \
-    --active_gp_thresh_ratio 0.1 \
+    --active_gp_thresh_ratio 0. \
     --gene_expr_recon_dist nb \
     --cond_embed_injection gene_expr_decoder \
     --n_cond_embed None \
     --log_variational \
-    --node_label_method one-hop-attention \
+    --node_label_method one-hop-norm \
     --n_layers_encoder 1 \
     --n_hidden_encoder None \
     --conv_layer_encoder gcnconv \

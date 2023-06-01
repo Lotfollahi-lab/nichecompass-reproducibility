@@ -29,7 +29,7 @@ do
     python ../train_nichecompass_benchmarking_models.py \
     --adata_new_name None \
     --n_neighbors_list 4 4 8 8 12 12 16 16 20 20 \
-    --edge_batch_size_list 8192 8192 8192 8192 8192 8192 8192 8192 8192 8192 \
+    --edge_batch_size_list 8192 8192 4096 4096 2048 2048 1024 1024 1024 1024 \
     --node_batch_size_list None None None None None None None None None None \
     --seeds 0 1 2 3 4 5 6 7 8 9 \
     --run_index 1 2 3 4 5 6 7 8 9 10 \
