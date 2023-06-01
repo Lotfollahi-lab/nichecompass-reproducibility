@@ -5,6 +5,7 @@ import scib
 
 from nichecompass.benchmarking import compute_clisis, compute_cas
 
+
 def compute_latent_space_comparison(dataset,
                                     run_number,
                                     srt_data_results_folder_path,
