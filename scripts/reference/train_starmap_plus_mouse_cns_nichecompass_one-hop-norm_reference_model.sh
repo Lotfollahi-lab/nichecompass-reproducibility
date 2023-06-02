@@ -26,7 +26,7 @@ batch19 batch20 \
 --model_label one-hop-norm_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
---active_gp_thresh_ratio 0.1 \
+--active_gp_thresh_ratio 0.05 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --n_cond_embed None \
@@ -43,6 +43,6 @@ batch19 batch20 \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \
---lambda_l1_masked 30. \
+--lambda_l1_masked 5. \
 --edge_batch_size 1024 \
 --node_batch_size None
