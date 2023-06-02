@@ -484,7 +484,6 @@ if args.reference_batches is not None:
         print("Loading data...")
         adata_batch = ad.read_h5ad(
             f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
-        adata_batch.obs[args.mapping_entity_key] = "reference"
         print("Computing spatial neighborhood graph...")
         # Compute (separate) spatial neighborhood graphs
         sq.gr.spatial_neighbors(adata_batch,
@@ -545,6 +544,7 @@ else:
     adata.obsp[args.adj_key] = (
         adata.obsp[args.adj_key].maximum(
             adata.obsp[args.adj_key].T))
+adata.obs[args.mapping_entity_key] = "reference"
 
 # ATAC data (if included)
 if args.include_atac_modality:

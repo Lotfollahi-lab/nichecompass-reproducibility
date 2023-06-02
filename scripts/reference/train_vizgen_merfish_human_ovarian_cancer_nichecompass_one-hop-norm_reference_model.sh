@@ -1,7 +1,7 @@
 python ../wait.py
 python ../train_nichecompass_reference_model.py \
 --dataset vizgen_merfish_human_ovarian_cancer \
---reference_batches batch1 batch2 batch3 batch4 \
+--reference_batches batch2 batch3 batch4 \
 --n_neighbors 12 \
 --no-filter_genes \
 --nichenet_keep_target_genes_ratio 0.01 \
@@ -14,7 +14,7 @@ python ../train_nichecompass_reference_model.py \
 --overlap_thresh_target_genes 0.9 \
 --overlap_thresh_genes 0.9 \
 --counts_key counts \
---condition_key sample \
+--condition_key batch \
 --spatial_key spatial \
 --adj_key spatial_connectivities \
 --mapping_entity_key mapping_entity \
@@ -24,7 +24,7 @@ python ../train_nichecompass_reference_model.py \
 --model_label one-hop-norm_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
---active_gp_thresh_ratio 0. \
+--active_gp_thresh_ratio 0.1 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --n_cond_embed None \
@@ -37,7 +37,7 @@ python ../train_nichecompass_reference_model.py \
 --n_epochs_all_gps 25 \
 --n_epochs_no_cond_contrastive 0 \
 --lambda_edge_recon 500000. \
---lambda_gene_expr_recon 100. \
+--lambda_gene_expr_recon 300. \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \

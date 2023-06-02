@@ -14,7 +14,7 @@ python ../train_nichecompass_reference_model.py \
 --overlap_thresh_target_genes 0.9 \
 --overlap_thresh_genes 0.9 \
 --counts_key counts \
---condition_key sample \
+--condition_key batch \
 --spatial_key spatial \
 --adj_key spatial_connectivities \
 --mapping_entity_key mapping_entity \
