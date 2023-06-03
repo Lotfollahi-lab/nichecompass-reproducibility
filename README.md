@@ -8,8 +8,8 @@
 2) Create the nichecompass-reproducibility conda environment: <br>
 ```conda env create -f envs/environment.yml```
 
-3) Create the deeplinc conda environment (for deeplinc workloads which are
-incompatible with rest): <br>
+3) Create the deeplinc conda environment (for benchmarking deeplinc method which relies on legacy packages and is
+incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_deeplinc.yml```
 
 4) Activate the nichecompass-reproducibility conda environment: <br>
