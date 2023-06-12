@@ -14,7 +14,7 @@ python ../train_nichecompass_reference_model.py \
 --overlap_thresh_source_genes 0.9 \
 --overlap_thresh_target_genes 0.9 \
 --overlap_thresh_genes 0.9 \
---counts_key log_normalized_counts \
+--counts_key counts \
 --condition_key batch \
 --spatial_key spatial \
 --adj_key spatial_connectivities \
@@ -29,7 +29,7 @@ python ../train_nichecompass_reference_model.py \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --n_cond_embed None \
---no-log_variational \
+--log_variational \
 --node_label_method one-hop-attention \
 --n_layers_encoder 1 \
 --n_hidden_encoder None \

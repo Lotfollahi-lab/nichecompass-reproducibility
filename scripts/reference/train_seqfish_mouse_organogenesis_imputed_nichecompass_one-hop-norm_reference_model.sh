@@ -14,7 +14,7 @@ python ../train_nichecompass_reference_model.py \
 --overlap_thresh_source_genes 0.9 \
 --overlap_thresh_target_genes 0.9 \
 --overlap_thresh_genes 0.9 \
---counts_key log_normalized_counts \
+--counts_key counts \
 --condition_key batch \
 --spatial_key spatial \
 --adj_key spatial_connectivities \
@@ -25,11 +25,11 @@ python ../train_nichecompass_reference_model.py \
 --model_label one-hop-norm_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
---active_gp_thresh_ratio 0.1 \
+--active_gp_thresh_ratio 0.05 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
---n_cond_embed None \
---no-log_variational \
+--n_cond_embed 3 \
+--log_variational \
 --node_label_method one-hop-norm \
 --n_layers_encoder 1 \
 --n_hidden_encoder None \
@@ -39,9 +39,9 @@ python ../train_nichecompass_reference_model.py \
 --n_epochs_no_cond_contrastive 0 \
 --lr 0.001 \
 --lambda_edge_recon 500000. \
---lambda_gene_expr_recon 100. \
+--lambda_gene_expr_recon 300. \
 --lambda_cond_contrastive 0. \
---contrastive_logits_ratio 0.00390625 \
+--contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \
 --lambda_l1_masked 5. \
 --edge_batch_size 4096 \

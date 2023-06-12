@@ -85,11 +85,6 @@ parser.add_argument(
     nargs="+",
     default="1 2 3 4 5 6 7 8 9 10",
     help="Index per model training run.")
-parser.add_argument(
-    "--cell_type_key",
-    type=str,
-    default="cell_type",
-    help="Key in `adata.obs` where the cell types are stored.")
 
 # Gene program mask
 parser.add_argument(
@@ -157,7 +152,7 @@ parser.add_argument(
 parser.add_argument(
     "--counts_key",
     type=none_or_value,
-    default=None,
+    default="counts",
     help="s. NicheCompass class signature.")
 parser.add_argument(
     "--condition_key",
@@ -175,6 +170,11 @@ parser.add_argument(
     default="spatial_connectivities",
     help="s. NicheCompass class signature.")
 parser.add_argument(
+    "--cell_type_key",
+    type=str,
+    default="cell_type",
+    help="Key in `adata.obs` where the cell types are stored.")
+parser.add_argument(
     "--mapping_entity_key",
     type=str,
     default="mapping_entity",
@@ -187,7 +187,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_hvg",
     type=int,
-    default=4000,
+    default=3000,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
 parser.add_argument(
@@ -270,12 +270,12 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=40,
+    default=200,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
     type=int,
-    default=20,
+    default=25,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_no_cond_contrastive",
@@ -290,22 +290,22 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=1000.,
+    default=500000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=1.,
+    default=300.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
-    default=1000.,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--contrastive_logits_ratio",
     type=float,
-    default=0.015625,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
@@ -346,23 +346,22 @@ print(sys.argv)
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
-                              f"{current_timestamp}"
-figure_folder_path = f"{root_dir}/figures/{args.dataset}/{args.model_label}/" \
-                     f"{current_timestamp}"
-gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
-srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
-                                                       # transcriptomics data
-srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
-srt_data_results_folder_path = f"{srt_data_folder_path}/results"
+root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+artifacts_folder_path = f"{root_folder_path}/artifacts"
+model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models/" \
+                    f"{args.model_label}/{current_timestamp}"
+gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program 
+                                                             # data
+so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
+                                                              # data
+so_data_gold_folder_path = f"{so_data_folder_path}/gold"
+so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
-os.makedirs(model_artifacts_folder_path, exist_ok=True)
-os.makedirs(figure_folder_path, exist_ok=True)
-os.makedirs(f"{srt_data_results_folder_path}/{args.model_label}", exist_ok=True)
+os.makedirs(model_folder_path, exist_ok=True)
+os.makedirs(so_data_results_folder_path, exist_ok=True)
 
 ###############################################################################
 ## 2. Prepare Gene Program Mask ##
@@ -449,13 +448,13 @@ if args.adata_new_name is None:
     if args.reference_batches is not None:
         for batch in args.reference_batches:
             adata_batch = ad.read_h5ad(
-                f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+                f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
             adata_batch.obs[args.mapping_entity_key] = "reference"
             adata_batch_list.append(adata_batch)
         adata_original = ad.concat(adata_batch_list, join="inner")
     else:
         adata_original = ad.read_h5ad(
-            f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
+            f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
 
     adata_new = sc.AnnData(sp.csr_matrix(
         (adata_original.shape[0], adata_original.shape[1]),
@@ -471,8 +470,7 @@ if args.adata_new_name is None:
     del(adata_original)
 else:
     adata_new = ad.read_h5ad(
-        f"{srt_data_results_folder_path}/{args.model_label}/"
-        f"{args.adata_new_name}")
+        f"{so_data_results_folder_path}/{args.adata_new_name}")
     
 ###############################################################################
 ## 4. Train Models ##
@@ -487,7 +485,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
             print(f"Processing batch {batch}...")
             print("Loading data...")
             adata_batch = ad.read_h5ad(
-                f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+                f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
             adata_batch.obs[args.mapping_entity_key] = "reference"
             print("Computing spatial neighborhood graph...\n")
             # Compute (separate) spatial neighborhood graphs
@@ -539,7 +537,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
         adata.obsp[args.adj_key] = connectivities
     else:
         adata = ad.read_h5ad(
-            f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
+            f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
         # Compute (separate) spatial neighborhood graphs
         sq.gr.spatial_neighbors(adata,
                                 coord_type="generic",
@@ -722,14 +720,13 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
     # Store intermediate adata to disk
     adata_new.write(
-    f"{srt_data_results_folder_path}/{args.model_label}/"
-    f"{args.dataset}_nichecompass_{args.model_label}.h5ad") 
+        f"{so_data_results_folder_path}/{args.dataset}_"
+        f"nichecompass_{args.model_label}.h5ad") 
 
     print("\nSaving model...")
     # Save trained model
     model.save(
-        dir_path=model_artifacts_folder_path + \
-                 f"/{args.model_label}/run{run_number}/",
+        dir_path=f"{model_folder_path}/run{run_number}/",
         overwrite=True,
         save_adata=True,
         adata_file_name=f"{args.dataset}_{args.model_label}.h5ad")
@@ -744,5 +741,5 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
 # Store final adata to disk
 adata_new.write(
-    f"{srt_data_results_folder_path}/{args.model_label}/"
-    f"{args.dataset}_nichecompass_{args.model_label}.h5ad") 
+    f"{so_data_results_folder_path}/{args.dataset}_"
+    f"nichecompass_{args.model_label}.h5ad") 

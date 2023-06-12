@@ -42,7 +42,7 @@ do
     --model_label one-hop-attention_single_sample_method_benchmarking \
     --active_gp_names_key nichecompass_active_gp_names \
     --latent_key nichecompass_latent \
-    --active_gp_thresh_ratio 0.1 \
+    --active_gp_thresh_ratio 0.05 \
     --gene_expr_recon_dist nb \
     --cond_embed_injection gene_expr_decoder \
     --n_cond_embed None \

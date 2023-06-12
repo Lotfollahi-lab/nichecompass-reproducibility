@@ -42,7 +42,7 @@ do
     --model_label one-hop-norm_single_sample_method_benchmarking \
     --active_gp_names_key nichecompass_active_gp_names \
     --latent_key nichecompass_latent \
-    --active_gp_thresh_ratio 0.1 \
+    --active_gp_thresh_ratio 0.05 \
     --gene_expr_recon_dist nb \
     --cond_embed_injection gene_expr_decoder \
     --n_cond_embed None \
@@ -51,7 +51,7 @@ do
     --n_layers_encoder 1 \
     --n_hidden_encoder None \
     --conv_layer_encoder gcnconv \
-    --n_epochs 100 \
+    --n_epochs 200 \
     --n_epochs_all_gps 25 \
     --n_epochs_no_cond_contrastive 0 \
     --lr 0.001 \

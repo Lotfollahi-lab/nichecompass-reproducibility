@@ -153,7 +153,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_hvg",
     type=int,
-    default=2000,
+    default=3000,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
 parser.add_argument(
@@ -207,7 +207,7 @@ parser.add_argument(
 parser.add_argument(
     "--active_gp_thresh_ratio",
     type=float,
-    default=0.03,
+    default=0.05,
     help="s. NicheCompass class signature")
 parser.add_argument(
     "--gene_expr_recon_dist",
@@ -252,7 +252,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=100,
+    default=200,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -277,22 +277,22 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=100.,
+    default=300.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_chrom_access_recon",
     type=float,
-    default=0.,
+    default=100.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
-    default=100000.,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--contrastive_logits_ratio",
     type=float,
-    default=0.0078125,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
@@ -379,23 +379,26 @@ if args.include_atac_modality:
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
-                              f"{current_timestamp}"
-gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
-ga_data_folder_path = f"{root_dir}/datasets/ga_data" # gene annotation data
-srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
-                                                       # transcriptomics data
-srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
-srt_data_results_folder_path = f"{srt_data_folder_path}/results"
+root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+artifacts_folder_path = f"{root_folder_path}/artifacts"
+model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models/" \
+                    f"{args.model_label}/{current_timestamp}"
+gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
+                                                             # data
+ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
+                                                             # data
+so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
+                                                               # data
+srt_data_gold_folder_path = f"{so_data_folder_path}/gold"
+so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
 gtf_file_path = ga_data_folder_path + \
                 "/gencode.vM32.chr_patch_hapl_scaff.annotation.gtf.gz"
-os.makedirs(model_artifacts_folder_path, exist_ok=True)
-os.makedirs(f"{srt_data_results_folder_path}/{args.model_label}", exist_ok=True)
+os.makedirs(model_folder_path, exist_ok=True)
+os.makedirs(so_data_results_folder_path, exist_ok=True)
 
 ###############################################################################
 ## 2. Gene Program Mask ##
@@ -736,12 +739,12 @@ sc.tl.umap(model.adata,
 
 # Store adata to disk
 model.adata.write(
-    f"{srt_data_results_folder_path}/{args.model_label}/{args.dataset}_"
+    f"{so_data_results_folder_path}/{args.dataset}_"
     f"nichecompass_{args.model_label}.h5ad")
 
 print("\nSaving model...")
 # Save trained model
-model.save(dir_path=model_artifacts_folder_path + f"/{args.model_label}",
+model.save(dir_path=model_folder_path,
            overwrite=True,
            save_adata=True,
            adata_file_name=f"{args.dataset}_{args.model_label}.h5ad",

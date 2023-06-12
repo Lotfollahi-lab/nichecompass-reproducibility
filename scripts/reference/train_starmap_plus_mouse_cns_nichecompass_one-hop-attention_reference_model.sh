@@ -38,6 +38,7 @@ batch19 batch20 \
 --n_epochs 100 \
 --n_epochs_all_gps 25 \
 --n_epochs_no_cond_contrastive 0 \
+--lr 0.001 \
 --lambda_edge_recon 500000. \
 --lambda_gene_expr_recon 300. \
 --lambda_cond_contrastive 0. \

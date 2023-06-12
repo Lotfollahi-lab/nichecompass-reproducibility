@@ -107,7 +107,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=100,
+    default=200,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -132,17 +132,17 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=100.,
+    default=300.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cond_contrastive",
     type=float,
-    default=100000.,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--contrastive_logits_ratio",
     type=float,
-    default=0.0078125,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
@@ -183,21 +183,22 @@ mlflow.log_param("timestamp", args.load_timestamp)
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
-                              f"{args.load_timestamp}"
-gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
-srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
-                                                       # transcriptomics data
-srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
-srt_data_results_folder_path = f"{srt_data_folder_path}/results"
+root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+artifacts_folder_path = f"{root_folder_path}/artifacts"
+model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models"
+gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
+                                                             # data
+so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
+                                                               # data
+so_data_gold_folder_path = f"{so_data_folder_path}/gold"
+so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
-os.makedirs(f"{srt_data_results_folder_path}/{args.reference_query_model_label}",
+os.makedirs(f"{so_data_results_folder_path}/{args.reference_query_model_label}",
             exist_ok=True)
-os.makedirs(f"{srt_data_results_folder_path}/{args.query_model_label}",
+os.makedirs(f"{so_data_results_folder_path}/{args.query_model_label}",
             exist_ok=True)
 
 ###############################################################################
@@ -207,7 +208,8 @@ os.makedirs(f"{srt_data_results_folder_path}/{args.query_model_label}",
 # Retrieve reference model attributes and adata
 print("Retrieving reference model...")
 reference_model = NicheCompass.load(
-    dir_path=model_artifacts_folder_path + f"/{args.reference_model_label}",
+    dir_path=model_folder_path + f"/{args.reference_model_label}/" \
+             f"{args.load_timestamp}",
     adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key)
 
@@ -238,7 +240,7 @@ if args.query_batches is not None:
         print(f"\nProcessing batch {batch}...")
         print("Loading data...")
         adata_batch = ad.read_h5ad(
-            f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+            f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
         adata_batch.obs[args.mapping_entity_key] = "query"
         print("Computing spatial neighborhood graph...")
         # Compute (separate) spatial neighborhood graphs
@@ -290,7 +292,7 @@ if args.query_batches is not None:
     adata.obsp[adj_key] = connectivities
 else:
     adata = ad.read_h5ad(
-            f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
+            f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
     # Compute (separate) spatial neighborhood graphs
     sq.gr.spatial_neighbors(adata,
                             coord_type="generic",
@@ -333,7 +335,8 @@ print("\nTraining model...")
 # Load model trained on reference data for transfer learning with query data
 # Freeze all weights except for conditional weights
 model = NicheCompass.load(
-    dir_path=model_artifacts_folder_path + f"/{args.reference_model_label}",
+    dir_path=model_folder_path + f"/{args.reference_model_label}/" \
+             f"{args.load_timestamp}",
     adata=adata,
     adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key,
@@ -359,7 +362,8 @@ model.train(n_epochs=args.n_epochs,
 print("\nSaving query model...")
 # Save trained model
 model.save(
-    dir_path=model_artifacts_folder_path + f"/{args.query_model_label}",
+    dir_path=model_folder_path + f"/{args.query_model_label}/" \
+             f"{args.load_timestamp}",
     overwrite=True,
     save_adata=True,
     adata_file_name=f"{args.dataset}_{args.query_model_label}.h5ad")
@@ -439,14 +443,14 @@ sc.tl.umap(model.adata,
 
 # Store adata to disk
 model.adata.write(
-    f"{srt_data_results_folder_path}/{args.reference_query_model_label}/"
+    f"{so_data_results_folder_path}/"
     f"{args.dataset}_nichecompass_{args.reference_query_model_label}.h5ad")
 
 print("\nSaving reference query model...")
 # Save trained model
 model.save(
-    dir_path=model_artifacts_folder_path + \
-             f"/{args.reference_query_model_label}",
+    dir_path=model_folder_path + f"/{args.reference_query_model_label}/" \
+             f"{args.load_timestamp}",
     overwrite=True,
     save_adata=True,
     adata_file_name=f"{args.dataset}_{args.reference_query_model_label}.h5ad")

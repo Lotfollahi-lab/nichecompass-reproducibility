@@ -23,7 +23,7 @@ python train_nichecompass_reference_model.py \
 --gp_targets_mask_key nichecompass_gp_targets \
 --gp_sources_mask_key nichecompass_gp_sources \
 --gp_names_key nichecompass_gp_names \
---model_label reference \
+--model_label one-hop-attention_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
 --active_gp_thresh_ratio 0.1 \
