@@ -31,14 +31,14 @@ def plot_latent(adata,
         fig.show()
         
         
-def plot_latent_clusters_in_latent_and_physical_space(
+def plot_category_in_latent_and_physical_space(
         adata,
         plot_label,
-        latent_cluster_key,
+        cat_key,
         groups,
         sample_key,
         samples,
-        latent_cluster_colors,
+        cat_colors,
         size,
         spot_size,
         save_fig,
@@ -47,8 +47,8 @@ def plot_latent_clusters_in_latent_and_physical_space(
     ncols = min(5, len(samples))
     # Create plot of cell type annotations in physical and latent space
     fig = plt.figure(figsize=(12, len(samples) + 12))
-    title = fig.suptitle(t=f"NicheCompass {plot_label} " \
-                           "in Latent and Physical Space",
+    title = fig.suptitle(t=f"{plot_label} in NicheCompass " \
+                           "Latent and Physical Space",
                          y=0.96,
                          x=0.55,
                          fontsize=20)
@@ -63,19 +63,19 @@ def plot_latent_clusters_in_latent_and_physical_space(
     axs = []
     axs.append(fig.add_subplot(spec1[0]))
     sc.pl.umap(adata=adata,
-               color=[latent_cluster_key],
+               color=[cat_key],
                groups=groups,
-               palette=latent_cluster_colors,
+               palette=cat_colors,
                size=size,
-               title=f"{plot_label} in Latent Space",
+               title=f"{plot_label} in NicheCompass Latent Space",
                ax=axs[0],
                show=False)
     for idx, sample in enumerate(samples):
         axs.append(fig.add_subplot(spec2[ncols + idx]))
         sc.pl.spatial(adata=adata[adata.obs[sample_key] == sample],
-                      color=[latent_cluster_key],
+                      color=[cat_key],
                       groups=groups,                  
-                      palette=latent_cluster_colors,
+                      palette=cat_colors,
                       spot_size=spot_size,
                       title=f"{plot_label} in \n Physical Space \n"
                             f"(Sample: {sample})",

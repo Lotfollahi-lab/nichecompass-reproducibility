@@ -1,7 +1,7 @@
 python ../wait.py
 python ../train_nichecompass_reference_model.py \
 --dataset seqfish_mouse_organogenesis_imputed \
---reference_batches batch1 batch2 batch3 \
+--reference_batches batch1 batch2 batch3 batch4 batch5 batch6 \
 --n_neighbors 12 \
 --filter_genes \
 --n_hvg 4000 \
@@ -28,7 +28,7 @@ python ../train_nichecompass_reference_model.py \
 --active_gp_thresh_ratio 0.1 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
---n_cond_embed None \
+--n_cond_embed 3 \
 --log_variational \
 --node_label_method one-hop-attention \
 --n_layers_encoder 1 \
@@ -37,12 +37,12 @@ python ../train_nichecompass_reference_model.py \
 --n_epochs 100 \
 --n_epochs_all_gps 25 \
 --n_epochs_no_cond_contrastive 0 \
---lr 0.001
+--lr 0.001 \
 --lambda_edge_recon 500000. \
---lambda_gene_expr_recon 100. \
+--lambda_gene_expr_recon 300. \
 --lambda_cond_contrastive 0. \
 --contrastive_logits_ratio 0. \
 --lambda_group_lasso 0. \
---lambda_l1_masked 10. \
---edge_batch_size 256 \
+--lambda_l1_masked 5. \
+--edge_batch_size 4096 \
 --node_batch_size None

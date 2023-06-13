@@ -4,7 +4,7 @@ python ../train_nichecompass_reference_model.py \
 --reference_batches batch1 batch2 batch3 batch4 batch5 batch6 \
 --n_neighbors 12 \
 --filter_genes \
---n_hvg 2000 \
+--n_hvg 3000 \
 --nichenet_keep_target_genes_ratio 0.01 \
 --nichenet_max_n_target_genes_per_gp 1000 \
 --include_mebocost_gps \
@@ -25,11 +25,11 @@ python ../train_nichecompass_reference_model.py \
 --model_label one-hop-norm_reference \
 --active_gp_names_key nichecompass_active_gp_names \
 --latent_key nichecompass_latent \
---active_gp_thresh_ratio 0.05 \
+--active_gp_thresh_ratio 0.1 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
 --n_cond_embed 3 \
---log_variational \
+--no-log_variational \
 --node_label_method one-hop-norm \
 --n_layers_encoder 1 \
 --n_hidden_encoder None \

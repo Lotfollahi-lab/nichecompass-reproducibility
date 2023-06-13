@@ -315,6 +315,13 @@ parser.add_argument(
     default=None,
     help="s. NicheCompass train method signature")
 
+# Other
+parser.add_argument(
+    "--timestamp_suffix",
+    type=str,
+    default="",
+    help="Timestamp suffix for saving artifacts if timestamp overlaps")
+
 args = parser.parse_args()
 
 if args.reference_batches == [None]:
@@ -340,7 +347,7 @@ experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
 mlflow_experiment_id = experiment.experiment_id
 
 # Track params that are not part of model
-mlflow.log_param("timestamp", current_timestamp)
+mlflow.log_param("timestamp", current_timestamp + args.timestamp_suffix)
 mlflow.log_param("nichenet_keep_target_genes_ratio",
                  args.nichenet_keep_target_genes_ratio)
 mlflow.log_param("nichenet_max_n_target_genes_per_gp",
@@ -382,7 +389,8 @@ if args.include_atac_modality:
 root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 artifacts_folder_path = f"{root_folder_path}/artifacts"
 model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models/" \
-                    f"{args.model_label}/{current_timestamp}"
+                    f"{args.model_label}/{current_timestamp}" \
+                    f"{args.timestamp_suffix}"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
                                                              # data
 ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation

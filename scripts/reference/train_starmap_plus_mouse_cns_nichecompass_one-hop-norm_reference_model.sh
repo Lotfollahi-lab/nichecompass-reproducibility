@@ -1,9 +1,7 @@
 python ../wait.py
 python ../train_nichecompass_reference_model.py \
 --dataset starmap_plus_mouse_cns \
---reference_batches batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8 \
-batch9 batch10 batch11 batch12 batch13 batch14 batch15 batch16 batch17 batch18 \
-batch19 batch20 \
+--reference_batches batch1 batch2 batch3 \
 --n_neighbors 12 \
 --no-filter_genes \
 --nichenet_keep_target_genes_ratio 0.01 \
@@ -29,7 +27,7 @@ batch19 batch20 \
 --active_gp_thresh_ratio 0.1 \
 --gene_expr_recon_dist nb \
 --cond_embed_injection gene_expr_decoder \
---n_cond_embed 10 \
+--n_cond_embed 3 \
 --log_variational \
 --node_label_method one-hop-norm \
 --n_layers_encoder 1 \
