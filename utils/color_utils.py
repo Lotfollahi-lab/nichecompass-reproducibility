@@ -202,6 +202,20 @@ nanostring_cosmx_human_nsclc_cell_type_colors = {
     "pDC" : "#C9EBFB",
     "mast" : "#C9EBFB"}
 
+nanostring_cosmx_human_nsclc_cell_type_colors = {
+    "endothelial": "#FFD8B8", # Peach
+    "B-cell": "#F9CB9C", # Light Peach
+    "myeloid": "#FFB8A2", # Apricot
+    "plasmablasts": "#F08CAE", # Pink
+    "fibroblast": "#F49FAD", # Pale Pink
+    "neutrophil": "#E7F0A4", # Pale Canary
+    "NK/T cell": "#C7F2C2", # Light Green
+    "epithelial": "#97E6A1", # Soft Green
+    "fibrbolblast": "#FE938C", # Coral
+    "mast": "#A5DEE4", # Pale Blue
+    "tumors": "#5CA4A9", # Blue-Green
+}
+
 vizgen_merfish_mouse_liver_cell_type_colors = {
     "Hepatocyte" : "#635547",
     "Macrophage" : "#DABE99",
@@ -215,6 +229,14 @@ vizgen_merfish_mouse_liver_cell_type_colors = {
     "Erythroid-progenitor_Hepatocyte_Neutrophil_Pre-B-cell" : "#EF5A9D",
     "Neutrophil" : "#C594BF",
     "Pre-B-cell" : "#DFCDE4"}
+
+vizgen_merfish_human_ovarian_cancer_cell_type_colors = {
+    "Fibroblasts" : "#635547",
+    "Epithelial cells" : "#DABE99",
+    "Macrophages" : "#9e6762",
+    "T cells" : "#FACB12",
+    "Endothelial cells" : "#c19f70",
+    "B cells" : "#0F4A9C"}
 
 spatial_atac_rna_seq_mouse_embryo_and_brain_rna_colors = {
     "R5" : "#635547",
