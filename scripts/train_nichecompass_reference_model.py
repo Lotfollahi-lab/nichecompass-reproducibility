@@ -338,7 +338,7 @@ else:
 now = datetime.now()
 current_timestamp = now.strftime("%d%m%Y_%H%M%S")
 
-print(f"Run timestamp: {current_timestamp}.")
+print(f"Run timestamp: {current_timestamp + args.timestamp_suffix}.")
 print("Script arguments:")
 print(sys.argv)
 
@@ -391,6 +391,9 @@ artifacts_folder_path = f"{root_folder_path}/artifacts"
 model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models/" \
                     f"{args.model_label}/{current_timestamp}" \
                     f"{args.timestamp_suffix}"
+result_folder_path = f"{artifacts_folder_path}/{args.dataset}/results/" \
+                     f"{args.model_label}/{current_timestamp}" \
+                     f"{args.timestamp_suffix}"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
                                                              # data
 ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
@@ -398,7 +401,6 @@ ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
 so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
                                                                # data
 srt_data_gold_folder_path = f"{so_data_folder_path}/gold"
-so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
@@ -406,7 +408,7 @@ omnipath_lr_interactions_file_path = gp_data_folder_path + \
 gtf_file_path = ga_data_folder_path + \
                 "/gencode.vM32.chr_patch_hapl_scaff.annotation.gtf.gz"
 os.makedirs(model_folder_path, exist_ok=True)
-os.makedirs(so_data_results_folder_path, exist_ok=True)
+os.makedirs(result_folder_path, exist_ok=True)
 
 ###############################################################################
 ## 2. Gene Program Mask ##
@@ -747,8 +749,7 @@ sc.tl.umap(model.adata,
 
 # Store adata to disk
 model.adata.write(
-    f"{so_data_results_folder_path}/{args.dataset}_"
-    f"nichecompass_{args.model_label}.h5ad")
+    f"{result_folder_path}/{args.dataset}_{args.model_label}.h5ad")
 
 print("\nSaving model...")
 # Save trained model

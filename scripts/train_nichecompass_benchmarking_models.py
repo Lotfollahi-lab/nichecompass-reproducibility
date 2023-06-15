@@ -318,6 +318,13 @@ parser.add_argument(
     default=0.,
     help="s. NicheCompass train method signature")
 
+# Other
+parser.add_argument(
+    "--timestamp_suffix",
+    type=str,
+    default="",
+    help="Timestamp suffix for saving artifacts if timestamp overlaps")
+
 args = parser.parse_args()
 
 n_neighbors_list = [int(n_neighbors) for n_neighbors in args.n_neighbors_list]
@@ -338,7 +345,7 @@ if args.cond_embed_injection == [None]:
 now = datetime.now()
 current_timestamp = now.strftime("%d%m%Y_%H%M%S")
 
-print(f"Run timestamp: {current_timestamp}.")
+print(f"Run timestamp: {current_timestamp + args.timestamp_suffix}.")
 print("Script arguments:")
 print(sys.argv)
 
@@ -349,19 +356,22 @@ print(sys.argv)
 root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 artifacts_folder_path = f"{root_folder_path}/artifacts"
 model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models/" \
-                    f"{args.model_label}/{current_timestamp}"
+                    f"{args.model_label}/{current_timestamp}" \
+                     f"{args.timestamp_suffix}"
+result_folder_path = f"{artifacts_folder_path}/{args.dataset}/results/" \
+                     f"{args.model_label}/{current_timestamp}" \
+                     f"{args.timestamp_suffix}"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program 
                                                              # data
 so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
                                                               # data
 so_data_gold_folder_path = f"{so_data_folder_path}/gold"
-so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
 os.makedirs(model_folder_path, exist_ok=True)
-os.makedirs(so_data_results_folder_path, exist_ok=True)
+os.makedirs(result_folder_path, exist_ok=True)
 
 ###############################################################################
 ## 2. Prepare Gene Program Mask ##
@@ -470,7 +480,7 @@ if args.adata_new_name is None:
     del(adata_original)
 else:
     adata_new = ad.read_h5ad(
-        f"{so_data_results_folder_path}/{args.adata_new_name}")
+        f"{result_folder_path}/{args.adata_new_name}")
     
 ###############################################################################
 ## 4. Train Models ##
@@ -617,7 +627,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     # Set mlflow experiment
     experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
     mlflow_experiment_id = experiment.experiment_id
-    mlflow.log_param("timestamp", current_timestamp)
+    mlflow.log_param("timestamp", current_timestamp + args.timestamp_suffix)
 
     # Log dataset params
     mlflow.log_param("dataset", args.dataset)
@@ -720,8 +730,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
     # Store intermediate adata to disk
     adata_new.write(
-        f"{so_data_results_folder_path}/{args.dataset}_"
-        f"nichecompass_{args.model_label}.h5ad") 
+        f"{result_folder_path}/{args.dataset}_{args.model_label}.h5ad") 
 
     print("\nSaving model...")
     # Save trained model
@@ -741,5 +750,4 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
 
 # Store final adata to disk
 adata_new.write(
-    f"{so_data_results_folder_path}/{args.dataset}_"
-    f"nichecompass_{args.model_label}.h5ad") 
+    f"{result_folder_path}/{args.dataset}_{args.model_label}.h5ad") 
