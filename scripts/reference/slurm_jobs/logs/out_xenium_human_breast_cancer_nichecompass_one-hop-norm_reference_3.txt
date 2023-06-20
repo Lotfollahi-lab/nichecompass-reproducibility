@@ -1,0 +1,37 @@
+Run timestamp: 20062023_154812_3.
+Script arguments:
+['../train_nichecompass_reference_model.py', '--dataset', 'xenium_human_breast_cancer', '--reference_batches', 'batch1', 'batch2', '--n_neighbors', '12', '--no-filter_genes', '--nichenet_keep_target_genes_ratio', '1.', '--nichenet_max_n_target_genes_per_gp', '250', '--include_mebocost_gps', '--species', 'human', '--gp_filter_mode', 'subset', '--combine_overlap_gps', '--overlap_thresh_source_genes', '0.9', '--overlap_thresh_target_genes', '0.9', '--overlap_thresh_genes', '0.9', '--counts_key', 'counts', '--condition_key', 'batch', '--spatial_key', 'spatial', '--adj_key', 'spatial_connectivities', '--mapping_entity_key', 'mapping_entity', '--gp_targets_mask_key', 'nichecompass_gp_targets', '--gp_sources_mask_key', 'nichecompass_gp_sources', '--gp_names_key', 'nichecompass_gp_names', '--model_label', 'one-hop-norm_reference', '--active_gp_names_key', 'nichecompass_active_gp_names', '--latent_key', 'nichecompass_latent', '--active_gp_thresh_ratio', '0.05', '--gene_expr_recon_dist', 'nb', '--cond_embed_injection', 'encoder', 'gene_expr_decoder', '--n_cond_embed', '2', '--log_variational', '--node_label_method', 'one-hop-norm', '--n_layers_encoder', '1', '--n_hidden_encoder', 'None', '--conv_layer_encoder', 'gcnconv', '--n_epochs', '100', '--n_epochs_all_gps', '25', '--n_epochs_no_cond_contrastive', '0', '--lr', '0.001', '--lambda_edge_recon', '500000.', '--lambda_gene_expr_recon', '300.', '--lambda_cond_contrastive', '0.0', '--contrastive_logits_pos_ratio', '0.0', '--contrastive_logits_neg_ratio', '0.0', '--lambda_group_lasso', '0.', '--lambda_l1_masked', '5.0', '--edge_batch_size', '4096', '--node_batch_size', 'None', '--timestamp_suffix', '_3']
+
+Preparing the gene program mask...
+Number of gene programs before filtering and combining: 2264.
+Number of gene programs after filtering and combining: 1691.
+
+Processing batch batch1...
+Loading data...
+Computing spatial neighborhood graph...
+
+Processing batch batch2...
+Loading data...
+Computing spatial neighborhood graph...
+
+Training model...
+--- INITIALIZING NEW NETWORK MODULE: VARIATIONAL GENE PROGRAM GRAPH AUTOENCODER ---
+LOSS -> include_edge_recon_loss: True, include_gene_expr_recon_loss: True, gene_expr_recon_dist: nb
+NODE LABEL METHOD -> one-hop-norm
+ACTIVE GP THRESHOLD RATIO -> 0.05
+LOG VARIATIONAL -> True
+CONDITIONAL EMBEDDING INJECTION -> ['encoder', 'gene_expr_decoder']
+ENCODER -> n_input: 313, n_cond_embed_input: 2, n_layers: 1, n_hidden: 313, n_latent: 1302, n_addon_latent: 0, conv_layer: gcnconv, n_attention_heads: 0, dropout_rate: 0.0
+COSINE SIM GRAPH DECODER -> n_cond_embed_input: 0, n_cond_embed_output: 1302, dropout_rate: 0.0
+MASKED GENE EXPRESSION DECODER -> n_input: 1302, n_cond_embed_input: 2, n_addon_input: 0, n_output: 626
+ONE HOP GCN NORM NODE LABEL AGGREGATOR
+
+--- INITIALIZING TRAINER ---
+Number of training nodes: 254127
+Number of validation nodes: 28236
+Number of training edges: 1717813
+Number of validation edges: 190868
+Edge batch size: 4096
+Node batch size: None
+
+--- MODEL TRAINING ---
