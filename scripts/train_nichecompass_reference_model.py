@@ -126,6 +126,12 @@ parser.add_argument(
     default="batch",
     help="s. NicheCompass class signature.")
 parser.add_argument(
+    "--cat_covariates_keys",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--n_neighbors",
     type=int,
     default=12,
@@ -224,6 +230,12 @@ parser.add_argument(
     type=none_or_int,
     default=None,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--nums_cat_covariates_embed",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
@@ -333,6 +345,10 @@ if args.reference_batches == [None]:
     args.reference_batches = None
 if args.cond_embed_injection == [None]:
     args.cond_embed_injection = []
+if args.cat_covariates_keys == [None]:
+    args.cat_covariates_keys = None
+if args.nums_cat_covariates_embed == [None]:
+    args.nums_cat_covariates_embed = None
     
 if args.include_atac_modality:
     save_adata_atac = True
@@ -722,7 +738,9 @@ model = NicheCompass(adata,
                      adj_key=args.adj_key,
                      condition_key=args.condition_key,
                      cond_embed_injection=args.cond_embed_injection,
+                     cat_covariates_keys=args.cat_covariates_keys,
                      n_cond_embed=args.n_cond_embed,
+                     nums_cat_covariates_embed=args.nums_cat_covariates_embed,
                      gp_names_key=args.gp_names_key,
                      active_gp_names_key=args.active_gp_names_key,
                      gp_targets_mask_key=args.gp_targets_mask_key,

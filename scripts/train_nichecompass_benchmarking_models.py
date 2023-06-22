@@ -73,7 +73,7 @@ parser.add_argument(
     "--node_batch_size_list",
     type=none_or_value,
     nargs="+",
-    default="32 32 32 32 16 16 8 8 8 8",
+    default="None None None None None None None None None None",
     help="Node batch sizes per model training run.")
 parser.add_argument(
     "--seeds",
@@ -90,12 +90,12 @@ parser.add_argument(
 parser.add_argument(
     "--nichenet_keep_target_genes_ratio",
     type=float,
-    default=0.01,
+    default=1.,
     help="Ratio how many of the overall top scored target genes are kept.")
 parser.add_argument(
     "--nichenet_max_n_target_genes_per_gp",
     type=int,
-    default=25344,
+    default=250,
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
     "--include_mebocost_gps",
@@ -159,6 +159,12 @@ parser.add_argument(
     type=str,
     default="batch",
     help="s. NicheCompass class signature.")
+parser.add_argument(
+    "--cat_covariates_keys",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--spatial_key",
     type=str,
@@ -243,6 +249,12 @@ parser.add_argument(
     default=None,
     help="s. NicheCompass train method signature")
 parser.add_argument(
+    "--nums_cat_covariates_embed",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -270,7 +282,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=200,
+    default=100,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -345,6 +357,10 @@ if args.reference_batches == [None]:
     args.reference_batches = None
 if args.cond_embed_injection == [None]:
     args.cond_embed_injection = []
+if args.cat_covariates_keys == [None]:
+    args.cat_covariates_keys = None
+if args.nums_cat_covariates_embed == [None]:
+    args.nums_cat_covariates_embed = None
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -368,15 +384,17 @@ result_folder_path = f"{artifacts_folder_path}/{args.dataset}/results/" \
                      f"{args.timestamp_suffix}"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program 
                                                              # data
+ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
+                                                             # data
 so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
                                                               # data
 so_data_gold_folder_path = f"{so_data_folder_path}/gold"
 nichenet_lr_network_file_path = gp_data_folder_path + \
-                                "/nichenet_lr_network_v2_"
+                                "/nichenet_lr_network_v2_" \
                                 f"{args.species}.csv"
 nichenet_ligand_target_matrix_file_path = gp_data_folder_path + \
-                                          "/nichenet_ligand_target_matrix_v2_"
-                                          f"{args.species}.csv"
+                                          "/nichenet_ligand_target_matrix_" \
+                                          f"v2_{args.species}.csv"
 omnipath_lr_network_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_network.csv"
 gene_orthologs_mapping_file_path = ga_data_folder_path + \
@@ -404,7 +422,7 @@ omnipath_genes = get_unique_genes_from_gp_dict(
     retrieved_gene_entities=["sources", "targets"])
 
 # NicheNet gene programs
-nichenet_gp_dict = extract_gp_dict_from_nichenet_ligand_target_mx(
+nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
     species=args.species,
     version="v2",
     keep_target_genes_ratio=args.nichenet_keep_target_genes_ratio,
@@ -674,7 +692,9 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                          adj_key=args.adj_key,
                          condition_key=args.condition_key,
                          cond_embed_injection=args.cond_embed_injection,
+                         cat_covariates_keys=args.cat_covariates_keys,
                          n_cond_embed=args.n_cond_embed,
+                         nums_cat_covariates_embed=args.nums_cat_covariates_embed,
                          gp_names_key=args.gp_names_key,
                          active_gp_names_key=args.active_gp_names_key,
                          gp_targets_mask_key=args.gp_targets_mask_key,

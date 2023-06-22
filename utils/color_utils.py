@@ -61,7 +61,7 @@ default_color_dict = {
     "59": "#C0C0C0", # Silver
     "60": "#D3D3D3", # Light Gray
     "61": "#F5F5F5", # White Smoke
-    "62": "#FFFFFF", # White
+    "62": "#F17171", # Light Red
     "63": "#000000", # Black
     "64": "#FF8C42", # Tangerine
     "65": "#F9A11F", # Bright Orange-Yellow
