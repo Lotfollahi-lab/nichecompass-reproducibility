@@ -122,7 +122,7 @@ parser.add_argument(
     help="s. NicheCompass class signature.")
 parser.add_argument(
     "--condition_key",
-    type=none_or_value,
+    type=str,
     default="batch",
     help="s. NicheCompass class signature.")
 parser.add_argument(
@@ -221,19 +221,14 @@ parser.add_argument(
     default="nb",
     help="s. NicheCompass class signature")
 parser.add_argument(
-    "--cond_embed_injection",
+    "--cat_covariates_embeds_injection",
     nargs='+',
-    default=["gene_expr_decoder"],
+    default=["encoder gene_expr_decoder"],
     help="s. NicheCompass class signature")
 parser.add_argument(
-    "--n_cond_embed",
-    type=none_or_int,
-    default=None,
-    help="s. NicheCompass train method signature")
-parser.add_argument(
-    "--nums_cat_covariates_embed",
+    "--cat_covariates_embeds_nums",
     nargs='+',
-    type=none_or_value,
+    type=none_or_int,
     default=None,
     help="s. NicheCompass class signature")
 parser.add_argument(
@@ -272,7 +267,7 @@ parser.add_argument(
     default=25,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--n_epochs_no_cond_contrastive",
+    "--n_epochs_no_cat_covariates_contrastive",
     type=int,
     default=5,
     help="s. NicheCompass train method signature")
@@ -297,7 +292,7 @@ parser.add_argument(
     default=100.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--lambda_cond_contrastive",
+    "--lambda_cat_covariates_contrastive",
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
@@ -343,12 +338,12 @@ args = parser.parse_args()
 
 if args.reference_batches == [None]:
     args.reference_batches = None
-if args.cond_embed_injection == [None]:
-    args.cond_embed_injection = []
+if args.cat_covariates_embeds_injection == [None]:
+    args.cat_covariates_embeds_injection = []
 if args.cat_covariates_keys == [None]:
     args.cat_covariates_keys = None
-if args.nums_cat_covariates_embed == [None]:
-    args.nums_cat_covariates_embed = None
+if args.cat_covariates_embeds_nums == [None]:
+    args.cat_covariates_embeds_nums = None
     
 if args.include_atac_modality:
     save_adata_atac = True
@@ -736,11 +731,9 @@ model = NicheCompass(adata,
                      adata_atac,
                      counts_key=args.counts_key,
                      adj_key=args.adj_key,
-                     condition_key=args.condition_key,
-                     cond_embed_injection=args.cond_embed_injection,
+                     cat_covariates_embeds_injection=args.cat_covariates_embeds_injection,
                      cat_covariates_keys=args.cat_covariates_keys,
-                     n_cond_embed=args.n_cond_embed,
-                     nums_cat_covariates_embed=args.nums_cat_covariates_embed,
+                     cat_covariates_embeds_nums=args.cat_covariates_embeds_nums,
                      gp_names_key=args.gp_names_key,
                      active_gp_names_key=args.active_gp_names_key,
                      gp_targets_mask_key=args.gp_targets_mask_key,
@@ -757,12 +750,12 @@ model = NicheCompass(adata,
 # Train model
 model.train(n_epochs=args.n_epochs,
             n_epochs_all_gps=args.n_epochs_all_gps,
-            n_epochs_no_cond_contrastive=args.n_epochs_no_cond_contrastive,
+            n_epochs_no_cat_covariates_contrastive=args.n_epochs_no_cat_covariates_contrastive,
             lr=args.lr,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
             lambda_chrom_access_recon=args.lambda_chrom_access_recon,
-            lambda_cond_contrastive=args.lambda_cond_contrastive,
+            lambda_cat_covariates_contrastive=args.lambda_cat_covariates_contrastive,
             contrastive_logits_pos_ratio=args.contrastive_logits_pos_ratio,
             contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
