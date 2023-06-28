@@ -52,6 +52,11 @@ def none_or_int(value):
         return None
     return int(value)
 
+def none_or_bool(value):
+    if value == "None":
+        return None
+    return bool("True")
+
 # Gene program mask
 parser.add_argument(
     "--species",
@@ -98,6 +103,11 @@ parser.add_argument(
     type=float,
     default=0.9,
     help="Threshold for overall genes above which gene programs are combined.")
+parser.add_argument(
+    "--add_fc_gps_instead_of_gp_dict_gps",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether to combine overlapping gene programs.")
 
 # Data
 parser.add_argument(
@@ -129,6 +139,12 @@ parser.add_argument(
     "--cat_covariates_keys",
     nargs='+',
     type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
+parser.add_argument(
+    "--cat_covariates_no_edges",
+    nargs='+',
+    type=none_or_bool,
     default=None,
     help="s. NicheCompass class signature")
 parser.add_argument(
@@ -342,6 +358,8 @@ if args.cat_covariates_embeds_injection == [None]:
     args.cat_covariates_embeds_injection = []
 if args.cat_covariates_keys == [None]:
     args.cat_covariates_keys = None
+if args.cat_covariates_no_edges == [None]:
+    args.cat_covariates_no_edges = None
 if args.cat_covariates_embeds_nums == [None]:
     args.cat_covariates_embeds_nums = None
     
@@ -349,6 +367,8 @@ if args.include_atac_modality:
     save_adata_atac = True
 else:
     save_adata_atac = False
+    
+print(args.cat_covariates_no_edges)
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -698,7 +718,8 @@ add_gps_from_gp_dict_to_adata(
     max_genes_per_gp=None,
     max_source_genes_per_gp=None,
     max_target_genes_per_gp=None,
-    filter_genes_not_in_masks=False)
+    filter_genes_not_in_masks=False,
+    add_fc_gps_instead_of_gp_dict_gps=args.add_fc_gps_instead_of_gp_dict_gps)
 
 ###############################################################################
 ### 3.5 Add Chromatin Accessibility Mask to Data (If ATAC Modality Incl.) ###
@@ -733,6 +754,7 @@ model = NicheCompass(adata,
                      adj_key=args.adj_key,
                      cat_covariates_embeds_injection=args.cat_covariates_embeds_injection,
                      cat_covariates_keys=args.cat_covariates_keys,
+                     cat_covariates_no_edges=args.cat_covariates_no_edges,
                      cat_covariates_embeds_nums=args.cat_covariates_embeds_nums,
                      gp_names_key=args.gp_names_key,
                      active_gp_names_key=args.active_gp_names_key,

@@ -52,6 +52,11 @@ def none_or_int(value):
         return None
     return int(value)
 
+def none_or_bool(value):
+    if value == "None":
+        return None
+    return bool("True")
+
 # Benchmarking-specific
 parser.add_argument(
     "--adata_new_name",
@@ -163,6 +168,12 @@ parser.add_argument(
     "--cat_covariates_keys",
     nargs='+',
     type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
+parser.add_argument(
+    "--cat_covariates_no_edges",
+    nargs='+',
+    type=none_or_bool,
     default=None,
     help="s. NicheCompass class signature")
 parser.add_argument(
@@ -354,6 +365,8 @@ if args.cat_covariates_embeds_injection == [None]:
     args.cat_covariates_embeds_injection = []
 if args.cat_covariates_keys == [None]:
     args.cat_covariates_keys = None
+if args.cat_covariates_no_edges == [None]:
+    args.cat_covariates_no_edges = None
 if args.cat_covariates_embeds_nums == [None]:
     args.cat_covariates_embeds_nums = None
 
@@ -690,6 +703,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                          adj_key=args.adj_key,
                          cat_covariates_embeds_injection=args.cat_covariates_embeds_injection,
                          cat_covariates_keys=args.cat_covariates_keys,
+                         cat_covariates_no_edges=args.cat_covariates_no_edges,
                          cat_covariates_embeds_nums=args.cat_covariates_embeds_nums,
                          gp_names_key=args.gp_names_key,
                          active_gp_names_key=args.active_gp_names_key,
