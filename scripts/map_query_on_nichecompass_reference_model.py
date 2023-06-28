@@ -26,7 +26,7 @@ import squidpy as sq
 from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 extract_gp_dict_from_mebocost_es_interactions,
-                                extract_gp_dict_from_nichenet_ligand_target_mx,
+                                extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
                                 get_unique_genes_from_gp_dict)
@@ -140,7 +140,12 @@ parser.add_argument(
     default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--contrastive_logits_ratio",
+    "--contrastive_logits_pos_ratio",
+    type=float,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--contrastive_logits_neg_ratio",
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
@@ -169,7 +174,7 @@ args = parser.parse_args()
 
 if args.query_batches == [None]:
     args.query_batches = None
-xw
+
 print("Script arguments:")
 print(sys.argv)
 
@@ -351,7 +356,8 @@ model.train(n_epochs=args.n_epochs,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
             lambda_cond_contrastive=args.lambda_cond_contrastive,
-            contrastive_logits_ratio=args.contrastive_logits_ratio,
+            contrastive_logits_pos_ratio=args.contrastive_logits_pos_ratio,
+            contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
             edge_batch_size=args.edge_batch_size,

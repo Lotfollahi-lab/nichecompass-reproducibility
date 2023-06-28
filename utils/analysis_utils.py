@@ -44,22 +44,22 @@ def plot_category_in_latent_and_physical_space(
         save_fig,
         file_path):
     """Plot latent clusters in latent and physical space."""
-    ncols = min(5, len(samples))
+    ncols = min(3, len(samples))
     # Create plot of cell type annotations in physical and latent space
-    fig = plt.figure(figsize=(12, len(samples) + 12))
+    fig = plt.figure(figsize=(20, len(samples) + 20))
     title = fig.suptitle(t=f"{plot_label} in NicheCompass " \
                            "Latent and Physical Space",
                          y=0.96,
                          x=0.55,
                          fontsize=20)
     spec1 = gridspec.GridSpec(ncols=1,
-                              nrows=1 + 1 + int(len(samples) / 5),
+                              nrows=1 + 1 + int(len(samples) / 3),
                               width_ratios=[1],
-                              height_ratios=[3] + [2] * (1 + int(len(samples) / 5)))
+                              height_ratios=[3] + [2] * (1 + int(len(samples) / 3)))
     spec2 = gridspec.GridSpec(ncols=ncols,
-                              nrows=2 + int(len(samples) / 5),
+                              nrows=2 + int(len(samples) / 3),
                               width_ratios=[1] * ncols,
-                              height_ratios=[3] + [2] * (1 + int(len(samples) / 5)))
+                              height_ratios=[3] + [2] * (1 + int(len(samples) / 3)))
     axs = []
     axs.append(fig.add_subplot(spec1[0]))
     sc.pl.umap(adata=adata,

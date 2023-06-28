@@ -1,3 +1,110 @@
+default_color_dict = {
+    "0": "#FFD8B8",  # Peach
+    "1": "#FFAA80",  # Light Coral
+    "2": "#FF4D4D",  # Light Red
+    "3": "#FF8C8C",  # Salmon Pink
+    "4": "#FFD966",  # Yellow
+    "5": "#FFB83F",  # Light Orange
+    "6": "#FF9326",  # Orange
+    "7": "#FFED80",  # Soft Yellow
+    "8": "#FFFEA3",  # Pale Canary
+    "9": "#A5DEE4",  # Pale Blue
+    "10": "#77B1BD", # Sky Blue
+    "11": "#4E8CA7", # Light Blue
+    "12": "#276A8C", # Royal Blue
+    "13": "#DAB6C4", # Pink
+    "14": "#C38D9E", # Mauve-Pink
+    "15": "#9D88A2", # Mauve
+    "16": "#6B5B95", # Purple
+    "17": "#9B4DCA", # Lavender-Purple
+    "18": "#FF9CDA", # Bright Pink
+    "19": "#FF69B4", # Hot Pink
+    "20": "#FF00FF", # Magenta
+    "21": "#DA70D6", # Orchid
+    "22": "#BA55D3", # Medium Orchid
+    "23": "#8A2BE2", # Blue Violet
+    "24": "#9370DB", # Medium Purple
+    "25": "#7B68EE", # Medium Slate Blue
+    "26": "#4169E1", # Royal Blue
+    "27": "#4682B4", # Steel Blue
+    "28": "#00CED1", # Dark Turquoise
+    "29": "#48D1CC", # Medium Turquoise
+    "30": "#40E0D0", # Turquoise
+    "31": "#00FF00", # Lime
+    "32": "#7FFF00", # Chartreuse
+    "33": "#ADFF2F", # Green Yellow
+    "34": "#32CD32", # Lime Green
+    "35": "#228B22", # Forest Green
+    "36": "#006400", # Dark Green
+    "37": "#008080", # Teal
+    "38": "#20B2AA", # Light Sea Green
+    "39": "#00FFFF", # Cyan
+    "40": "#00BFFF", # Deep Sky Blue
+    "41": "#4169E1", # Royal Blue
+    "42": "#0000CD", # Medium Blue
+    "43": "#00008B", # Dark Blue
+    "44": "#8B008B", # Dark Magenta
+    "45": "#FF1493", # Deep Pink
+    "46": "#FF4500", # Orange Red
+    "47": "#FF0000", # Red
+    "48": "#FF6347", # Tomato
+    "49": "#FF7F50", # Coral
+    "50": "#CD5C5C", # Indian Red
+    "51": "#B22222", # Fire Brick
+    "52": "#A52A2A", # Brown
+    "53": "#8B0000", # Dark Red
+    "54": "#D2691E", # Chocolate
+    "55": "#A0522D", # Sienna
+    "56": "#800000", # Maroon
+    "57": "#808080", # Gray
+    "58": "#A9A9A9", # Dark Gray
+    "59": "#C0C0C0", # Silver
+    "60": "#D3D3D3", # Light Gray
+    "61": "#F5F5F5", # White Smoke
+    "62": "#F17171", # Light Red
+    "63": "#000000", # Black
+    "64": "#FF8C42", # Tangerine
+    "65": "#F9A11F", # Bright Orange-Yellow
+    "66": "#FACC15", # Golden Yellow
+    "67": "#E2E062", # Pale Lime
+    "68": "#BADE92", # Soft Lime
+    "69": "#70C1B3", # Greenish-Blue
+    "70": "#41B3A3", # Turquoise
+    "71": "#5EAAA8", # Gray-Green
+    "72": "#72B01D", # Chartreuse
+    "73": "#9CD08F", # Light Green
+    "74": "#8EBA43", # Olive Green
+    "75": "#FAC8C3", # Light Pink
+    "76": "#E27D60", # Dark Salmon
+    "77": "#C38D9E", # Mauve-Pink
+    "78": "#937D64", # Light Brown
+    "79": "#B1C1CC", # Light Blue-Gray
+    "80": "#88A0A8", # Gray-Blue-Green
+    "81": "#4E598C", # Dark Blue-Purple
+    "82": "#4B4E6D", # Dark Gray-Blue
+    "83": "#8E9AAF", # Light Blue-Grey
+    "84": "#C0D6DF", # Pale Blue-Grey
+    "85": "#97C1A9", # Blue-Green
+    "86": "#4C6E5D", # Dark Green
+    "87": "#95B9C7", # Pale Blue-Green
+    "88": "#C1D5E0", # Pale Gray-Blue
+    "89": "#ECDB54", # Bright Yellow
+    "90": "#E89B3B", # Bright Orange
+    "91": "#CE5A57", # Deep Red
+    "92": "#C3525A", # Dark Red
+    "93": "#B85D8E", # Berry
+    "94": "#7D5295", # Deep Purple
+    "-1" : "#9DD84A",
+    "None" : "#D3D3D3"
+}
+
+def create_new_color_dict(
+        adata,
+        cat_key):
+    new_categories = adata.obs[cat_key].unique().tolist()
+    new_color_dict = {key: value for key, value in zip(new_categories, default_color_dict.values())}
+    return new_color_dict
+    
 latent_cluster_colors = {
     "0": "#FFD8B8", # Peach
     "1": "#F9CB9C", # Light Peach
@@ -396,3 +503,119 @@ mapping_entity_colors = {
     "reference" : "#FFD8B8", # Peach
     "query" : "#355C7D", # Dark Slate Blue
 }
+
+vizgen_merfish_human_lung_cancer = {
+    "Epiblast" : "#FFD8B8", # Peach
+    "Primitive Streak" : "#F9CB9C", # Light Peach
+    "Caudal epiblast" : "#FFB8A2", # Apricot
+    "PGC" : "#F08CAE", # Pink
+    "Anterior Primitive Streak" : "#F49FAD", # Pale Pink
+    "Notochord" : "#E7F0A4", # Pale Canary
+    "Def. endoderm" : "#C7F2C2", # Light Green
+    "Definitive endoderm" : "#97E6A1", # Soft Green
+    "Gut" : "#FE938C", # Coral
+    "Gut tube" : "#A5DEE4", # Pale Blue
+    "Nascent mesoderm" : "#5CA4A9", # Blue-Green
+    "Mixed mesoderm" : "#6B5B95", # Lavender
+    "Intermediate mesoderm" : "#F9A03F", # Orange
+    "Caudal Mesoderm" : "#F7DB6A", # Light Yellow
+    "Paraxial mesoderm" : "#EEBB4D", # Light Amber
+    "Somitic mesoderm" : "#D6E4B2", # Pale Green
+    "Pharyngeal mesoderm" : "#A8DADC", # Pale Cyan
+    "Splanchnic mesoderm" : "#3D5A80", # Dark Blue
+    "Cardiomyocytes" : "#3E3F8A", # Navy Blue
+    "Allantois" : "#218380", # Teal
+    "ExE mesoderm" : "#90BE6D", # Soft Green-Yellow
+    "Lateral plate mesoderm" : "#FFD369", # Yellow
+    "Mesenchyme" : "#ED553B", # Red-Orange
+    "Mixed mesenchymal mesoderm" : "#DA627D", # Mauve
+    "Haematoendothelial progenitors" : "#6C5B7B", # Purple
+    "Endothelium" : "#4ECDC4", # Mint
+    "Blood progenitors 1" : "#65AADD", # Sky Blue
+    "Blood progenitors 2" : "#8FBFE0", # Powder Blue
+    "Erythroid1" : "#A2D2FF", # Pale Sky Blue
+    "Erythroid2" : "#F3C969", # Light Amber-Yellow
+    "Erythroid3" : "#EE6C4D", # Light Red-Orange
+    "Erythroid" : "#EC4E20", # Bright Red
+    "Blood progenitors" : "#D64161", # Dark Pink
+    "NMP" : "#FF7A5A", # Bright Coral
+    "Rostral neurectoderm" : "#E7A977", # Light Coral
+    "Caudal neurectoderm" : "#FECE44", # Bright Yellow
+    "Neural crest" : "#FFC55F", # Yellow-Orange
+    "Forebrain/Midbrain/Hindbrain" : "#F89E7B", # Light Coral-Orange
+    "Spinal cord" : "#7ECEFD", # Baby Blue
+    "Surface ectoderm" : "#C9B1BD", # Pale Mauve
+    "Visceral endoderm" : "#E6A0C4", # Light Pink
+    "ExE endoderm" : "#E36BAE", # Bright Pink
+    "ExE ectoderm" : "#8B5B6E", # Mauve-Brown
+    "Parietal endoderm" : "#748CAB", # Blue-Gray
+    "Low quality" : "#E5E5E5", # Light Gray
+    "Cranial mesoderm" : "#C4C4C4", # Gray
+    "Anterior somitic tissues" : "#A4A4A4", # Dark Gray
+    "Sclerotome" : "#4D4D4D", # Charcoal
+    "Dermomyotome" : "#F8B195", # Dusty Peach
+    "Posterior somitic tissues" : "#F67280", # Salmon Pink
+    "Presomitic mesoderm" : "#C06C84", # Rose
+}
+
+['Multiciliated (non-nasal)',
+ 'Classical monocytes',
+ 'AT2',
+ 'Suprabasal',
+ 'Adventitial fibroblasts',
+ 'Pericytes',
+ 'SMG serous (bronchial)',
+ 'EC aerocyte capillary',
+ 'Migratory DCs',
+ 'CD4 T cells',
+ 'CD8 T cells',
+ 'Hillock-like',
+ 'Lymphatic EC mature',
+ 'Goblet (nasal)',
+ 'Basal resting',
+ 'Mast cells',
+ 'Monocyte-derived Mph',
+ 'Peribronchial fibroblasts',
+ 'Lymphatic EC proliferating',
+ 'SMG serous (nasal)',
+ 'EC venous systemic',
+ 'EC venous pulmonary',
+ 'Club (nasal)',
+ 'DC2',
+ 'Alveolar fibroblasts',
+ 'Plasma cells',
+ 'Multiciliated (nasal)',
+ 'Mesothelium',
+ 'B cells',
+ 'NK cells',
+ 'Goblet (bronchial)',
+ 'Smooth muscle',
+ 'Alveolar Mph CCL3+',
+ 'Alveolar macrophages',
+ 'EC general capillary',
+ 'Lymphatic EC differentiating',
+ 'Club (non-nasal)',
+ 'Non-classical monocytes',
+ 'AT2 proliferating',
+ 'Interstitial Mph perivascular',
+ 'AT0',
+ 'Alveolar Mph proliferating',
+ 'Tuft',
+ 'Neuroendocrine',
+ 'Myofibroblasts',
+ 'SM activated stress response',
+ 'Subpleural fibroblasts',
+ 'SMG mucous',
+ 'Alveolar Mph MT-positive',
+ 'EC arterial',
+ 'Plasmacytoid DCs',
+ 'Smooth muscle FAM83D+',
+ 'SMG duct',
+ 'pre-TB secretory',
+ 'Deuterosomal',
+ 'AT1',
+ 'Hematopoietic stem cells',
+ 'Goblet (subsegmental)',
+ 'T cells proliferating',
+ 'Ionocyte',
+ 'DC1']
