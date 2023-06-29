@@ -55,7 +55,7 @@ def none_or_int(value):
 def none_or_bool(value):
     if value == "None":
         return None
-    return bool("True")
+    return value == "True"
 
 # Gene program mask
 parser.add_argument(
