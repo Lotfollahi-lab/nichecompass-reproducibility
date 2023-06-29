@@ -5,22 +5,27 @@
 ```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
 ```cd nichecompass-reproducibility```
 
-2) Create the nichecompass-reproducibility conda environment: <br>
+2) (Optional) Install Libmamba solver to make the installation much faster: <br>
+```conda update -n base conda``` <br>
+```conda install -n base conda-libmamba-solver``` <br>
+```conda config --set solver libmamba```
+
+3) Create the nichecompass-reproducibility conda environment: <br>
 ```conda env create -f envs/environment.yml```
 
-3) Create the deeplinc conda environment (for benchmarking deeplinc method which relies on legacy packages and is
+4) Create the deeplinc conda environment (for benchmarking deeplinc method which relies on legacy packages and is
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_deeplinc.yml```
 
-4) Activate the nichecompass-reproducibility conda environment: <br>
+5) Activate the nichecompass-reproducibility conda environment: <br>
 ```conda activate nichecompass-reproducibility```
 
-5) Clone the nichecompass repository and navigate into it: <br>
+6) Clone the nichecompass repository and navigate into it: <br>
 ```cd ..``` <br>
 ```git clone https://github.com/sebastianbirk/nichecompass.git``` <br>
 ```cd nichecompass```
 
-6) Install all NicheCompass Python dependencies via Poetry: <br>
+7) Install all NicheCompass Python dependencies via Poetry: <br>
 ```poetry install```
 
 
