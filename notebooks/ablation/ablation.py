@@ -1,6 +1,8 @@
 import sys
 sys.path.append("../../utils")
 
+print("1")
+
 import pandas as pd
 
 from ablation_utils import *
@@ -19,6 +21,8 @@ gp_names_key = "nichecompass_gp_names"
 artifact_folder_path = f"../../artifacts"
 
 summary_df = pd.read_csv(f"mlflow_summary_{ablation_task}_ablation.csv")
+
+print("2")
 
 # Compute metrics and add to summary df
 metrics_df = pd.DataFrame()
