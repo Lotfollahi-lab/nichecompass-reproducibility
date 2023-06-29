@@ -5,7 +5,7 @@
 ```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
 ```cd nichecompass-reproducibility```
 
-2) (Optional) Install Libmamba solver to make the installation much faster: <br>
+2) (Optional) Install the Libmamba solver to make the installation much faster: <br>
 ```conda update -n base conda``` <br>
 ```conda install -n base conda-libmamba-solver``` <br>
 ```conda config --set solver libmamba```
