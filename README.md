@@ -40,6 +40,6 @@ incompatible with dependencies of other methods): <br>
 3) From the root repository that contains both the nichecompass and nichecompass-reproducibility repositories, run: <br>
 ```docker buildx build --load --platform linux/amd64 --file nichecompass-reproducibility/envs/Dockerfile --tag nichecompass . --no-cache```
 
-4) (For Charliecloud) Export the Docker Image to a Tarball: <br>
+4) (For Charliecloud) Export the Docker image to a tarball: <br>
 ```docker export $(docker create nichecompass) | gzip -c > ./nichecompass.tar.gz```
 
