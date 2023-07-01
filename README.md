@@ -38,7 +38,7 @@ incompatible with dependencies of other methods): <br>
 ```git clone https://github.com/sebastianbirk/nichecompass.git```
 
 3) From the root repository that contains both the nichecompass and nichecompass-reproducibility repositories, run: <br>
-```docker buildx build --load --platform linux/amd64 --file nichecompass-reproducibility/envs/Dockerfile --tag nichecompass . --no-cache```
+```docker buildx build --load --platform linux/amd64 --file nichecompass-reproducibility/envs/Dockerfile --tag nichecompass . --no-cache``` (macOS)
 
 4) (For Charliecloud) Export the Docker image to a tarball: <br>
 ```docker export $(docker create nichecompass) | gzip -c > ./nichecompass.tar.gz```
