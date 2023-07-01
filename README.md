@@ -1,6 +1,8 @@
 # NicheCompass Reproducibility
 
 ## Installation
+
+### Standard
 1) Clone the nichecompass-reproducibility repository and navigate into it: <br>
 ```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
 ```cd nichecompass-reproducibility```
@@ -27,6 +29,16 @@ incompatible with dependencies of other methods): <br>
 
 7) Install all NicheCompass Python dependencies via Poetry: <br>
 ```poetry install```
+
+### Docker / Charliecloud Container
+1) Clone the nichecompass-reproducibility repository: <br>
+```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
+
+2) Clone the nichecompass repository: <br>
+```git clone https://github.com/sebastianbirk/nichecompass.git``` <br>
+
+3) From the root repository that contains both the nichecompass and nichecompass-reproducibility repositories, run: <br>
+```docker buildx build --load --platform linux/amd64 --file nichecompass-reproducibility/envs/Dockerfile --tag nichecompass . --no-cache``` <br>
 
 
 
