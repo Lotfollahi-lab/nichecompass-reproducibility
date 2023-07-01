@@ -13,10 +13,22 @@ Traceback (most recent call last):
     model.train(n_epochs=args.n_epochs,
   File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 689, in train
     self.trainer.train(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 372, in train
-    train_loss_dict = self.model.loss(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 730, in loss
-    compute_masked_l1_reg_loss(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/losses.py", line 412, in compute_masked_l1_reg_loss
-    if target_node_labels_atac_start_idx is not None:
-UnboundLocalError: local variable 'gene_only_idx' referenced before assignment
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 366, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 454, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 173, in forward
+    mu = self.conv_mu(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/torch_geometric/nn/conv/gcn_conv.py", line 197, in forward
+    out = self.propagate(edge_index, x=x, edge_weight=edge_weight,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 374, in propagate
+    out = self.message(**msg_kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/torch_geometric/nn/conv/gcn_conv.py", line 206, in message
+    return x_j if edge_weight is None else edge_weight.view(-1, 1) * x_j
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 9.89 GiB (GPU 0; 31.74 GiB total capacity; 11.47 GiB already allocated; 9.59 GiB free; 21.55 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

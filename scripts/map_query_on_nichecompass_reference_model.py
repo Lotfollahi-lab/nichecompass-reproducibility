@@ -115,7 +115,7 @@ parser.add_argument(
     default=25,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--n_epochs_no_cond_contrastive",
+    "--n_epochs_no_cat_covariates_contrastive",
     type=int,
     default=5,
     help="s. NicheCompass train method signature")
@@ -135,7 +135,7 @@ parser.add_argument(
     default=300.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--lambda_cond_contrastive",
+    "--lambda_cat_covariates_contrastive",
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
@@ -220,10 +220,16 @@ reference_model = NicheCompass.load(
 
 reference_adata = reference_model.adata
 counts_key = reference_model.counts_key_
-condition_key = reference_model.condition_key_
+cat_covariates_keys = reference_model.cat_covariates_keys_
 adj_key = reference_model.adj_key_
 gp_targets_mask_key = reference_model.gp_targets_mask_key_
 gp_sources_mask_key = reference_model.gp_sources_mask_key_
+gp_targets_categories_mask_key = reference_model.gp_targets_categories_mask_key_
+gp_sources_categories_mask_key = reference_model.gp_sources_categories_mask_key_
+targets_categories_label_encoder_key = (
+    reference_model.targets_categories_label_encoder_key_)
+sources_categories_label_encoder_key = (
+    reference_model.sources_categories_label_encoder_key_)
 target_genes_idx_key = reference_model.target_genes_idx_key_
 source_genes_idx_key = reference_model.source_genes_idx_key_
 genes_idx_key = reference_model.genes_idx_key_
@@ -323,6 +329,14 @@ adata = adata[:, genes]
 # training. Use the same masks as for the reference model
 adata.varm[gp_targets_mask_key] = reference_adata.varm[gp_targets_mask_key]
 adata.varm[gp_sources_mask_key] = reference_adata.varm[gp_sources_mask_key]
+adata.varm[gp_targets_categories_mask_key] = (
+    reference_adata.varm[gp_targets_categories_mask_key])
+adata.varm[gp_sources_categories_mask_key] = (
+    reference_adata.varm[gp_sources_categories_mask_key])
+adata.uns[targets_categories_label_encoder_key] = (
+    reference_adata.uns[targets_categories_label_encoder_key])
+adata.uns[sources_categories_label_encoder_key] = (
+    reference_adata.uns[sources_categories_label_encoder_key])
 adata.uns[args.gp_names_key] = reference_adata.uns[args.gp_names_key]
 adata.uns[genes_idx_key] = reference_adata.uns[genes_idx_key]
 adata.uns[target_genes_idx_key] = reference_adata.uns[target_genes_idx_key]
@@ -346,16 +360,16 @@ model = NicheCompass.load(
     adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key,
     unfreeze_all_weights=False,
-    unfreeze_cond_embed_weights=True)
+    unfreeze_cat_covariates_embedder_weights=True)
 
 # Train model
 model.train(n_epochs=args.n_epochs,
             n_epochs_all_gps=args.n_epochs_all_gps,
-            n_epochs_no_cond_contrastive=args.n_epochs_no_cond_contrastive,
+            n_epochs_no_cat_covariates_contrastive=args.n_epochs_no_cat_covariates_contrastive,
             lr=args.lr,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
-            lambda_cond_contrastive=args.lambda_cond_contrastive,
+            lambda_cat_covariates_contrastive=args.lambda_cat_covariates_contrastive,
             contrastive_logits_pos_ratio=args.contrastive_logits_pos_ratio,
             contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
@@ -432,7 +446,7 @@ model.adata.obsm[latent_key], _ = model.get_latent_representation(
    adata=model.adata,
    counts_key=counts_key,
    adj_key=adj_key,
-   condition_key=condition_key,
+   cat_covariates_keys=cat_covariates_keys,
    only_active_gps=True,
    return_mu_std=True,
    node_batch_size=model.node_batch_size_)
