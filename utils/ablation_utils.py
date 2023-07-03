@@ -65,7 +65,7 @@ def compute_metrics(artifact_folder_path,
                     "timestamp": [],
                     "cca": [],
                     "cas": [],
-                    #"clisis": []
+                    "clisis": []
                    }
     if condition_key is None:
         metrics_dict["gcs"] = []
@@ -111,8 +111,7 @@ def compute_metrics(artifact_folder_path,
         elapsed_time = time.time() - start_time
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
-        print(f"Elapsed time: {minutes} minutes {seconds} seconds.")  
-        """
+        print(f"Elapsed time: {minutes} minutes {seconds} seconds.")
         print(f"Computing metric CLISIS")
         metrics_dict["clisis"].append(compute_clisis(
             adata=adata,
@@ -126,7 +125,6 @@ def compute_metrics(artifact_folder_path,
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
         print(f"Elapsed time: {minutes} minutes {seconds} seconds.")  
-        """
         
         if condition_key is None:
             # Spatial conservation metrics that cannot take into account condition
