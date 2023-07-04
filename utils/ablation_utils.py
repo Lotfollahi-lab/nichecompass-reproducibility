@@ -85,6 +85,7 @@ def compute_metrics(artifact_folder_path,
         if i != 0:
             # Load spatial knn graph from first iteration to avoid recomputation
             adata.obsp[f"{spatial_knng_key}_connectivities"] = spatial_connectivities
+            adata.uns[spatial_knng_key] = spatial_metadata
         
         start_time = time.time()
         print(f"Computing metric CCA")
@@ -174,6 +175,7 @@ def compute_metrics(artifact_folder_path,
         if i == 0:
             # Store spatial knn graph from first iteration to avoid recomputation
             spatial_connectivities = adata.obsp[f"{spatial_knng_key}_connectivities"]
+            spatial_metadata = adata.uns[spatial_knng_key]
         
     return metrics_df
     
