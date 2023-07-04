@@ -645,12 +645,12 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
         adata = adata[:, adata.var["keep_gene"] == True]
         print(f"Keeping {len(adata.var_names)} highly variable or gene "
               "program relevant genes.")
-        adata = (
-            adata[:, adata.var_names[
-                adata.var_names.str.upper().isin(
-                    [gene.upper() for gene in gp_dict_genes])].sort_values()])
-        print(f"Keeping {len(adata.var_names)} genes after filtering "
-              "genes not in gp dict.")
+        #adata = (
+        #    adata[:, adata.var_names[
+        #        adata.var_names.str.upper().isin(
+        #            [gene.upper() for gene in gp_dict_genes])].sort_values()])
+        #print(f"Keeping {len(adata.var_names)} genes after filtering "
+        #      "genes not in gp dict.")
 
     # Add the gene program dictionary as binary masks to the adata for
     # model training

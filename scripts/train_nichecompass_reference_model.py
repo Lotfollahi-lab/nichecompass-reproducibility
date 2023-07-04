@@ -107,7 +107,8 @@ parser.add_argument(
     "--add_fc_gps_instead_of_gp_dict_gps",
     action=argparse.BooleanOptionalAction,
     default=False,
-    help="Indicator whether to combine overlapping gene programs.")
+    help="Indicator whether to add a fc gp mask instead of a gp dict gp mask."
+         "This is used for ablation studies.")
 
 # Data
 parser.add_argument(
@@ -403,6 +404,8 @@ mlflow.log_param("overlap_thresh_target_genes",
                  args.overlap_thresh_target_genes)
 mlflow.log_param("overlap_thresh_genes",
                  args.overlap_thresh_genes)
+mlflow.log_param("add_fc_gps_instead_of_gp_dict_gps",
+                 args.add_fc_gps_instead_of_gp_dict_gps)
 mlflow.log_param("reference_batches",
                  args.reference_batches)
 mlflow.log_param("n_neighbors",
@@ -671,10 +674,10 @@ if args.filter_genes:
     adata = adata[:, adata.var["keep_gene"] == True]
     print(f"Keeping {len(adata.var_names)} highly variable or gene program "
           "relevant genes.")
-    adata = (adata[:, adata.var_names[adata.var_names.str.upper().isin(
-                [gene.upper() for gene in gp_dict_genes])].sort_values()])
-    print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
-          "gp dict.")
+    #adata = (adata[:, adata.var_names[adata.var_names.str.upper().isin(
+    #            [gene.upper() for gene in gp_dict_genes])].sort_values()])
+    #print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
+    #      "gp dict.")
 
 # ATAC data (if included)
 if args.include_atac_modality:
