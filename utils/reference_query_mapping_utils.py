@@ -4,9 +4,89 @@
 import collections
 import colorsys
 
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
 import matplotlib.path
 import matplotlib.patches
+import numpy as np
+
+
+def plot_clustered_stacked(df_list,
+                           labels=None,
+                           title="multiple stacked bar plot",
+                           H="//",
+                           **kwargs):
+    """
+    Given a list of dataframes, with identical columns and index, create a clustered stacked bar plot.
+    
+    Adapted from https://stackoverflow.com/questions/22787209/how-to-have-clusters-of-stacked-bars.
+    
+    Parameters
+    ----------
+    df_list:
+        A list of dataframes.
+    labels:
+        A list of the names of the dataframe, used for the legend.
+    title:
+        A string for the title of the plot.
+    H:
+        The hatch used for identification of the different dataframes
+    """
+
+    n_df = len(df_list)
+    n_col = len(df_list[0].columns) 
+    n_ind = len(df_list[0].index)
+    plt.figure(figsize=(10, 5))
+    axe = plt.subplot(111)
+
+    for df in df_list: # for each data frame
+        axe = df.plot(kind="bar",
+                      linewidth=0,
+                      stacked=True,
+                      ax=axe,
+                      legend=False,
+                      grid=False,
+                      **kwargs)  # make bar plots
+
+    h,l = axe.get_legend_handles_labels() # get the handles we want to modify
+    for i in range(0, n_df * n_col, n_col): # len(h) = n_col * n_df
+        for j, pa in enumerate(h[i:i+n_col]):
+            for rect in pa.patches: # for each index
+                rect.set_x(rect.get_x() + 1 / float(n_df + 1) * i / float(n_col))
+                rect.set_hatch(H * int(i / n_col)) #edited part     
+                rect.set_width(1 / float(n_df + 1))
+
+    axe.set_xticks((np.arange(0, 2 * n_ind, 2) + 1 / float(n_df + 1)) / 2.)
+    axe.set_xticklabels(df.index, rotation = 0)
+    axe.set_title(title)
+    
+    # Add invisible data to add another legend
+    n=[]        
+    for i in range(n_df):
+        n.append(axe.bar(0, 0, color="gray", hatch=H * i))
+        
+    l1 = axe.legend(h[:n_col], l[:n_col], loc="best", bbox_to_anchor=(0.8, 0.55, 0.5, 0.5), fontsize=8)
+    if labels is not None:
+        l2 = plt.legend(n, labels, loc="best", bbox_to_anchor=(0.8, -0.5, 0.5, 0.5), fontsize=8, handlelength=4) 
+    axe.add_artist(l1)
+    #plt.subplots_adjust()
+    return axe
+
+
+def calculate_top_accuracy(list1, list2, n):
+    num_groups = len(list1)
+    top_n_matches = 0
+    top_n_total = 0
+
+    for i in range(num_groups):
+        group1_categories = list1[i][:n]
+        group2_categories = list2[i][:n]
+        common_categories = set(group1_categories).intersection(group2_categories)
+        
+        top_n_matches += len(common_categories)
+        top_n_total += n
+
+    accuracy = top_n_matches / top_n_total
+    return accuracy
 
 
 def get_distinct_colors(n):
@@ -117,8 +197,8 @@ class Sankey:
 
     def init_figure(self, ax):
         if ax is None:
-            self.fig = matplotlib.pyplot.figure()
-            self.ax = matplotlib.pyplot.Axes(self.fig, [0, 0, 1, 1])
+            self.fig = plt.figure()
+            self.ax = plt.Axes(self.fig, [0, 0, 1, 1])
             self.fig.add_axes(self.ax)
         self.fig = ax.figure
         self.ax = ax
@@ -318,16 +398,16 @@ class Sankey:
         self.ax.get_yaxis().set_visible(False)
         for k in self.ax.spines.keys():
             self.ax.spines[k].set_visible(False)
-        # matplotlib.pyplot.axis('off')
+        # plt.axis('off')
         # self.fig.set_figheight(self.plot_height)
         # self.fig.set_figwidth(self.plot_width)
         if self.tag:
             text_ax = self.fig.add_axes((0.02, 0.95, 0.05, 0.05), frame_on=False)
             text_ax.set_axis_off()
-            matplotlib.pyplot.text(
+            plt.text(
                 0, 0, self.tag, fontsize=30, transform=text_ax.transAxes
             )
-        # matplotlib.pyplot.tight_layout()
+        # plt.tight_layout()
 
 
 def sankey(x, y, colorside="left", **kwargs):
