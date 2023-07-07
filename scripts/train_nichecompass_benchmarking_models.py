@@ -340,6 +340,11 @@ parser.add_argument(
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--n_sampled_neighbors",
+    type=int,
+    default=-1,
+    help="s. NicheCompass train method signature")
 
 # Other
 parser.add_argument(
@@ -732,6 +737,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                 lambda_l1_masked=args.lambda_l1_masked,
                 edge_batch_size=edge_batch_size_list[k],
                 node_batch_size=node_batch_size_list[k],
+                n_sampled_neighbors=args.n_sampled_neighbors,
                 mlflow_experiment_id=mlflow_experiment_id,
                 seed=seeds[k],
                 verbose=True)

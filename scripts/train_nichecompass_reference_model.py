@@ -343,6 +343,11 @@ parser.add_argument(
     type=none_or_int,
     default=None,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--n_sampled_neighbors",
+    type=int,
+    default=-1,
+    help="s. NicheCompass train method signature")
 
 # Other
 parser.add_argument(
@@ -787,6 +792,7 @@ model.train(n_epochs=args.n_epochs,
             lambda_l1_masked=args.lambda_l1_masked,
             edge_batch_size=args.edge_batch_size,
             node_batch_size=args.node_batch_size,
+            n_sampled_neighbors=args.n_sampled_neighbors,
             mlflow_experiment_id=mlflow_experiment_id,
             verbose=True)
 
