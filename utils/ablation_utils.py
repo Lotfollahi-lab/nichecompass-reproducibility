@@ -1,5 +1,7 @@
 import math
+import os
 import time
+from datetime import datetime
 
 import matplotlib
 import matplotlib.colors as colors
@@ -142,6 +144,10 @@ def compute_metrics(artifact_folder_path,
     
 def get_loss_weights(row):  
     return f"lambda_edge_recon_{row['lambda_edge_recon_']}_+_lambda_gene_expr_recon_{row['lambda_gene_expr_recon_']}"
+
+
+def get_gp_mask(row):  
+    return f"{'fc_gp_mask' if row['add_fc_gps_instead_of_gp_dict_gps'] else 'custom_gp_mask_target_genes_ratio_' + str(row['nichenet_keep_target_genes_ratio'])}"
         
 
 def plot_ablation_points(df,
@@ -242,9 +248,10 @@ def plot_metrics(fig_title,
                  df,
                  group_col,
                  metric_cols,
+                 figure_folder_path,
+                 file_name,
                  plot_ratio_active_gps=False,
-                 save_fig=False,
-                 file_name="ablation_metrics.png"):
+                 save_fig=False):
     """"""
     if plot_ratio_active_gps:
         fig, axes = plt.subplots(len(metric_cols) + 1, 1, sharey=True, figsize=(10, 20))
@@ -260,13 +267,13 @@ def plot_metrics(fig_title,
                         bottom=0.1,
                         right=0.9,
                         top=0.94,
-                        wspace=0.175,
-                        hspace=0.5)
+                        wspace=0.2,
+                        hspace=0.2)
     if save_fig:
         # Get time for timestamping saved artefacts
         now = datetime.now()
         current_timestamp = now.strftime("%d%m%Y_%H%M%S")
-        benchmark_fig_run_dir = f"{figure_folder_path}/{dataset}/benchmarking/{experiment_name}/results/{current_timestamp}"
+        benchmark_fig_run_dir = f"{figure_folder_path}/{current_timestamp}"
         os.makedirs(benchmark_fig_run_dir, exist_ok=True)
         plt.savefig(f"{benchmark_fig_run_dir}/{file_name}",
                     bbox_inches='tight')
