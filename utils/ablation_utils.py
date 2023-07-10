@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scanpy as sc
-import scib
 import seaborn as sns
 from matplotlib import gridspec
 from matplotlib.colors import LinearSegmentedColormap
@@ -16,7 +15,7 @@ from plottable.cmap import normed_cmap
 from plottable.formatters import tickcross
 from plottable.plots import bar
 
-from nichecompass.benchmarking import compute_cas, compute_cca, compute_clisis, compute_gcs, compute_mlami
+from nichecompass.benchmarking import compute_cas, compute_cca, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
 from nichecompass.utils import create_new_color_dict
 
     
@@ -51,134 +50,95 @@ def compute_metrics(artifact_folder_path,
                     task,
                     timestamps,
                     cell_type_key,
-                    condition_key,
-                    spatial_knng_key,
-                    latent_knng_key,
+                    batch_key,
                     spatial_key,
-                    latent_key):
+                    latent_key,
+                    n_jobs=1,
+                    metrics=[
+                        "gcs",
+                        "cas",
+                        "clisis",
+                        "cnmi",
+                        "casw",
+                        "clisi",
+                        "basw",
+                        "bgc",
+                        "bilisi"]):
     """
-    Compute cell type identity, spatial conservation and batch correction metrics to evaluate an ablation task,
-    and return a dataframe with the computed metrics.
+    Compute spatial conservation, biological conservation and batch correction metrics to
+    evaluate an ablation task, and return a dataframe with the computed metrics.
     """
     # Initialize metrics dicts
     metrics_dict = {"dataset": [],
-                    "timestamp": [],
-                    "cca": [],
-                    "cas": [],
-                    "clisis": []
-                   }
-    if condition_key is None:
-        metrics_dict["gcs"] = []
-        metrics_dict["mlami"] = []
-    else:
-        metrics_dict["asw"] = []
-        metrics_dict["ilisi"] = []        
+                    "timestamp": []}
+    for metric in metrics:
+        if batch_key is None:
+            if metric in ["basw", "bgc", "bilisi"]:
+                continue
+            else:
+                metrics_dict[metric] = []
     
-    # For each model, compute metrics and append results to metrics dict
+    # For each model compute metrics and append results to metrics dict
     for i, timestamp in enumerate(timestamps):
         print(f"Loading {dataset} model with timestamp {timestamp}.")
         adata = sc.read_h5ad(f"{artifact_folder_path}/{dataset}/models/{task}/{timestamp}/{dataset}_{task}.h5ad")
         
+        if (batch_key is None) & (i != 0):
+            print(knng_dict)
+            # Load spatial knn graph from first iteration to avoid recomputation
+            if "spatial_15knng_connectivities" in knng_dict.keys():
+                adata.obsp[f"nichecompass_spatial_15knng_connectivities"] = knng_dict["spatial_15knng_connectivities"]
+                adata.obsp[f"nichecompass_spatial_15knng_distances"] = knng_dict["spatial_15knng_distances"]
+                adata.uns[f"nichecompass_spatial_15knng_n_neighbors"] = 15
+            if "spatial_50knng_connectivities" in knng_dict.keys():
+                adata.obsp[f"nichecompass_spatial_50knng_connectivities"] = knng_dict["spatial_50knng_connectivities"]
+                adata.obsp[f"nichecompass_spatial_50knng_distances"] = knng_dict["spatial_50knng_distances"]
+                adata.uns[f"nichecompass_spatial_50knng_n_neighbors"] = 50
+            if "spatial_90knng_connectivities" in knng_dict.keys():
+                adata.obsp[f"nichecompass_spatial_90knng_connectivities"] = knng_dict["spatial_90knng_connectivities"]
+                adata.obsp[f"nichecompass_spatial_90knng_distances"] = knng_dict["spatial_90knng_distances"]
+                adata.uns[f"nichecompass_spatial_90knng_n_neighbors"] = 90
+        
         metrics_dict["dataset"].append(dataset)
         metrics_dict["timestamp"].append(timestamp)
         
-        if i != 0:
-            # Load spatial knn graph from first iteration to avoid recomputation
-            adata.obsp[f"{spatial_knng_key}_connectivities"] = spatial_connectivities
-            adata.uns[spatial_knng_key] = spatial_metadata
+        benchmark_dict = compute_benchmarking_metrics(
+                adata=adata,
+                metrics=metrics,
+                cell_type_key=cell_type_key,
+                batch_key=batch_key,
+                spatial_key=spatial_key,
+                latent_key=latent_key,
+                n_jobs=n_jobs,
+                seed=0,
+                mlflow_experiment_id=None)
         
-        start_time = time.time()
-        print(f"Computing metric CCA")
-        # Cell identity conservation metrics
-        metrics_dict["cca"].append(compute_cca(
-                adata=adata,
-                cell_cat_key=cell_type_key,
-                latent_key=latent_key))
-        elapsed_time = time.time() - start_time
-        minutes = int(elapsed_time // 60)
-        seconds = int(elapsed_time % 60)
-        print(f"Elapsed time: {minutes} minutes {seconds} seconds.")  
-
-        print(f"Computing metric CAS")
-        # Spatial conservation metrics that can take into account condition
-        metrics_dict["cas"].append(compute_cas(
-            adata=adata,
-            cell_type_key=cell_type_key,
-            condition_key=condition_key,
-            spatial_knng_key=spatial_knng_key,
-            latent_knng_key=latent_knng_key,
-            spatial_key=spatial_key,
-            latent_key=latent_key))
-        elapsed_time = time.time() - start_time
-        minutes = int(elapsed_time // 60)
-        seconds = int(elapsed_time % 60)
-        print(f"Elapsed time: {minutes} minutes {seconds} seconds.")
-        print(f"Computing metric CLISIS")
-        metrics_dict["clisis"].append(compute_clisis(
-            adata=adata,
-            cell_type_key=cell_type_key,
-            condition_key=condition_key,
-            spatial_knng_key=spatial_knng_key,
-            latent_knng_key=latent_knng_key,
-            spatial_key=spatial_key,
-            latent_key=latent_key))
-        elapsed_time = time.time() - start_time
-        minutes = int(elapsed_time // 60)
-        seconds = int(elapsed_time % 60)
-        print(f"Elapsed time: {minutes} minutes {seconds} seconds.")  
+        for key, value in benchmark_dict.items():
+            metrics_dict[key].append(value)
         
-        if condition_key is None:
-            # Spatial conservation metrics that cannot take into account condition
-            print(f"Computing metric GCS")
-            metrics_dict["gcs"].append(compute_gcs(
-                adata=adata,
-                spatial_knng_key=spatial_knng_key,
-                latent_knng_key=latent_knng_key))
-            elapsed_time = time.time() - start_time
-            minutes = int(elapsed_time // 60)
-            seconds = int(elapsed_time % 60)
-            print(f"Elapsed time: {minutes} minutes {seconds} seconds.") 
-            print(f"Computing metric MLAMI")
-            metrics_dict["mlami"].append(compute_mlami(
-                adata=adata,
-                spatial_knng_key=spatial_knng_key,
-                latent_knng_key=latent_knng_key))
-            elapsed_time = time.time() - start_time
-            minutes = int(elapsed_time // 60)
-            seconds = int(elapsed_time % 60)
-            print(f"Elapsed time: {minutes} minutes {seconds} seconds.") 
-        else:
-            # Batch correction metrics
-            print(f"Computing metric ASW")
-            metrics_dict["asw"].append(scib.me.silhouette_batch(
-                adata=adata,
-                batch_key=condition_key,
-                label_key=cell_type_key,
-                embed=latent_key))
-            elapsed_time = time.time() - start_time
-            minutes = int(elapsed_time // 60)
-            seconds = int(elapsed_time % 60)
-            print(f"Elapsed time: {minutes} minutes {seconds} seconds.") 
-            print(f"Computing metric ILISI")
-            metrics_dict["ilisi"].append(scib.me.ilisi_graph(
-                adata=adata,
-                batch_key=condition_key,
-                type_="embed",
-                use_rep=latent_key))
-            elapsed_time = time.time() - start_time
-            minutes = int(elapsed_time // 60)
-            seconds = int(elapsed_time % 60)
-            print(f"Elapsed time: {minutes} minutes {seconds} seconds.") 
         metrics_df = pd.DataFrame(metrics_dict)
         metrics_df.to_csv(f"{dataset}_{task}_metrics.csv")
         
         if i == 0:
             # Store spatial knn graph from first iteration to avoid recomputation
-            spatial_connectivities = adata.obsp[f"{spatial_knng_key}_connectivities"]
-            spatial_metadata = adata.uns[spatial_knng_key]
-        
+            knng_dict = {}
+            if f"nichecompass_spatial_15knng_connectivities" in adata.obsp:
+                knng_dict["spatial_15knng_connectivities"] = adata.obsp[f"nichecompass_spatial_15knng_connectivities"]
+            if f"nichecompass_spatial_50knng_connectivities" in adata.obsp:
+                knng_dict["spatial_50knng_connectivities"] = adata.obsp[f"nichecompass_spatial_50knng_connectivities"]
+            if f"nichecompass_spatial_90knng_connectivities" in adata.obsp:
+                knng_dict["spatial_90knng_connectivities"] = adata.obsp[f"nichecompass_spatial_90knng_connectivities"]
+            if f"nichecompass_spatial_15knng_distances" in adata.obsp:
+                knng_dict["spatial_15knng_distances"] = adata.obsp[f"nichecompass_spatial_15knng_distances"]
+            if f"nichecompass_spatial_50knng_distances" in adata.obsp:
+                knng_dict["spatial_50knng_distances"] = adata.obsp[f"nichecompass_spatial_50knng_distances"]
+            if f"nichecompass_spatial_90knng_distances" in adata.obsp:
+                knng_dict["spatial_90knng_distances"] = adata.obsp[f"nichecompass_spatial_90knng_distances"]
+                
+            print(knng_dict)
+
     return metrics_df
-    
+
     
 def get_loss_weights(row):  
     return f"lambda_edge_recon_{row['lambda_edge_recon_']}_+_lambda_gene_expr_recon_{row['lambda_gene_expr_recon_']}"
