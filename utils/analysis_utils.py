@@ -192,16 +192,18 @@ def compute_latent_clusters(adata,
 def compute_cell_type_latent_clusters(adata,
                                       latent_key,
                                       cell_type_latent_resolution,
+                                      cell_type_res_latent_cluster_key,
                                       cell_type_latent_cluster_key,
                                       latent_knng_key,
                                       cell_type_key,
                                       cell_type,
-                                      cell_type_specific_clustering=False):    
+                                      cell_type_specific_clustering=False,
+                                      dummy_category="-1"):    
     if not cell_type_specific_clustering:
         # Compute latent Leiden clustering with cell-type-specific resolution
         sc.tl.leiden(adata=adata,
                      resolution=cell_type_latent_resolution,
-                     key_added=cell_type_latent_cluster_key,
+                     key_added=cell_type_res_latent_cluster_key,
                      neighbors_key=latent_knng_key)
         
         # Filter for cell type
@@ -218,13 +220,13 @@ def compute_cell_type_latent_clusters(adata,
         # Compute latent Leiden clustering with cell-type-specific resolution
         sc.tl.leiden(adata=cell_type_adata,
                      resolution=cell_type_latent_resolution,
-                     key_added=cell_type_latent_cluster_key,
+                     key_added=cell_type_res_latent_cluster_key,
                      neighbors_key=latent_knng_key)
-        
-    # Only keep latent clusters for cell type and set rest to NaN
-    adata.obs[cell_type_latent_cluster_key] = np.nan
+
+    # Only keep latent clusters for cell type and set rest to dummy category
+    adata.obs[cell_type_latent_cluster_key] = dummy_category
     adata.obs.loc[adata.obs[cell_type_key] == cell_type, cell_type_latent_cluster_key] = (
-        cell_type_adata.obs[cell_type_latent_cluster_key])
+        cell_type_adata.obs[cell_type_res_latent_cluster_key])
     
     
 def plot_cell_type_latent_clusters(adata,

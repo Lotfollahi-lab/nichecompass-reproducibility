@@ -3,6 +3,8 @@ import os
 import time
 from datetime import datetime
 
+from nichecompass.benchmarking import compute_cas, compute_cca, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
+
 import matplotlib
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -17,7 +19,6 @@ from plottable.cmap import normed_cmap
 from plottable.formatters import tickcross
 from plottable.plots import bar
 
-from nichecompass.benchmarking import compute_cas, compute_cca, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
 from nichecompass.utils import create_new_color_dict
 
     
@@ -71,14 +72,14 @@ def compute_metrics(artifact_folder_path,
     evaluate an ablation task, and return a dataframe with the computed metrics.
     """
     # Initialize metrics dicts
-    metrics_dict = {"dataset": [],
-                    "timestamp": []}
+    benchmark_dict_acc = {"dataset": [],
+                          "timestamp": []}
     for metric in metrics:
         if batch_key is None:
             if metric in ["basw", "bgc", "bilisi"]:
                 continue
             else:
-                metrics_dict[metric] = []
+                benchmark_dict_acc[metric] = []
     
     # For each model compute metrics and append results to metrics dict
     for i, timestamp in enumerate(timestamps):
@@ -101,8 +102,8 @@ def compute_metrics(artifact_folder_path,
                 adata.obsp[f"nichecompass_spatial_90knng_distances"] = knng_dict["spatial_90knng_distances"]
                 adata.uns[f"nichecompass_spatial_90knng_n_neighbors"] = 90
         
-        metrics_dict["dataset"].append(dataset)
-        metrics_dict["timestamp"].append(timestamp)
+        benchmark_dict_acc["dataset"].append(dataset)
+        benchmark_dict_acc["timestamp"].append(timestamp)
         
         benchmark_dict = compute_benchmarking_metrics(
                 adata=adata,
@@ -116,10 +117,10 @@ def compute_metrics(artifact_folder_path,
                 mlflow_experiment_id=None)
         
         for key, value in benchmark_dict.items():
-            metrics_dict[key].append(value)
+            benchmark_dict_acc[key].append(value)
         
-        metrics_df = pd.DataFrame(metrics_dict)
-        metrics_df.to_csv(f"{dataset}_{task}_metrics.csv")
+        benchmark_df = pd.DataFrame(benchmark_dict_acc)
+        benchmark_df.to_csv(f"{dataset}_{task}_metrics.csv")
         
         if i == 0:
             # Store spatial knn graph from first iteration to avoid recomputation
@@ -139,7 +140,7 @@ def compute_metrics(artifact_folder_path,
                 
             print(knng_dict)
 
-    return metrics_df
+    return benchmark_df
 
     
 def get_loss_weights(row):  
