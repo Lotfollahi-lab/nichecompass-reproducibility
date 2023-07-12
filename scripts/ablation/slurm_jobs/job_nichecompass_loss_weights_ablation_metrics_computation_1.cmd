@@ -2,15 +2,15 @@
 #SBATCH -J nichecompass_loss_weights_ablation_metrics_computation_1
 #SBATCH -o ../scripts/ablation/slurm_jobs/logs/out_nichecompass_loss_weights_ablation_metrics_computation_1.txt
 #SBATCH -e ../scripts/ablation/slurm_jobs/logs/err_nichecompass_loss_weights_ablation_metrics_computation_1.txt
-#SBATCH -t 48:00:00
-#SBATCH -p gpu_p
+#SBATCH -t 12:00:00
+#SBATCH -p interactive_gpu_p
 #SBATCH -c 6
 #SBATCH --gres=gpu:1
-#SBATCH --qos=gpu
+#SBATCH --qos=interactive_gpu
 #SBATCH --mem=64GB
-#SBATCH --nice=10000
+#SBATCH --nice=9999
 source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation
-python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_160.csv --datasets xenium_human_breast_cancer starmap_plus_mouse_cns --cell_type_keys cell_states Main_molecular_cell_type --batch_keys None None --experiment_ids 3 4
+python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_60.csv --datasets xenium_human_breast_cancer --cell_type_keys cell_states --batch_keys None
