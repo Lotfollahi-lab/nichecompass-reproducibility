@@ -67,12 +67,6 @@ parser.add_argument(
     default="",
     help="Batch keys corresponding to the datasets.")
 parser.add_argument(
-    "--experiment_ids",
-    nargs='+',
-    type=none_or_int,
-    default=None,
-    help="Experiment IDs corresponding to the datasets")
-parser.add_argument(
     "--spatial_key",
     type=str,
     default="spatial",
@@ -98,6 +92,8 @@ file_folder_path = f"{artifact_folder_path}/{args.task}"
 ###############################################################################
 
 summary_df = pd.read_csv(f"{file_folder_path}/{args.file_name}")
+
+print(summary_df)
 
 # Compute metrics and add to summary df
 metrics_df = pd.DataFrame()
