@@ -76,6 +76,11 @@ parser.add_argument(
     type=str,
     default="nichecompass_latent",
     help="s. NicheCompass metrics function signature.")
+parser.add_argument(
+    "--metrics",
+    nargs="+",
+    default=["nasw"],
+    help="Metrics to be computed.")
 
 args = parser.parse_args()
 
@@ -111,6 +116,7 @@ for i, dataset in enumerate(args.datasets):
         batch_key=args.batch_keys[i],
         spatial_key=args.spatial_key,
         latent_key=args.latent_key,
+        metrics=args.metrics,
         file_name=args.file_name)
     metrics_df = pd.concat([metrics_df, dataset_metrics_df],
                            axis=0)
