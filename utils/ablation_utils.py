@@ -66,7 +66,8 @@ def compute_metrics(artifact_folder_path,
                         "clisi",
                         "basw",
                         "bgc",
-                        "bilisi"]):
+                        "bilisi"],
+                    file_name="temp.csv"):
     """
     Compute spatial conservation, biological conservation and batch correction metrics to
     evaluate an ablation task, and return a dataframe with the computed metrics.
@@ -120,7 +121,9 @@ def compute_metrics(artifact_folder_path,
             benchmark_dict_acc[key].append(value)
         
         benchmark_df = pd.DataFrame(benchmark_dict_acc)
-        benchmark_df.to_csv(f"{dataset}_{task}_metrics.csv")
+        
+        # Store results in temp file
+        benchmark_df.to_csv(f"{artifact_folder_path}/{task}/{file_name}_metrics_temp.csv")
         
         if i == 0:
             # Store spatial knn graph from first iteration to avoid recomputation
@@ -137,8 +140,6 @@ def compute_metrics(artifact_folder_path,
                 knng_dict["spatial_50knng_distances"] = adata.obsp[f"nichecompass_spatial_50knng_distances"]
             if f"nichecompass_spatial_90knng_distances" in adata.obsp:
                 knng_dict["spatial_90knng_distances"] = adata.obsp[f"nichecompass_spatial_90knng_distances"]
-                
-            print(knng_dict)
 
     return benchmark_df
 
@@ -148,7 +149,7 @@ def get_loss_weights(row):
 
 
 def get_gp_mask(row):  
-    return f"{'fc_gp_mask' if row['add_fc_gps_instead_of_gp_dict_gps'] else 'custom_gp_mask_target_genes_ratio_' + str(row['nichenet_keep_target_genes_ratio'])}"
+    return f"{'fc_1_layer_decoder' if row['add_fc_gps_instead_of_gp_dict_gps'] else 'custom_gp_mask_target_genes_ratio_' + str(row['nichenet_keep_target_genes_ratio'])}"
         
 
 def plot_ablation_points(df,
