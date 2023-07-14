@@ -93,8 +93,6 @@ file_folder_path = f"{artifact_folder_path}/{args.task}"
 
 summary_df = pd.read_csv(f"{file_folder_path}/{args.file_name}")
 
-print(summary_df)
-
 # Compute metrics and add to summary df
 metrics_df = pd.DataFrame()
 for i, dataset in enumerate(args.datasets):
@@ -112,10 +110,10 @@ for i, dataset in enumerate(args.datasets):
         cell_type_key=args.cell_type_keys[i],
         batch_key=args.batch_keys[i],
         spatial_key=args.spatial_key,
-        latent_key=args.latent_key)
+        latent_key=args.latent_key,
+        file_name=args.file_name)
     metrics_df = pd.concat([metrics_df, dataset_metrics_df],
                            axis=0)
-    metrics_df.to_csv(f"{file_folder_path}/{args.file_name}_metrics_temp.csv")
 summary_df = pd.merge(summary_df, metrics_df,
                       on=["dataset", "timestamp"],
                       how="left")

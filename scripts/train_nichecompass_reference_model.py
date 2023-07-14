@@ -77,7 +77,12 @@ parser.add_argument(
     "--include_mebocost_gps",
     action=argparse.BooleanOptionalAction,
     default=True,
-    help="Indicator whether to include mebocost gene programs.")
+    help="Indicator whether to include MEBOCOST gene programs.")
+parser.add_argument(
+    "--include_collectri_gps",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether to include CollecTRI gene programs.")
 parser.add_argument(
     "--gp_filter_mode",
     type=str,
@@ -453,6 +458,8 @@ nichenet_ligand_target_matrix_file_path = gp_data_folder_path + \
                                           f"v2_{args.species}.csv"
 omnipath_lr_network_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_network.csv"
+collectri_tf_network_file_path = gp_data_folder_path + \
+                                 f"/collectri_tf_network_{args.species}.csv"
 gene_orthologs_mapping_file_path = ga_data_folder_path + \
                                    "/human_mouse_gene_orthologs.csv"
 gtf_file_path = ga_data_folder_path + \
@@ -520,6 +527,25 @@ if args.include_mebocost_gps:
     if args.filter_genes:
         # Update gene program relevant genes
         gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
+        
+if args.include_collectri_gps:
+    collectri_gp_dict = extract_gp_dict_from_collectri_tf_network(
+        species=args.species,
+        tf_network_file_path=collectri_tf_network_file_path,
+        load_from_disk=True,
+        save_to_disk=False,
+        plot_gp_gene_count_distributions=False)
+    
+    combined_gp_dict.update(collectri_gp_dict)
+    
+    collectri_genes = get_unique_genes_from_gp_dict(
+        gp_dict=collectri_gp_dict,
+        retrieved_gene_entities=["sources", "targets"],
+        retrieved_gene_categories=["tf"])
+    
+    if args.filter_genes:
+        # Update gene program relevant genes (with only tf genes)
+        gp_relevant_genes = list(set(gp_relevant_genes + collectri_genes))
     
 # Filter and combine gene programs
 combined_new_gp_dict = filter_and_combine_gp_dict_gps(
