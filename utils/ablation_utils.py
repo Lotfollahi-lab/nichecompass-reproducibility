@@ -247,31 +247,150 @@ def plot_ablation_points(df,
     return tab
 
 
-def plot_metrics(fig_title,
-                 df,
-                 group_col,
-                 metric_cols,
-                 figure_folder_path,
-                 file_name,
-                 plot_ratio_active_gps=False,
-                 save_fig=False):
+def plot_metrics_table(df,
+                       ablation_col,
+                       ablation_col_width,
+                       group_col,
+                       metric_cols,
+                       metric_col_weights,
+                       metric_col_width=1.5,
+                       plot_width=15,
+                       plot_height=10,
+                       group_label_dict={"starmap_plus_mouse_cns": "STARmap PLUS Mouse CNS",
+                                         "xenium_human_breast_cancer": "Xenium Human Breast Cancer"},
+                       show=True,
+                       save_dir=None,
+                       save_name="ablation_results.svg"):
     """"""
+    groups = df[group_col].unique().tolist()
+    df = df.pivot(index=[ablation_col], columns=[group_col, "score_type"], values="score")
+    df.reset_index(inplace=True)
+    df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
+    if len(groups) > 1:
+        sorted_metrics_col_list = []
+        for i, group in enumerate(groups): 
+            sorted_group_metrics_col_list = sorted([col for col in list(df.columns) if group in col],
+                                           key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
+            df[f"Overall Score ({i})"] = np.average(df[sorted_group_metrics_col_list],
+                                                    weights=metric_col_weights,
+                                                    axis=1)
+            sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
+        df = df[[ablation_col] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
+        df["Overall Score (All)"] = np.average(df[sorted_metrics_col_list],
+                                               weights=metric_col_weights * len(groups),
+                                               axis=1)
+        df.sort_values(by=["Overall Score (All)"], inplace=True, ascending=False)
+        
+    else:
+        sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
+                                  key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
+        df = df[[ablation_col] + sorted_metrics_col_list]
+        df["Overall Score"] = np.average(df[sorted_metrics_col_list],
+                                         weights=metric_col_weights,
+                                         axis=1)
+        df.sort_values(by=["Overall Score"], inplace=True, ascending=False)
+    
+    cmap_fn = lambda col_data: normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
+
+    column_definitions = [
+        ColumnDefinition(name=ablation_col,
+                         title=ablation_col.replace("_", " ").title(),
+                         width=ablation_col_width,
+                         textprops={"ha": "left", "weight": "bold"})]
+
+    aggregate_cols = [col for col in list(df.columns) if "Overall" in col]
+
+    for i, group in enumerate(groups):
+        if len(groups) > 1:
+            group_number_string = f"({i})"
+        else:
+            group_number_string = ""
+        # Circles for the metric columns
+        column_definitions += [
+            ColumnDefinition(
+                name=f"{group}_{col}",
+                title=col.upper().replace("_", " "),
+                width=metric_col_width,
+                textprops={
+                    "ha": "center",
+                    "bbox": {"boxstyle": "circle", "pad": 0.25}},
+                cmap=cmap_fn(df[f"{group}_{col}"]),
+                group=f"Dataset Metrics \n {group_label_dict[group]} {group_number_string}",
+                border="left" if j == 0 else None,
+                formatter="{:.3f}")
+            for j, col in enumerate(metric_cols)]
+
+        # Circles for the aggregate columns
+        column_definitions += [
+            ColumnDefinition(
+                name=col,
+                title=col.replace(" ", "\n"),
+                width=metric_col_width,
+                textprops={
+                    "ha": "center",
+                    "bbox": {"boxstyle": "circle", "pad": 0.25}},
+                cmap=cmap_fn(df[col]),
+                group="Aggregates",
+                border="left" if j == 0 else None,
+                formatter="{:.3f}")
+            for j, col in enumerate(aggregate_cols)]
+
+    # Allow to manipulate text post-hoc (in illustrator)
+    with matplotlib.rc_context({"svg.fonttype": "none"}):
+        fig, ax = plt.subplots(figsize=(plot_width, plot_height))
+        tab = Table(
+            df,
+            cell_kw={
+                "linewidth": 0,
+                "edgecolor": "k"},
+            column_definitions=column_definitions,
+            ax=ax,
+            row_dividers=True,
+            footer_divider=True,
+            textprops={"fontsize": 10, "ha": "center"},
+            row_divider_kw={"linewidth": 1, "linestyle": (0, (1, 5))},
+            col_label_divider_kw={"linewidth": 1, "linestyle": "-"},
+            column_border_kw={"linewidth": 1, "linestyle": "-"},
+            index_col=ablation_col,
+        ).autoset_fontcolors(colnames=df.columns)
+    if show:
+        plt.show()
+    if save_dir is not None:
+        os.makedirs(save_dir, exist_ok=True)        
+        fig.savefig(os.path.join(save_dir, save_name), facecolor=ax.get_facecolor(), dpi=300)
+    return tab
+
+
+def plot_metrics_boxplot(fig_title,
+                         df,
+                         group_col,
+                         metric_cols,
+                         figure_folder_path,
+                         file_name,
+                         metric_col_titles=None,
+                         order=None,
+                         plot_ratio_active_gps=False,
+                         save_fig=False):
+    """"""
+    if metric_col_titles is None:
+        metric_col_titles = metric_cols
     if plot_ratio_active_gps:
         fig, axes = plt.subplots(len(metric_cols) + 1, 1, sharey=True, figsize=(10, 20))
         sns.boxplot(data=df, ax=axes[2], x="ratio_active_gps", y=group_col)
         axes[2].set_title("Ratio of Active Gene Programs")
     else:
-        fig, axes = plt.subplots(len(metric_cols), 1, sharey=True, figsize=(10, 15))
-    fig.suptitle(fig_title, fontsize=15)
-    for i, metric_col in enumerate(metric_cols):
-        sns.boxplot(data=df, ax=axes[i], x=metric_col, y=group_col)
-        axes[i].set_title(metric_col)
+        fig, axes = plt.subplots(len(metric_cols), 1, sharey=True, figsize=(10, len(metric_cols) * 5))
+    fig.suptitle(fig_title, fontsize=25)
+    for i, (metric_col, metric_col_title) in enumerate(zip(metric_cols, metric_col_titles)):
+        sns.boxplot(data=df, ax=axes[i], x=metric_col, y=group_col, order=order)
+        axes[i].set_title(metric_col_title)
+        axes[i].set_xlabel("score")
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
-                        top=0.94,
-                        wspace=0.2,
-                        hspace=0.2)
+                        top=0.95,
+                        wspace=0.25,
+                        hspace=0.25)
     if save_fig:
         # Get time for timestamping saved artefacts
         now = datetime.now()
