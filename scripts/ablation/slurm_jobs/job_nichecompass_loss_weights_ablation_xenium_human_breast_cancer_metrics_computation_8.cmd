@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation
-python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_xenium_human_breast_cancer_180.csv --datasets xenium_human_breast_cancer --cell_type_keys cell_states --batch_keys None --metrics gcs nasw cnmi
+python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_xenium_human_breast_cancer_180.csv --datasets xenium_human_breast_cancer --cell_type_keys cell_states --batch_keys None --metrics mlami cas clisis cari casw clisi

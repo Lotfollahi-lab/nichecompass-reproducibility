@@ -123,4 +123,4 @@ for i, dataset in enumerate(args.datasets):
 summary_df = pd.merge(summary_df, metrics_df,
                       on=["dataset", "timestamp"],
                       how="left")
-summary_df.to_csv(f"{file_folder_path}/{args.file_name}_metrics.csv")
+summary_df.to_csv(f"{file_folder_path}/{args.file_name.replace('.csv', '')}_metrics.csv")
