@@ -124,7 +124,7 @@ def compute_metrics(artifact_folder_path,
         benchmark_df = pd.DataFrame(benchmark_dict_acc)
         
         # Store results in temp file
-        benchmark_df.to_csv(f"{artifact_folder_path}/{task}/{file_name}_metrics_temp.csv")
+        benchmark_df.to_csv(f"{artifact_folder_path}/{task}/{file_name.replace('.csv', '')}_metrics_temp.csv")
         
         if i == 0:
             # Store spatial knn graph from first iteration to avoid recomputation
