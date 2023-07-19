@@ -566,3 +566,11 @@ def visualize_niches(artifact_folder_path,
                         bbox_extra_artists=(lgd, title),
                         bbox_inches="tight")
         plt.show()
+        
+
+def scale_metric(metric,
+                 reverse=True):
+    scaled_metric = math.atan(metric) / (math.pi / 2)
+    if reverse:
+        scaled_metric = 1 - scaled_metric
+    return scaled_metric
