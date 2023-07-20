@@ -6,17 +6,5 @@
   @numba.jit()
 /home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/umap_.py:660: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
   @numba.jit()
-Traceback (most recent call last):
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation/../compute_metrics.py", line 110, in <module>
-    dataset_metrics_df = compute_metrics(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation/../../utils/ablation_utils.py", line 110, in compute_metrics
-    benchmark_dict = compute_benchmarking_metrics(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/benchmarking/metrics.py", line 168, in compute_benchmarking_metrics
-    benchmark_dict["cas"] = compute_cas(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/benchmarking/cas.py", line 191, in compute_cas
-    sq.gr.nhood_enrichment(adata=adata,
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/squidpy/gr/_nhood.py", line 156, in nhood_enrichment
-    _assert_categorical_obs(adata, cluster_key)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/squidpy/gr/_utils.py", line 134, in _assert_categorical_obs
-    raise KeyError(f"Cluster key `{key}` not found in `adata.obs`.")
-KeyError: 'Cluster key `cell_type` not found in `adata.obs`.'
+/var/spool/slurmd/job12488839/slurm_script: line 16: 2375718 Killed                  python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_vizgen_merfish_human_ovarian_cancer_60.csv --datasets vizgen_merfish_human_ovarian_cancer --cell_type_keys cell_type --batch_keys None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=12488839.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.
