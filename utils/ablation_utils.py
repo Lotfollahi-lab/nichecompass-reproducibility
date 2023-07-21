@@ -80,8 +80,8 @@ def compute_metrics(artifact_folder_path,
         if batch_key is None:
             if metric in ["basw", "bgc", "bilisi"]:
                 continue
-            else:
-                benchmark_dict_acc[metric] = []
+        else:
+            benchmark_dict_acc[metric] = []
     
     # For each model compute metrics and append results to metrics dict
     for i, timestamp in enumerate(timestamps):
@@ -388,17 +388,12 @@ def plot_metrics_boxplot(fig_title,
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
-                        top=0.95,
+                        top=0.965,
                         wspace=0.25,
                         hspace=0.25)
     if save_fig:
-        # Get time for timestamping saved artefacts
-        now = datetime.now()
-        current_timestamp = now.strftime("%d%m%Y_%H%M%S")
-        benchmark_fig_run_dir = f"{figure_folder_path}/{current_timestamp}"
-        os.makedirs(benchmark_fig_run_dir, exist_ok=True)
-        plt.savefig(f"{benchmark_fig_run_dir}/{file_name}",
-                    bbox_inches='tight')
+        plt.savefig(f"{figure_folder_path}/{file_name}",
+                    bbox_inches="tight")
         
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
