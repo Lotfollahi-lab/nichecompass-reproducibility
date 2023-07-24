@@ -80,6 +80,8 @@ def compute_metrics(artifact_folder_path,
         if batch_key is None:
             if metric in ["basw", "bgc", "bilisi"]:
                 continue
+            else:
+                benchmark_dict_acc[metric] = [] 
         else:
             benchmark_dict_acc[metric] = []
     
