@@ -1,3 +1,4 @@
+import gc
 import math
 import os
 import time
@@ -153,7 +154,22 @@ def get_loss_weights(row):
 
 def get_gp_mask(row):  
     return f"{'fc_1_layer_decoder' if row['add_fc_gps_instead_of_gp_dict_gps'] else 'custom_gp_mask_target_genes_ratio_' + str(row['nichenet_keep_target_genes_ratio'])}"
-        
+
+
+# alternative version
+def get_loss_weights_combination_alternative(row):  
+    return f"""{'No Gene Expression Prediction & No Edge Reconstruction' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else (
+                'Only Gene Expression Prediction' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] != 0.0) else (
+                'Only Edge Reconstruction' if (row['lambda_edge_recon_'] != 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else (
+                'Gene Expression Prediction Prioritized' if (row['lambda_edge_recon_']/row['lambda_gene_expr_recon_'] < (500000 / 300)) else (
+                'Edge Reconstruction Prioritized' if (row['lambda_edge_recon_']/row['lambda_gene_expr_recon_'] > (500000 / 300)) else 'Balanced Gene Expression Prediction & Edge Reconstruction'))))}"""
+
+
+def get_loss_weights_combination(row):  
+    return f"""{'Neither' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else (
+                'Only Gene Expr Prediction' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] != 0.0) else (
+                'Only Edge Reconstruction' if (row['lambda_edge_recon_'] != 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else 'Gene Expr Prediction & Edge Reconstruction'))}"""
+
 
 def plot_ablation_points(df,
                          ablation_col,
@@ -255,15 +271,20 @@ def plot_metrics_table(df,
                        group_col,
                        metric_cols,
                        metric_col_weights,
+                       metric_col_titles=None,
                        metric_col_width=1.5,
                        plot_width=15,
                        plot_height=10,
                        group_label_dict={"starmap_plus_mouse_cns": "STARmap PLUS Mouse CNS",
-                                         "xenium_human_breast_cancer": "Xenium Human Breast Cancer"},
+                                         "xenium_human_breast_cancer": "Xenium Human Breast Cancer",
+                                         "vizgen_merfish_human_ovarian_cancer": "Vizgen MERFISH Human Ovarian Cancer"},
                        show=True,
                        save_dir=None,
                        save_name="ablation_results.svg"):
     """"""
+    if metric_col_titles is None:
+        metric_col_titles = [col.upper().replace("_", " ").replace(" ", "\n") for col in metric_cols]
+    
     groups = df[group_col].unique().tolist()
     df = df.pivot(index=[ablation_col], columns=[group_col, "score_type"], values="score")
     df.reset_index(inplace=True)
@@ -311,7 +332,7 @@ def plot_metrics_table(df,
         column_definitions += [
             ColumnDefinition(
                 name=f"{group}_{col}",
-                title=col.upper().replace("_", " "),
+                title=metric_col_titles[j],
                 width=metric_col_width,
                 textprops={
                     "ha": "center",
@@ -390,7 +411,7 @@ def plot_metrics_boxplot(fig_title,
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
-                        top=0.965,
+                        top=0.945,
                         wspace=0.25,
                         hspace=0.25)
     if save_fig:
@@ -497,7 +518,9 @@ def visualize_niches(artifact_folder_path,
                      spot_size=0.03,
                      groups=None,
                      save_fig=False,
-                     file_path=""):
+                     save_folder_path="",
+                     file_name="",
+                     file_format="png"):
     for timestamp in timestamps:
         adata = sc.read_h5ad(f"{artifact_folder_path}/{dataset}/models/{task}/{timestamp}/{dataset}_{task}.h5ad")
         samples = adata.obs[sample_key].unique().tolist()
@@ -511,6 +534,9 @@ def visualize_niches(artifact_folder_path,
         latent_cluster_colors = create_new_color_dict(
             adata=adata,
             cat_key=latent_cluster_key)
+        
+        print(latent_cluster_colors)
+        print(adata.obs[latent_cluster_key])
 
         fig = plt.figure(figsize=(12, 14))
         title = fig.suptitle(t=f"NicheCompass Latent Clusters " \
@@ -559,10 +585,11 @@ def visualize_niches(artifact_folder_path,
         # Adjust, save and display plot
         plt.subplots_adjust(wspace=0.2, hspace=0.25)
         if save_fig:
-            fig.savefig(file_path,
+            fig.savefig(f"{save_folder_path}/{file_name}_{timestamp}.{file_format}",
                         bbox_extra_artists=(lgd, title),
                         bbox_inches="tight")
         plt.show()
+        gc.collect()
         
 
 def scale_metric(metric,
