@@ -105,11 +105,15 @@ for i, dataset in enumerate(args.datasets):
     timestamps = summary_df[(summary_df["dataset"] == dataset) & 
                             (summary_df["val_auroc_score"].notnull())][
         "timestamp"].tolist()
+    nums_neighbors = summary_df[(summary_df["dataset"] == dataset) & 
+                            (summary_df["val_auroc_score"].notnull())][
+        "n_neighbors"].tolist()
     
     # Compute metrics for ablation runs models
     dataset_metrics_df = compute_metrics(
         artifact_folder_path=artifact_folder_path,
         dataset=dataset,
+        nums_neighbors=nums_neighbors,
         task=args.task,
         timestamps=timestamps,
         cell_type_key=args.cell_type_keys[i],
