@@ -51,6 +51,7 @@ def compute_ablation_points(df,
 
 def compute_metrics(artifact_folder_path,
                     dataset,
+                    nums_neighbors,
                     task,
                     timestamps,
                     cell_type_key,
@@ -71,7 +72,7 @@ def compute_metrics(artifact_folder_path,
                         "bilisi"],
                     file_name="temp.csv"):
     """
-    Compute spatial conservation, biological conservation and batch correction metrics to
+    Compute spatial conservation, biological conservation, niche identification, and batch correction metrics to
     evaluate an ablation task, and return a dataframe with the computed metrics.
     """
     # Initialize metrics dicts
@@ -86,12 +87,23 @@ def compute_metrics(artifact_folder_path,
         else:
             benchmark_dict_acc[metric] = []
     
+    compute_knng_flag = True
     # For each model compute metrics and append results to metrics dict
     for i, timestamp in enumerate(timestamps):
+        benchmark_dict_acc["dataset"].append(dataset)
+        benchmark_dict_acc["timestamp"].append(timestamp)
         print(f"Loading {dataset} model with timestamp {timestamp}.")
-        adata = sc.read_h5ad(f"{artifact_folder_path}/{dataset}/models/{task}/{timestamp}/{dataset}_{task}.h5ad")
+        try:
+            adata = sc.read_h5ad(f"{artifact_folder_path}/{dataset}/models/{task}/{timestamp}/{dataset}_{task}.h5ad")
+        except:
+            print(f"Could not load adata with path '{artifact_folder_path}/{dataset}/models/{task}/{timestamp}/{dataset}_{task}.h5ad' ...")
+            for key in benchmark_dict_acc.keys():
+                if key in metrics:
+                    benchmark_dict_acc[key].append(0.0)
+            continue
+        n_neighbors = nums_neighbors[i]
         
-        if (batch_key is None) & (i != 0):
+        if (batch_key is None) & (not compute_knng_flag):
             print(knng_dict)
             # Load spatial knn graph from first iteration to avoid recomputation
             if "spatial_15knng_connectivities" in knng_dict.keys():
@@ -107,11 +119,9 @@ def compute_metrics(artifact_folder_path,
                 adata.obsp[f"nichecompass_spatial_90knng_distances"] = knng_dict["spatial_90knng_distances"]
                 adata.uns[f"nichecompass_spatial_90knng_n_neighbors"] = 90
         
-        benchmark_dict_acc["dataset"].append(dataset)
-        benchmark_dict_acc["timestamp"].append(timestamp)
-        
         benchmark_dict = compute_benchmarking_metrics(
                 adata=adata,
+                n_neighbors_spatial_metrics=n_neighbors,
                 metrics=metrics,
                 cell_type_key=cell_type_key,
                 batch_key=batch_key,
@@ -129,7 +139,7 @@ def compute_metrics(artifact_folder_path,
         # Store results in temp file
         benchmark_df.to_csv(f"{artifact_folder_path}/{task}/{file_name.replace('.csv', '')}_metrics_temp.csv")
         
-        if i == 0:
+        if compute_knng_flag:
             # Store spatial knn graph from first iteration to avoid recomputation
             knng_dict = {}
             if f"nichecompass_spatial_15knng_connectivities" in adata.obsp:
@@ -144,6 +154,7 @@ def compute_metrics(artifact_folder_path,
                 knng_dict["spatial_50knng_distances"] = adata.obsp[f"nichecompass_spatial_50knng_distances"]
             if f"nichecompass_spatial_90knng_distances" in adata.obsp:
                 knng_dict["spatial_90knng_distances"] = adata.obsp[f"nichecompass_spatial_90knng_distances"]
+            compute_knng_flag = False
 
     return benchmark_df
 
