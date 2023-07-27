@@ -1,0 +1,94 @@
+[True]
+Run timestamp: 26072023_213914_40.
+Script arguments:
+['../train_nichecompass_reference_model.py', '--dataset', 'seqfish_mouse_organogenesis_imputed', '--reference_batches', 'batch1', 'batch2', 'batch3', 'batch4', 'batch5', 'batch6', '--n_neighbors', '4', '--filter_genes', '--n_hvg', '4000', '--nichenet_keep_target_genes_ratio', '0.1', '--nichenet_max_n_target_genes_per_gp', '250', '--include_mebocost_gps', '--species', 'mouse', '--gp_filter_mode', 'subset', '--combine_overlap_gps', '--overlap_thresh_source_genes', '0.9', '--overlap_thresh_target_genes', '0.9', '--overlap_thresh_genes', '0.9', '--counts_key', 'counts', '--condition_key', 'batch', '--cat_covariates_keys', 'batch', '--cat_covariates_no_edges', 'True', '--spatial_key', 'spatial', '--adj_key', 'spatial_connectivities', '--mapping_entity_key', 'mapping_entity', '--gp_targets_mask_key', 'nichecompass_gp_targets', '--gp_sources_mask_key', 'nichecompass_gp_sources', '--gp_names_key', 'nichecompass_gp_names', '--model_label', 'one-hop-norm_reference', '--active_gp_names_key', 'nichecompass_active_gp_names', '--latent_key', 'nichecompass_latent', '--active_gp_thresh_ratio', '0.0', '--gene_expr_recon_dist', 'nb', '--cat_covariates_embeds_injection', 'gene_expr_decoder', '--cat_covariates_embeds_nums', '3', '--log_variational', '--node_label_method', 'one-hop-norm', '--n_layers_encoder', '1', '--n_hidden_encoder', 'None', '--conv_layer_encoder', 'gcnconv', '--n_epochs', '100', '--n_epochs_all_gps', '25', '--n_epochs_no_cat_covariates_contrastive', '0', '--lr', '0.001', '--lambda_edge_recon', '500000', '--lambda_gene_expr_recon', '30000', '--lambda_cat_covariates_contrastive', '0.0', '--contrastive_logits_pos_ratio', '0.0', '--contrastive_logits_neg_ratio', '0.0', '--lambda_group_lasso', '0.', '--lambda_l1_masked', '5', '--edge_batch_size', '512', '--node_batch_size', 'None', '--n_sampled_neighbors', '-1', '--timestamp_suffix', '_40']
+
+Preparing the gene program mask...
+Number of gene programs before filtering and combining: 2324.
+Number of gene programs after filtering and combining: 1818.
+
+Processing batch batch1...
+Loading data...
+Computing spatial neighborhood graph...
+
+Processing batch batch2...
+Loading data...
+Computing spatial neighborhood graph...
+
+Processing batch batch3...
+Loading data...
+Computing spatial neighborhood graph...
+
+Processing batch batch4...
+Loading data...
+Computing spatial neighborhood graph...
+
+Processing batch batch5...
+Loading data...
+Computing spatial neighborhood graph...
+
+Processing batch batch6...
+Loading data...
+Computing spatial neighborhood graph...
+
+Filtering genes...
+Starting with 29452 genes.
+Keeping 29452 genes after filtering genes with expression in 0 cells.
+Keeping 4032 highly variable or gene program relevant genes.
+
+Training model...
+--- INITIALIZING NEW NETWORK MODULE: VARIATIONAL GENE PROGRAM GRAPH AUTOENCODER ---
+LOSS -> include_edge_recon_loss: True, include_gene_expr_recon_loss: True, gene_expr_recon_dist: nb
+NODE LABEL METHOD -> one-hop-norm
+ACTIVE GP THRESHOLD RATIO -> 0.0
+LOG VARIATIONAL -> True
+CATEGORICAL COVARIATES EMBEDDINGS INJECTION -> ['gene_expr_decoder']
+ENCODER -> n_input: 4032, n_cat_covariates_embed_input: 0, n_layers: 1, n_hidden: 1540, n_latent: 1540, n_addon_latent: 0, conv_layer: gcnconv, n_attention_heads: 0, dropout_rate: 0.0
+COSINE SIM GRAPH DECODER -> dropout_rate: 0.0
+MASKED GENE EXPRESSION DECODER -> n_input: 1540, n_cat_covariates_embed_input: 3, n_addon_input: 0, n_output: 8064
+ONE HOP GCN NORM NODE LABEL AGGREGATOR
+
+--- INITIALIZING TRAINER ---
+Number of training nodes: 47311
+Number of validation nodes: 5257
+Number of training edges: 109836
+Number of validation edges: 12204
+Edge batch size: 512
+Node batch size: None
+
+--- MODEL TRAINING ---
+Epoch 1/100 |--------------------| 1.0% val_auroc_score: 0.8625; val_auprc_score: 0.9711; val_best_acc_score: 0.8517; val_best_f1_score: 0.9199; train_kl_reg_loss: 590592.7118; train_edge_recon_loss: 118214.1069; train_gene_expr_recon_loss: 259826941.9163; train_masked_gp_l1_reg_loss: 7250.3631; train_group_lasso_reg_loss: 0.0000; train_global_loss: 260542999.4419; train_optim_loss: 260542999.4419; val_kl_reg_loss: 559284.8021; val_edge_recon_loss: 120330.3968; val_gene_expr_recon_loss: 219137984.0000; val_masked_gp_l1_reg_loss: 7528.0962; val_group_lasso_reg_loss: 0.0000; val_global_loss: 219825136.0000; val_optim_loss: 219825136.0000
+Epoch 2/100 |--------------------| 2.0% val_auroc_score: 0.8393; val_auprc_score: 0.9657; val_best_acc_score: 0.8620; val_best_f1_score: 0.9239; train_kl_reg_loss: 533428.4826; train_edge_recon_loss: 118689.4755; train_gene_expr_recon_loss: 219046548.0186; train_masked_gp_l1_reg_loss: 7730.0797; train_group_lasso_reg_loss: 0.0000; train_global_loss: 219706395.3116; train_optim_loss: 219706395.3116; val_kl_reg_loss: 481490.2708; val_edge_recon_loss: 120003.8561; val_gene_expr_recon_loss: 217232036.6667; val_masked_gp_l1_reg_loss: 7962.0010; val_group_lasso_reg_loss: 0.0000; val_global_loss: 217841499.3333; val_optim_loss: 217841499.3333
+Epoch 3/100 |--------------------| 3.0% val_auroc_score: 0.8476; val_auprc_score: 0.9669; val_best_acc_score: 0.8693; val_best_f1_score: 0.9287; train_kl_reg_loss: 472000.1568; train_edge_recon_loss: 118450.4405; train_gene_expr_recon_loss: 214232504.3349; train_masked_gp_l1_reg_loss: 8244.7007; train_group_lasso_reg_loss: 0.0000; train_global_loss: 214831200.2233; train_optim_loss: 214831200.2233; val_kl_reg_loss: 432671.9974; val_edge_recon_loss: 118045.2191; val_gene_expr_recon_loss: 211508690.6667; val_masked_gp_l1_reg_loss: 8535.2500; val_group_lasso_reg_loss: 0.0000; val_global_loss: 212067934.6667; val_optim_loss: 212067934.6667
+Epoch 4/100 |--------------------| 4.0% val_auroc_score: 0.8513; val_auprc_score: 0.9667; val_best_acc_score: 0.8706; val_best_f1_score: 0.9287; train_kl_reg_loss: 432160.0102; train_edge_recon_loss: 118553.4840; train_gene_expr_recon_loss: 209171106.8279; train_masked_gp_l1_reg_loss: 8803.3426; train_group_lasso_reg_loss: 0.0000; train_global_loss: 209730623.8512; train_optim_loss: 209730623.8512; val_kl_reg_loss: 403383.2513; val_edge_recon_loss: 120485.2682; val_gene_expr_recon_loss: 206987966.6667; val_masked_gp_l1_reg_loss: 9067.5537; val_group_lasso_reg_loss: 0.0000; val_global_loss: 207520908.0000; val_optim_loss: 207520908.0000
+Epoch 5/100 |█-------------------| 5.0% val_auroc_score: 0.8678; val_auprc_score: 0.9711; val_best_acc_score: 0.8540; val_best_f1_score: 0.9212; train_kl_reg_loss: 7447027439.4594; train_edge_recon_loss: 119395.4222; train_gene_expr_recon_loss: 9397531079.4419; train_masked_gp_l1_reg_loss: 10156.7133; train_group_lasso_reg_loss: 0.0000; train_global_loss: 16844687967.0326; train_optim_loss: 16844687967.0326; val_kl_reg_loss: 2825373.6667; val_edge_recon_loss: 118645.3109; val_gene_expr_recon_loss: 9631967488.0000; val_masked_gp_l1_reg_loss: 10264.0576; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9634921770.6667; val_optim_loss: 9634921770.6667
+Epoch 6/100 |█-------------------| 6.0% val_auroc_score: 0.8679; val_auprc_score: 0.9740; val_best_acc_score: 0.8622; val_best_f1_score: 0.9260; train_kl_reg_loss: 2394282.4797; train_edge_recon_loss: 119306.0879; train_gene_expr_recon_loss: 9531928895.1070; train_masked_gp_l1_reg_loss: 10245.0637; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9534452721.7116; train_optim_loss: 9534452721.7116; val_kl_reg_loss: 1889328.1198; val_edge_recon_loss: 111919.6891; val_gene_expr_recon_loss: 9472920533.3333; val_masked_gp_l1_reg_loss: 10225.0918; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9474931968.0000; val_optim_loss: 9474931968.0000
+Epoch 7/100 |█-------------------| 7.0% val_auroc_score: 0.8619; val_auprc_score: 0.9695; val_best_acc_score: 0.8538; val_best_f1_score: 0.9211; train_kl_reg_loss: 1667909.1227; train_edge_recon_loss: 119471.0785; train_gene_expr_recon_loss: 9389993207.6651; train_masked_gp_l1_reg_loss: 10203.7103; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9391790827.7581; train_optim_loss: 9391790827.7581; val_kl_reg_loss: 1362058.9635; val_edge_recon_loss: 118983.2917; val_gene_expr_recon_loss: 9321753130.6667; val_masked_gp_l1_reg_loss: 10181.2607; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9323244458.6667; val_optim_loss: 9323244458.6667
+Epoch 8/100 |█-------------------| 8.0% val_auroc_score: 0.8663; val_auprc_score: 0.9712; val_best_acc_score: 0.8527; val_best_f1_score: 0.9205; train_kl_reg_loss: 1224594.2913; train_edge_recon_loss: 118822.0356; train_gene_expr_recon_loss: 9250382867.0512; train_masked_gp_l1_reg_loss: 10157.3409; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9251736485.5070; train_optim_loss: 9251736485.5070; val_kl_reg_loss: 1016902.3047; val_edge_recon_loss: 119902.7074; val_gene_expr_recon_loss: 9231841834.6667; val_masked_gp_l1_reg_loss: 10132.3516; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9232988842.6667; val_optim_loss: 9232988842.6667
+
+Reducing learning rate: metric has not improved more than 0.0 in the last 4 epochs.
+New learning rate is 0.0001.
+
+Epoch 9/100 |█-------------------| 9.0% val_auroc_score: 0.8680; val_auprc_score: 0.9716; val_best_acc_score: 0.8531; val_best_f1_score: 0.9207; train_kl_reg_loss: 1040774.5427; train_edge_recon_loss: 120572.2877; train_gene_expr_recon_loss: 9185510652.4279; train_masked_gp_l1_reg_loss: 10129.6716; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9186682251.3116; train_optim_loss: 9186682251.3116; val_kl_reg_loss: 987364.8385; val_edge_recon_loss: 119843.8555; val_gene_expr_recon_loss: 9201710122.6667; val_masked_gp_l1_reg_loss: 10126.8564; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9202827605.3333; val_optim_loss: 9202827605.3333
+Epoch 10/100 |██------------------| 10.0% val_auroc_score: 0.8687; val_auprc_score: 0.9735; val_best_acc_score: 0.8593; val_best_f1_score: 0.9243; train_kl_reg_loss: 1008865.5442; train_edge_recon_loss: 118750.4347; train_gene_expr_recon_loss: 9168030191.3302; train_masked_gp_l1_reg_loss: 10123.8306; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9169168055.3674; train_optim_loss: 9169168055.3674; val_kl_reg_loss: 955629.1927; val_edge_recon_loss: 114381.9440; val_gene_expr_recon_loss: 9198109482.6667; val_masked_gp_l1_reg_loss: 10120.6543; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9199189632.0000; val_optim_loss: 9199189632.0000
+Epoch 11/100 |██------------------| 11.0% val_auroc_score: 0.8613; val_auprc_score: 0.9694; val_best_acc_score: 0.8474; val_best_f1_score: 0.9174; train_kl_reg_loss: 974832.7968; train_edge_recon_loss: 119843.6834; train_gene_expr_recon_loss: 9165179875.4233; train_masked_gp_l1_reg_loss: 10117.2526; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9166284785.7116; train_optim_loss: 9166284785.7116; val_kl_reg_loss: 921576.0156; val_edge_recon_loss: 124132.5452; val_gene_expr_recon_loss: 9168678784.0000; val_masked_gp_l1_reg_loss: 10113.6855; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9169734741.3333; val_optim_loss: 9169734741.3333
+Epoch 12/100 |██------------------| 12.0% val_auroc_score: 0.8655; val_auprc_score: 0.9719; val_best_acc_score: 0.8590; val_best_f1_score: 0.9241; train_kl_reg_loss: 938235.5515; train_edge_recon_loss: 120090.7589; train_gene_expr_recon_loss: 9148515913.8233; train_masked_gp_l1_reg_loss: 10109.8709; train_group_lasso_reg_loss: 0.0000; train_global_loss: 9149584460.2047; train_optim_loss: 9149584460.2047; val_kl_reg_loss: 885764.1953; val_edge_recon_loss: 114957.5674; val_gene_expr_recon_loss: 9140596778.6667; val_masked_gp_l1_reg_loss: 10105.8721; val_group_lasso_reg_loss: 0.0000; val_global_loss: 9141607808.0000; val_optim_loss: 9141607808.0000
+
+Stopping early: metric has not improved more than 0.0 in the last 8 epochs.
+If the early stopping criterion is too strong, please instantiate it with different parameters in the train method.
+Model training finished after 11 min 53 sec.
+Using best model state, which was in epoch 4.
+
+--- MODEL EVALUATION ---
+Val AUROC score: 0.8534
+Val AUPRC score: 0.9688
+Val best accuracy score: 0.8750
+Val best F1 score: 0.9314
+Val gene expr MSE score: 19185.0675
+Val cat covariate0 mean sim diff: -0.0002
+
+Computing neighbor graph...
+
+Computing UMAP embedding...
+
+Saving model...
