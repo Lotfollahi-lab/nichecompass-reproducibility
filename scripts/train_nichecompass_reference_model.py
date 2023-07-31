@@ -340,6 +340,11 @@ parser.add_argument(
     default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
+    "--lambda_l1_addon",
+    type=float,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
     "--edge_batch_size",
     type=int,
     default=256,
@@ -817,6 +822,7 @@ model.train(n_epochs=args.n_epochs,
             contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
+            lambda_l1_addon=args.lambda_l1_addon,
             edge_batch_size=args.edge_batch_size,
             node_batch_size=args.node_batch_size,
             n_sampled_neighbors=args.n_sampled_neighbors,
