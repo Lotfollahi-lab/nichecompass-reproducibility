@@ -178,8 +178,8 @@ def get_loss_weights_combination_alternative(row):
 
 def get_loss_weights_combination(row):  
     return f"""{'Neither' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else (
-                'Only Gene Expr Prediction' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] != 0.0) else (
-                'Only Edge Reconstruction' if (row['lambda_edge_recon_'] != 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else 'Gene Expr Prediction & Edge Reconstruction'))}"""
+                'Only Spatial Gene Expr Recon' if (row['lambda_edge_recon_'] == 0.0) & (row['lambda_gene_expr_recon_'] != 0.0) else (
+                'Only Edge Recon' if (row['lambda_edge_recon_'] != 0.0) & (row['lambda_gene_expr_recon_'] == 0.0) else 'Spatial Gene Expr Recon & Edge Recon'))}"""
 
 
 def plot_ablation_points(df,
