@@ -90,7 +90,7 @@ args = parser.parse_args()
 
 root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 artifact_folder_path = f"{root_folder_path}/artifacts"
-file_folder_path = f"{artifact_folder_path}/{args.task}"
+file_folder_path = f"{artifact_folder_path}/loss_weights_ablation"
 
 ###############################################################################
 ## 2. Compute Metrics ##
