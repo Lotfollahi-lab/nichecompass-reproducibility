@@ -515,7 +515,8 @@ combined_gp_dict.update(nichenet_gp_dict)
 
 if args.filter_genes:
     # Get gene program relevant genes
-    gp_relevant_genes = list(set(omnipath_genes + nichenet_source_genes))
+    gp_relevant_genes = [gene.upper() for gene in list(set(
+        omnipath_genes + nichenet_source_genes + mebocost_genes))]
 
 # Mebocost gene programs
 if args.include_mebocost_gps:

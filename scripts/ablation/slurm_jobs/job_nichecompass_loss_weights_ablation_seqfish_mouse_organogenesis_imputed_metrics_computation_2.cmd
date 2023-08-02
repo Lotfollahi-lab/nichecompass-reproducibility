@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation
-python ../compute_metrics.py --task one-hop-norm_reference --file_name mlflow_summary_loss_weights_ablation_seqfish_mouse_organogenesis_imputed_20.csv --datasets seqfish_mouse_organogenesis_imputed --cell_type_keys celltype_mapped_refined --batch_keys batch --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_metrics.py --task one-hop-norm_reference --file_name mlflow_summary_loss_weights_ablation_seqfish_mouse_organogenesis_imputed_10.csv --datasets seqfish_mouse_organogenesis_imputed --cell_type_keys celltype_mapped_refined --batch_keys batch --metrics gcs mlami cas clisis nasw cnmi cari casw clisi

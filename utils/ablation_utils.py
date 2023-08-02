@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime
 
-from nichecompass.benchmarking import compute_cas, compute_cca, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
+from nichecompass.benchmarking import compute_cas, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
 
 import matplotlib
 import matplotlib.colors as colors
@@ -51,7 +51,6 @@ def compute_ablation_points(df,
 
 def compute_metrics(artifact_folder_path,
                     dataset,
-                    nums_neighbors,
                     task,
                     timestamps,
                     cell_type_key,
@@ -101,7 +100,6 @@ def compute_metrics(artifact_folder_path,
                 if key in metrics:
                     benchmark_dict_acc[key].append(0.0)
             continue
-        n_neighbors = nums_neighbors[i]
         
         if (batch_key is None) & (not compute_knng_flag):
             print(knng_dict)
@@ -121,7 +119,6 @@ def compute_metrics(artifact_folder_path,
         
         benchmark_dict = compute_benchmarking_metrics(
                 adata=adata,
-                n_neighbors_spatial_metrics=n_neighbors,
                 metrics=metrics,
                 cell_type_key=cell_type_key,
                 batch_key=batch_key,

@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation
-python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_starmap_plus_mouse_cns_4.csv --datasets starmap_plus_mouse_cns --cell_type_keys Main_molecular_cell_type --batch_keys None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_metrics.py --task loss_weights_ablation --file_name mlflow_summary_loss_weights_ablation_starmap_plus_mouse_cns_20.csv --datasets starmap_plus_mouse_cns --cell_type_keys Main_molecular_cell_type --batch_keys None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi

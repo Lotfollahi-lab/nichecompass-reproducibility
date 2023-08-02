@@ -46,7 +46,7 @@ def plot_category_in_latent_and_physical_space(
     """Plot latent clusters in latent and physical space."""
     ncols = min(3, len(samples))
     # Create plot of cell type annotations in physical and latent space
-    fig = plt.figure(figsize=(20, len(samples) + 20))
+    fig = plt.figure(figsize=(15, len(samples) + 20))
     title = fig.suptitle(t=f"{plot_label} in NicheCompass " \
                            "Latent and Physical Space",
                          y=0.96,
