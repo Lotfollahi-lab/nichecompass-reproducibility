@@ -33,7 +33,7 @@ from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
-                                generate_multimodal_pairing_dict,
+                                generate_multimodal_mapping_dict,
                                 get_gene_annotations,
                                 get_unique_genes_from_gp_dict)
 
@@ -767,7 +767,7 @@ add_gps_from_gp_dict_to_adata(
 ###############################################################################
 
 if args.include_atac_modality:
-    gene_peak_dict = generate_multimodal_pairing_dict(
+    gene_peak_dict = generate_multimodal_mapping_dict(
         adata,
         adata_atac)
 
