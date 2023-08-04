@@ -270,6 +270,11 @@ parser.add_argument(
     default=1,
     help="s. NicheCompass class signature")
 parser.add_argument(
+    "--n_fc_layers_encoder",
+    type=int,
+    default=1,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--conv_layer_encoder",
     type=str,
     default="gcnconv",
@@ -804,6 +809,7 @@ model = NicheCompass(adata,
                      latent_key=args.latent_key,
                      active_gp_thresh_ratio=args.active_gp_thresh_ratio,
                      gene_expr_recon_dist=args.gene_expr_recon_dist,
+                     n_fc_layers_encoder=args.n_fc_layers_encoder,
                      n_layers_encoder=args.n_layers_encoder,
                      conv_layer_encoder=args.conv_layer_encoder,
                      n_hidden_encoder=args.n_hidden_encoder,
