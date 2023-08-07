@@ -7,10 +7,10 @@
 #SBATCH -c 6
 #SBATCH --gres=gpu:1
 #SBATCH --qos=gpu
-#SBATCH --mem=64GB
+#SBATCH --mem=128GB
 #SBATCH --nice=10000
 source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/ablation
-python ../compute_metrics.py --task neighbor_sampling_ablation --file_name mlflow_summary_neighbor_sampling_ablation_starmap_plus_mouse_cns_3.csv --datasets starmap_plus_mouse_cns --cell_type_keys Main_molecular_cell_type --batch_keys None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_metrics.py --task neighbor_sampling_ablation --file_name mlflow_summary_neighbor_sampling_ablation_starmap_plus_mouse_cns_6.csv --datasets starmap_plus_mouse_cns --cell_type_keys Main_molecular_cell_type --batch_keys None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi

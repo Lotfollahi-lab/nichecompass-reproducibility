@@ -234,6 +234,11 @@ parser.add_argument(
     default="nichecompass_latent",
     help="s. NicheCompass class signature")
 parser.add_argument(
+    "--n_addon_gp",
+    type=int,
+    default=10,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--active_gp_thresh_ratio",
     type=float,
     default=0.05,
@@ -521,7 +526,7 @@ combined_gp_dict.update(nichenet_gp_dict)
 if args.filter_genes:
     # Get gene program relevant genes
     gp_relevant_genes = [gene.upper() for gene in list(set(
-        omnipath_genes + nichenet_source_genes + mebocost_genes))]
+        omnipath_genes + nichenet_source_genes))]
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
@@ -536,9 +541,9 @@ if args.include_mebocost_gps:
 
     combined_gp_dict.update(mebocost_gp_dict)
     
-    if args.filter_genes:
+    #if args.filter_genes:
         # Update gene program relevant genes
-        gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
+        #gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
         
 if args.include_collectri_gps:
     collectri_gp_dict = extract_gp_dict_from_collectri_tf_network(
@@ -555,9 +560,9 @@ if args.include_collectri_gps:
         retrieved_gene_entities=["sources", "targets"],
         retrieved_gene_categories=["tf"])
     
-    if args.filter_genes:
+    #if args.filter_genes:
         # Update gene program relevant genes (with only tf genes)
-        gp_relevant_genes = list(set(gp_relevant_genes + collectri_genes))
+        #gp_relevant_genes = list(set(gp_relevant_genes + collectri_genes))
     
 # Filter and combine gene programs
 combined_new_gp_dict = filter_and_combine_gp_dict_gps(
@@ -807,6 +812,7 @@ model = NicheCompass(adata,
                      gp_targets_mask_key=args.gp_targets_mask_key,
                      gp_sources_mask_key=args.gp_sources_mask_key,
                      latent_key=args.latent_key,
+                     n_addon_gp=args.n_addon_gp,
                      active_gp_thresh_ratio=args.active_gp_thresh_ratio,
                      gene_expr_recon_dist=args.gene_expr_recon_dist,
                      n_fc_layers_encoder=args.n_fc_layers_encoder,
