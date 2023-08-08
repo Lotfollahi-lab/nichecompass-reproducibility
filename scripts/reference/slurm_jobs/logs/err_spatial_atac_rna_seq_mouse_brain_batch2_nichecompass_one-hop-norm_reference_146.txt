@@ -1,61 +1,145 @@
-usage: train_nichecompass_reference_model.py [-h] [--species SPECIES]
-                                             [--nichenet_keep_target_genes_ratio NICHENET_KEEP_TARGET_GENES_RATIO]
-                                             [--nichenet_max_n_target_genes_per_gp NICHENET_MAX_N_TARGET_GENES_PER_GP]
-                                             [--include_mebocost_gps | --no-include_mebocost_gps]
-                                             [--include_collectri_gps | --no-include_collectri_gps]
-                                             [--gp_filter_mode GP_FILTER_MODE]
-                                             [--combine_overlap_gps | --no-combine_overlap_gps]
-                                             [--overlap_thresh_source_genes OVERLAP_THRESH_SOURCE_GENES]
-                                             [--overlap_thresh_target_genes OVERLAP_THRESH_TARGET_GENES]
-                                             [--overlap_thresh_genes OVERLAP_THRESH_GENES]
-                                             [--add_fc_gps_instead_of_gp_dict_gps | --no-add_fc_gps_instead_of_gp_dict_gps]
-                                             [--dataset DATASET]
-                                             [--reference_batches REFERENCE_BATCHES [REFERENCE_BATCHES ...]]
-                                             [--counts_key COUNTS_KEY]
-                                             [--condition_key CONDITION_KEY]
-                                             [--cat_covariates_keys CAT_COVARIATES_KEYS [CAT_COVARIATES_KEYS ...]]
-                                             [--cat_covariates_no_edges CAT_COVARIATES_NO_EDGES [CAT_COVARIATES_NO_EDGES ...]]
-                                             [--n_neighbors N_NEIGHBORS]
-                                             [--spatial_key SPATIAL_KEY]
-                                             [--adj_key ADJ_KEY]
-                                             [--mapping_entity_key MAPPING_ENTITY_KEY]
-                                             [--filter_genes | --no-filter_genes]
-                                             [--n_hvg N_HVG]
-                                             [--gp_targets_mask_key GP_TARGETS_MASK_KEY]
-                                             [--gp_sources_mask_key GP_SOURCES_MASK_KEY]
-                                             [--gp_names_key GP_NAMES_KEY]
-                                             [--include_atac_modality | --no-include_atac_modality]
-                                             [--filter_peaks | --no-filter_peaks]
-                                             [--min_cell_peak_thresh_ratio MIN_CELL_PEAK_THRESH_RATIO]
-                                             [--model_label MODEL_LABEL]
-                                             [--active_gp_names_key ACTIVE_GP_NAMES_KEY]
-                                             [--latent_key LATENT_KEY]
-                                             [--n_addon_gp N_ADDON_GP]
-                                             [--active_gp_thresh_ratio ACTIVE_GP_THRESH_RATIO]
-                                             [--gene_expr_recon_dist GENE_EXPR_RECON_DIST]
-                                             [--cat_covariates_embeds_injection CAT_COVARIATES_EMBEDS_INJECTION [CAT_COVARIATES_EMBEDS_INJECTION ...]]
-                                             [--cat_covariates_embeds_nums CAT_COVARIATES_EMBEDS_NUMS [CAT_COVARIATES_EMBEDS_NUMS ...]]
-                                             [--log_variational | --no-log_variational]
-                                             [--node_label_method NODE_LABEL_METHOD]
-                                             [--n_layers_encoder N_LAYERS_ENCODER]
-                                             [--n_fc_layers_encoder N_FC_LAYERS_ENCODER]
-                                             [--conv_layer_encoder CONV_LAYER_ENCODER]
-                                             [--n_hidden_encoder N_HIDDEN_ENCODER]
-                                             [--n_epochs N_EPOCHS]
-                                             [--n_epochs_all_gps N_EPOCHS_ALL_GPS]
-                                             [--n_epochs_no_cat_covariates_contrastive N_EPOCHS_NO_CAT_COVARIATES_CONTRASTIVE]
-                                             [--lr LR]
-                                             [--lambda_edge_recon LAMBDA_EDGE_RECON]
-                                             [--lambda_gene_expr_recon LAMBDA_GENE_EXPR_RECON]
-                                             [--lambda_chrom_access_recon LAMBDA_CHROM_ACCESS_RECON]
-                                             [--lambda_cat_covariates_contrastive LAMBDA_CAT_COVARIATES_CONTRASTIVE]
-                                             [--contrastive_logits_pos_ratio CONTRASTIVE_LOGITS_POS_RATIO]
-                                             [--contrastive_logits_neg_ratio CONTRASTIVE_LOGITS_NEG_RATIO]
-                                             [--lambda_group_lasso LAMBDA_GROUP_LASSO]
-                                             [--lambda_l1_masked LAMBDA_L1_MASKED]
-                                             [--lambda_l1_addon LAMBDA_L1_ADDON]
-                                             [--edge_batch_size EDGE_BATCH_SIZE]
-                                             [--node_batch_size NODE_BATCH_SIZE]
-                                             [--n_sampled_neighbors N_SAMPLED_NEIGHBORS]
-                                             [--timestamp_suffix TIMESTAMP_SUFFIX]
-train_nichecompass_reference_model.py: error: argument --n_addon_gp: expected one argument
+/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/utils/gene_programs.py:203: ImplicitModificationWarning: Trying to modify attribute `._uns` of view, initializing view as actual.
+  adata.uns[sources_categories_label_encoder_key] = sources_categories_label_encoder
+window_graph:   0%|          | 0/4675 [00:00<?, ?it/s]window_graph:  13%|█▎        | 606/4675 [00:00<00:00, 6033.38it/s]window_graph:  27%|██▋       | 1241/4675 [00:00<00:00, 6212.90it/s]window_graph:  41%|████      | 1927/4675 [00:00<00:00, 6506.07it/s]window_graph:  56%|█████▌    | 2603/4675 [00:00<00:00, 6602.66it/s]window_graph:  71%|███████   | 3300/4675 [00:00<00:00, 6729.22it/s]window_graph:  87%|████████▋ | 4060/4675 [00:00<00:00, 7022.03it/s]window_graph: 100%|██████████| 4675/4675 [00:00<00:00, 6879.87it/s]
+/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py:319: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:245.)
+  self.gene_peaks_mask_ = torch.sparse_coo_tensor(
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/fromnumeric.py:3464: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/numpy/core/_methods.py:192: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/distances.py:1063: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
+  @numba.jit()
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/distances.py:1071: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
+  @numba.jit()
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/distances.py:1086: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
+  @numba.jit()
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/umap_.py:660: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
+  @numba.jit()
