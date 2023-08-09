@@ -21,6 +21,7 @@ from datetime import datetime
 import anndata as ad
 import mlflow
 import numpy as np
+import pandas as pd
 import scanpy as sc
 import scipy.sparse as sp
 import squidpy as sq
@@ -84,6 +85,11 @@ parser.add_argument(
     action=argparse.BooleanOptionalAction,
     default=False,
     help="Indicator whether to include CollecTRI gene programs.")
+parser.add_argument(
+    "--include_brain_marker_gps",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether to include brain marker gene programs.")
 parser.add_argument(
     "--gp_filter_mode",
     type=str,
@@ -185,6 +191,18 @@ parser.add_argument(
     default=3000,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
+parser.add_argument(
+    "--n_svg",
+    type=int,
+    default=3000,
+    help="Number of spatially variable genes that are kept if `filter_genes` "
+         "is `True`.")
+parser.add_argument(
+    "--n_svp",
+    type=int,
+    default=3000,
+    help="Number of spatially variable peaks that are kept if `filter_genes` "
+         "is `True`.")
 parser.add_argument(
     "--gp_targets_mask_key",
     type=str,
@@ -417,9 +435,12 @@ mlflow.log_param("nichenet_max_n_target_genes_per_gp",
                  args.nichenet_max_n_target_genes_per_gp)
 mlflow.log_param("include_mebocost_gps",
                  args.include_mebocost_gps)
-if args.include_mebocost_gps:
-    mlflow.log_param("species",
-                     args.species)
+mlflow.log_param("include_collectri_gps",
+                 args.include_collectri_gps)
+mlflow.log_param("include_brain_marker_gps",
+                 args.include_brain_marker_gps)
+mlflow.log_param("species",
+                 args.species)
 mlflow.log_param("gp_filter_mode",
                  args.gp_filter_mode)
 mlflow.log_param("combine_overlap_gps",
@@ -440,6 +461,8 @@ mlflow.log_param("filter_genes",
                  args.filter_genes)
 mlflow.log_param("n_hvg",
                  args.n_hvg)
+mlflow.log_param("n_svg",
+                 args.n_svg)
 mlflow.log_param("include_atac_modality",
                  args.include_atac_modality)
 if args.include_atac_modality:
@@ -563,6 +586,47 @@ if args.include_collectri_gps:
     #if args.filter_genes:
         # Update gene program relevant genes (with only tf genes)
         #gp_relevant_genes = list(set(gp_relevant_genes + collectri_genes))
+        
+if args.include_brain_marker_gps:
+    # Add spatial layer marker gene GPs
+    # Load experimentially validated marker genes
+    validated_marker_genes_df = pd.read_csv(f"{gp_data_folder_path}/marker_gps/Validated_markers_MM_layers.tsv",
+                                            sep="\t",
+                                            header=None,
+                                            names=["gene_name", "ensembl_id", "layer"])
+    validated_marker_genes_df = validated_marker_genes_df[["layer", "gene_name"]]
+
+    # Load ranked marker genes and get top 100 per layer
+    ranked_marker_genes_df = pd.DataFrame()
+    for ranked_marker_genes_file_name in [
+        "Ranked_mm_L2L3.tsv",
+        "Ranked_mm_L4.tsv",
+        "Ranked_mm_L5.tsv",
+        "Ranked_mm_L6.tsv",
+        "Ranked_mm_L6b.tsv"]:
+        ranked_marker_genes_layer_df = pd.read_csv(
+            f"{gp_data_folder_path}/marker_gps/{ranked_marker_genes_file_name}",
+            sep="\t",
+            header=None,
+            names=["ensembl_id", "gene_name", "layer"])
+        ranked_marker_genes_layer_df = ranked_marker_genes_layer_df[:100] # filter top 100 genes
+        ranked_marker_genes_layer_df = ranked_marker_genes_layer_df[["layer", "gene_name"]]
+        ranked_marker_genes_df = pd.concat([ranked_marker_genes_df, ranked_marker_genes_layer_df])
+    marker_genes_df = pd.concat([validated_marker_genes_df, ranked_marker_genes_df])
+
+    marker_genes_grouped_df = marker_genes_df.groupby("layer")["gene_name"].agg(list).reset_index()
+    marker_genes_grouped_df.columns = ["layer", "marker_genes"]
+    marker_genes_grouped_df["layer"] = marker_genes_grouped_df["layer"] + "_marker_GP"
+
+    marker_genes_gp_dict = {}
+    for layer, marker_genes in zip(marker_genes_grouped_df["layer"], marker_genes_grouped_df["marker_genes"]):
+        marker_genes_gp_dict[layer] = {
+            "sources": marker_genes,
+            "targets": marker_genes,
+            "sources_categories": ["marker"] * len(marker_genes),
+            "targets_categories": ["marker"] * len(marker_genes)}
+        
+    combined_gp_dict.update(marker_genes_gp_dict)
     
 # Filter and combine gene programs
 combined_new_gp_dict = filter_and_combine_gp_dict_gps(
@@ -680,9 +744,8 @@ else:
 # RNA-seq data
 if args.filter_genes:
     print("\nFiltering genes...")
-    # Filter genes and only keep ligand, receptor, metabolitye enzyme, 
-    # metabolite sensor and the 'n_hvg' highly variable genes (potential target
-    # genes of nichenet)
+    # Filter genes and only keep gp relevant, the 'n_svg' spatially variable,
+    # and 'n_hvg' highly variable genes
     gp_dict_genes = get_unique_genes_from_gp_dict(
         gp_dict=combined_new_gp_dict,
         retrieved_gene_entities=["sources", "targets"])
@@ -707,21 +770,34 @@ if args.filter_genes:
         else: # log normalized counts
             hvg_flavor = "seurat"
 
-    sc.pp.highly_variable_genes(
-        adata,
-        layer=hvg_layer,
-        n_top_genes=args.n_hvg,
-        flavor=hvg_flavor,
-        batch_key=args.condition_key,
-        subset=False)
+    if args.n_hvg != 0:
+        sc.pp.highly_variable_genes(
+            adata,
+            layer=hvg_layer,
+            n_top_genes=args.n_hvg,
+            flavor=hvg_flavor,
+            batch_key=args.condition_key,
+            subset=False)
+    else:
+        adata.var["highly_variable"] = False
+    
+    # Filter spatially variable genes
+    if args.n_svg != 0:
+        sq.gr.spatial_autocorr(adata, mode="moran", genes=adata.var_names)
+        sv_genes = adata.uns["moranI"].index[:args.n_svg].tolist()
+        adata.var["spatially_variable"] = adata.var_names.isin(sv_genes)
+    else:
+        adata.var["spatially_variable"] = False
 
+    gp_relevant_genes = []
     adata.var["gp_relevant"] = (
         adata.var.index.str.upper().isin(gp_relevant_genes))
     adata.var["keep_gene"] = (adata.var["gp_relevant"] | 
-                              adata.var["highly_variable"])
+                              adata.var["highly_variable"] |
+                              adata.var["spatially_variable"])
     adata = adata[:, adata.var["keep_gene"] == True]
-    print(f"Keeping {len(adata.var_names)} highly variable or gene program "
-          "relevant genes.")
+    print(f"Keeping {len(adata.var_names)} spatially variable, highly "
+          "variable or gene program relevant genes.")
     #adata = (adata[:, adata.var_names[adata.var_names.str.upper().isin(
     #            [gene.upper() for gene in gp_dict_genes])].sort_values()])
     #print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
@@ -732,13 +808,30 @@ if args.include_atac_modality:
     if args.filter_peaks:
         print("\nFiltering peaks...")
         print(f"Starting with {len(adata_atac.var_names)} peaks.")
-        # Filter out peaks that are rarely detected to reduce GPU footprint of model
+        # Filter out peaks that are rarely detected
         min_cells = int(adata_atac.shape[0] * args.min_cell_peak_thresh_ratio)
         sc.pp.filter_genes(adata_atac, min_cells=min_cells)
         print(f"Keeping {len(adata_atac.var_names)} peaks after filtering "
               " peaks with counts in less than "
               f"{int(adata_atac.shape[0] * args.min_cell_peak_thresh_ratio)} "
               "cells.")
+        
+    # Filter spatially variable peaks
+    if args.n_svp > 0:
+        adata_atac.obsp["spatial_connectivities"] = (
+            adata.obsp["spatial_connectivities"])
+        adata_atac.obsp["spatial_distances"] = adata.obsp["spatial_distances"]
+
+        sq.gr.spatial_autocorr(adata_atac,
+                               mode="moran",
+                               genes=adata_atac.var_names)
+        sv_peaks = adata_atac.uns["moranI"].index[:args.n_svp].tolist()
+        adata_atac.var["spatially_variable"] = (
+            adata_atac.var_names.isin(sv_peaks))
+        adata_atac = adata_atac[:,
+                                adata_atac.var["spatially_variable"] == True]
+        print(f"Keeping {len(adata_atac.var_names)} peaks after filtering "
+              "spatially variable peaks.")
 
 ###############################################################################
 ### 3.3 Annotate Genes (If ATAC Modality Incl.) ###
