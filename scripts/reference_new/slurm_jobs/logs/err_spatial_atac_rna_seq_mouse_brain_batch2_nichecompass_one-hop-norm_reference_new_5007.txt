@@ -1,0 +1,17 @@
+2023/08/09 11:59:29 INFO mlflow.tracking.fluent: Experiment with name 'spatial_atac_rna_seq_mouse_brain_batch2_one-hop-norm_reference_new' does not exist. Creating a new experiment.
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/reference_new/../train_nichecompass_reference_model.py", line 415, in <module>
+    experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/mlflow/tracking/fluent.py", line 123, in set_experiment
+    experiment_id = client.create_experiment(experiment_name)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/mlflow/tracking/client.py", line 616, in create_experiment
+    return self._tracking_client.create_experiment(name, artifact_location, tags)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/mlflow/tracking/_tracking_service/client.py", line 240, in create_experiment
+    return self.store.create_experiment(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/mlflow/store/tracking/file_store.py", line 380, in create_experiment
+    return self._create_experiment_with_id(name, str(experiment_id), artifact_location, tags)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/mlflow/store/tracking/file_store.py", line 345, in _create_experiment_with_id
+    write_yaml(meta_dir, FileStore.META_DATA_FILE_NAME, experiment_dict)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/mlflow/utils/file_utils.py", line 149, in write_yaml
+    raise Exception("Yaml file '%s' exists as '%s" % (file_path, yaml_file_name))
+Exception: Yaml file '/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/reference_new/mlruns/1/meta.yaml' exists as '/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/reference_new/mlruns/1/meta.yaml

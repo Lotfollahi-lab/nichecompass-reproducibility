@@ -463,6 +463,8 @@ mlflow.log_param("n_hvg",
                  args.n_hvg)
 mlflow.log_param("n_svg",
                  args.n_svg)
+mlflow.log_param("n_svp",
+                 args.n_svp)
 mlflow.log_param("include_atac_modality",
                  args.include_atac_modality)
 if args.include_atac_modality:
@@ -538,9 +540,9 @@ nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
     gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
     plot_gp_gene_count_distributions=False)
 
-nichenet_source_genes = get_unique_genes_from_gp_dict(
+nichenet_lr_genes = get_unique_genes_from_gp_dict(
     gp_dict=nichenet_gp_dict,
-    retrieved_gene_entities=["sources"])
+    retrieved_gene_categories=["ligand", "receptor"])
 
 # Combine gene programs into one dictionary
 combined_gp_dict = dict(omnipath_gp_dict)
@@ -549,7 +551,7 @@ combined_gp_dict.update(nichenet_gp_dict)
 if args.filter_genes:
     # Get gene program relevant genes
     gp_relevant_genes = [gene.upper() for gene in list(set(
-        omnipath_genes + nichenet_source_genes))]
+        omnipath_genes + nichenet_lr_genes))]
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
@@ -789,7 +791,6 @@ if args.filter_genes:
     else:
         adata.var["spatially_variable"] = False
 
-    gp_relevant_genes = []
     adata.var["gp_relevant"] = (
         adata.var.index.str.upper().isin(gp_relevant_genes))
     adata.var["keep_gene"] = (adata.var["gp_relevant"] | 

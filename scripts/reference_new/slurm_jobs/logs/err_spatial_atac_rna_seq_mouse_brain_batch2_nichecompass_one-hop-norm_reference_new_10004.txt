@@ -1,0 +1,29 @@
+/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/utils/gene_programs.py:203: ImplicitModificationWarning: Trying to modify attribute `._uns` of view, initializing view as actual.
+  adata.uns[sources_categories_label_encoder_key] = sources_categories_label_encoder
+window_graph:   0%|          | 0/3864 [00:00<?, ?it/s]window_graph:  14%|█▍        | 540/3864 [00:00<00:00, 5383.69it/s]window_graph:  29%|██▊       | 1103/3864 [00:00<00:00, 5528.08it/s]window_graph:  44%|████▍     | 1706/3864 [00:00<00:00, 5756.75it/s]window_graph:  60%|██████    | 2324/3864 [00:00<00:00, 5922.61it/s]window_graph:  75%|███████▌  | 2917/3864 [00:00<00:00, 5919.80it/s]window_graph:  93%|█████████▎| 3605/3864 [00:00<00:00, 6242.74it/s]window_graph: 100%|██████████| 3864/3864 [00:00<00:00, 6117.74it/s]
+/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py:319: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:245.)
+  self.gene_peaks_mask_ = torch.sparse_coo_tensor(
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/reference_new/../train_nichecompass_reference_model.py", line 876, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 738, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 381, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 604, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 203, in forward
+    logstd = self.conv_logstd(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 236, in forward
+    out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 374, in propagate
+    out = self.message(**msg_kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 273, in message
+    alpha = (x * self.att).sum(dim=-1)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.85 GiB (GPU 0; 31.74 GiB total capacity; 29.47 GiB already allocated; 1.14 GiB free; 30.01 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
