@@ -7,7 +7,7 @@
 #SBATCH -c 6
 #SBATCH --gres=gpu:1
 #SBATCH --qos=gpu
-#SBATCH --mem=64GB
+#SBATCH --mem=128GB
 #SBATCH --nice=10000
 source $HOME/.bashrc
 conda activate nichecompass-test
