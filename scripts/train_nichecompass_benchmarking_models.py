@@ -240,6 +240,11 @@ parser.add_argument(
     default="nichecompass_latent",
     help="s. NicheCompass class signature")
 parser.add_argument(
+    "--n_addon_gp",
+    type=int,
+    default=10,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--active_gp_thresh_ratio",
     type=float,
     default=0.05,
@@ -337,6 +342,11 @@ parser.add_argument(
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_l1_masked",
+    type=float,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--lambda_l1_addon",
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
@@ -716,6 +726,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                          gp_targets_mask_key=args.gp_targets_mask_key,
                          gp_sources_mask_key=args.gp_sources_mask_key,
                          latent_key=args.latent_key,
+                         n_addon_gp=args.n_addon_gp,
                          active_gp_thresh_ratio=args.active_gp_thresh_ratio,
                          gene_expr_recon_dist=args.gene_expr_recon_dist,
                          n_layers_encoder=args.n_layers_encoder,
@@ -736,6 +747,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                 contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
                 lambda_group_lasso=args.lambda_group_lasso,
                 lambda_l1_masked=args.lambda_l1_masked,
+                lambda_l1_addon=args.lambda_l1_addon,
                 edge_batch_size=edge_batch_size_list[k],
                 node_batch_size=node_batch_size_list[k],
                 n_sampled_neighbors=args.n_sampled_neighbors,
