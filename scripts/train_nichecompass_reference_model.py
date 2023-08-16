@@ -188,7 +188,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_hvg",
     type=int,
-    default=3000,
+    default=0,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
 parser.add_argument(
@@ -269,7 +269,7 @@ parser.add_argument(
 parser.add_argument(
     "--cat_covariates_embeds_injection",
     nargs='+',
-    default=["encoder gene_expr_decoder"],
+    default=["gene_expr_decoder"],
     help="s. NicheCompass class signature")
 parser.add_argument(
     "--cat_covariates_embeds_nums",
@@ -285,7 +285,7 @@ parser.add_argument(
 parser.add_argument(
     "--node_label_method",
     type=str,
-    default="one-hop-attention",
+    default="one-hop-norm",
     help="s. NicheCompass class signature")
 parser.add_argument(
     "--n_layers_encoder",
@@ -310,7 +310,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=200,
+    default=400,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -330,17 +330,17 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=500000.,
+    default=5000000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=300.,
+    default=3000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_chrom_access_recon",
     type=float,
-    default=100.,
+    default=1000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cat_covariates_contrastive",
@@ -791,6 +791,7 @@ if args.filter_genes:
     else:
         adata.var["spatially_variable"] = False
 
+    gp_relevant_genes = [] # remove gp relevant genes
     adata.var["gp_relevant"] = (
         adata.var.index.str.upper().isin(gp_relevant_genes))
     adata.var["keep_gene"] = (adata.var["gp_relevant"] | 

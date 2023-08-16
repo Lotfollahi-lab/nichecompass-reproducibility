@@ -67,12 +67,12 @@ parser.add_argument(
 parser.add_argument(
     "--n_neighbors_list",
     nargs="+",
-    default="4 4 8 8 12 12 16 16 20 20",
+    default="4 4 8 8 12 12 16 16",
     help="Number of neighbors per model training run.")
 parser.add_argument(
     "--edge_batch_size_list",
     nargs="+",
-    default="256 256 256 256 128 128 64 64 64 64",
+    default="256 256 256 256 128 128 64 64",
     help="Edge batch sizes per model training run.")
 parser.add_argument(
     "--node_batch_size_list",
@@ -83,12 +83,12 @@ parser.add_argument(
 parser.add_argument(
     "--seeds",
     nargs="+",
-    default="0 1 2 3 4 5 6 7 8 9",
+    default="0 1 2 3 4 5 6 7",
     help="Random seeds per model training run.")
 parser.add_argument(
     "--run_index",
     nargs="+",
-    default="1 2 3 4 5 6 7 8 9 10",
+    default="1 2 3 4 5 6 7 8",
     help="Index per model training run.")
 
 # Gene program mask
@@ -204,9 +204,15 @@ parser.add_argument(
 parser.add_argument(
     "--n_hvg",
     type=int,
-    default=3000,
+    default=0,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
+parser.add_argument(
+    "--n_svg",
+    type=int,
+    default=3000,
+    help="Number of spatially variable genes that are kept if `filter_genes` "
+         "is `True`.")
 parser.add_argument(
     "--gp_targets_mask_key",
     type=str,
@@ -281,6 +287,11 @@ parser.add_argument(
     default=1,
     help="s. NicheCompass class signature")
 parser.add_argument(
+    "--n_fc_layers_encoder",
+    type=int,
+    default=1,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--conv_layer_encoder",
     type=str,
     default="gcnconv",
@@ -293,7 +304,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=100,
+    default=400,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -313,12 +324,12 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=500000.,
+    default=5000000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=300.,
+    default=3000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cat_covariates_contrastive",
@@ -457,9 +468,9 @@ nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
     gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
     plot_gp_gene_count_distributions=False)
 
-nichenet_source_genes = get_unique_genes_from_gp_dict(
+nichenet_lr_genes = get_unique_genes_from_gp_dict(
     gp_dict=nichenet_gp_dict,
-    retrieved_gene_entities=["sources"])
+    retrieved_gene_categories=["ligand", "receptor"])
 
 # Combine gene programs into one dictionary
 combined_gp_dict = dict(omnipath_gp_dict)
@@ -468,7 +479,7 @@ combined_gp_dict.update(nichenet_gp_dict)
 if args.filter_genes:
     # Get gene program relevant genes
     gp_relevant_genes = [gene.upper() for gene in list(set(
-        omnipath_genes + nichenet_source_genes))]
+        omnipath_genes + nichenet_lr_genes))]
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
@@ -622,51 +633,64 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     # Filter genes if specified
     if args.filter_genes:
         print("\nFiltering genes...")
-        # Filter genes and only keep ligand, receptor, metabolitye enzyme, 
-        # metabolite sensor and the 'n_hvg' highly variable genes
-        # (potential target genes of nichenet)
+        # Filter genes and only keep gp relevant, the 'n_svg' spatially variable,
+        # and 'n_hvg' highly variable genes
         gp_dict_genes = get_unique_genes_from_gp_dict(
             gp_dict=combined_new_gp_dict,
             retrieved_gene_entities=["sources", "targets"])
         print(f"Starting with {len(adata.var_names)} genes.")
         sc.pp.filter_genes(adata,
                            min_cells=0)
-        print(f"Keeping {len(adata.var_names)} genes after filtering "
-              "genes with expression in 0 cells.")
+        print(f"Keeping {len(adata.var_names)} genes after filtering genes with "
+              "expression in 0 cells.")
 
         if args.counts_key is not None:
-            if (adata.layers[args.counts_key].astype(int).astype(
-            np.float32).sum() == adata.layers[args.counts_key].sum()): # raw counts
+            hvg_layer = args.counts_key
+            if (adata.layers[args.counts_key].astype(int).astype(np.float32).sum() == 
+            adata.layers[args.counts_key].sum()): # raw counts
                 hvg_flavor = "seurat_v3"
-            else:
-                hvg_flavor = "seurat" # log normalized counts
+            else: # log normalized counts
+                hvg_flavor = "seurat"
         else:
-            if adata.X.astype(int).astype(np.float32).sum() == adata.X.sum(): # raw counts
+            hvg_layer = None
+            if adata.X.astype(int).astype(np.float32).sum() == adata.X.sum():
+            # raw counts
                 hvg_flavor = "seurat_v3"
             else: # log normalized counts
                 hvg_flavor = "seurat"
 
-        sc.pp.highly_variable_genes(
-            adata,
-            layer=args.counts_key,
-            n_top_genes=args.n_hvg,
-            flavor=hvg_flavor,
-            batch_key=args.condition_key,
-            subset=False)
+        if args.n_hvg != 0:
+            sc.pp.highly_variable_genes(
+                adata,
+                layer=hvg_layer,
+                n_top_genes=args.n_hvg,
+                flavor=hvg_flavor,
+                batch_key=args.condition_key,
+                subset=False)
+        else:
+            adata.var["highly_variable"] = False
 
+        # Filter spatially variable genes
+        if args.n_svg != 0:
+            sq.gr.spatial_autocorr(adata, mode="moran", genes=adata.var_names)
+            sv_genes = adata.uns["moranI"].index[:args.n_svg].tolist()
+            adata.var["spatially_variable"] = adata.var_names.isin(sv_genes)
+        else:
+            adata.var["spatially_variable"] = False
+        
+        gp_relevant_genes = [] # remove gp relevant genes
         adata.var["gp_relevant"] = (
             adata.var.index.str.upper().isin(gp_relevant_genes))
-        adata.var["keep_gene"] = (
-            adata.var["gp_relevant"] | adata.var["highly_variable"])
+        adata.var["keep_gene"] = (adata.var["gp_relevant"] | 
+                                  adata.var["highly_variable"] |
+                                  adata.var["spatially_variable"])
         adata = adata[:, adata.var["keep_gene"] == True]
-        print(f"Keeping {len(adata.var_names)} highly variable or gene "
-              "program relevant genes.")
-        #adata = (
-        #    adata[:, adata.var_names[
-        #        adata.var_names.str.upper().isin(
-        #            [gene.upper() for gene in gp_dict_genes])].sort_values()])
-        #print(f"Keeping {len(adata.var_names)} genes after filtering "
-        #      "genes not in gp dict.")
+        print(f"Keeping {len(adata.var_names)} spatially variable, highly "
+              "variable or gene program relevant genes.")
+        #adata = (adata[:, adata.var_names[adata.var_names.str.upper().isin(
+    #            [gene.upper() for gene in gp_dict_genes])].sort_values()])
+    #print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
+    #      "gp dict.")
 
     # Add the gene program dictionary as binary masks to the adata for
     # model training
@@ -729,7 +753,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
                          n_addon_gp=args.n_addon_gp,
                          active_gp_thresh_ratio=args.active_gp_thresh_ratio,
                          gene_expr_recon_dist=args.gene_expr_recon_dist,
-                         n_layers_encoder=args.n_layers_encoder,
+                         n_fc_layers_encoder=args.n_fc_layers_encoder,
                          conv_layer_encoder=args.conv_layer_encoder,
                          n_hidden_encoder=args.n_hidden_encoder,
                          log_variational=args.log_variational,
