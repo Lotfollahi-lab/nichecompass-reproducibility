@@ -1,1 +1,24 @@
-2023/08/16 16:53:54 INFO mlflow.tracking.fluent: Experiment with name 'vizgen_merfish_mouse_liver_gcnconv_single_sample_method_benchmarking' does not exist. Creating a new experiment.
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking/../train_nichecompass_benchmarking_models.py", line 763, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 741, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 378, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 607, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 202, in forward
+    mu = self.conv_mu(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gcn_conv.py", line 197, in forward
+    out = self.propagate(edge_index, x=x, edge_weight=edge_weight,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 374, in propagate
+    out = self.message(**msg_kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gcn_conv.py", line 206, in message
+    return x_j if edge_weight is None else edge_weight.view(-1, 1) * x_j
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 24.46 GiB (GPU 0; 39.43 GiB total capacity; 28.09 GiB already allocated; 9.19 GiB free; 29.36 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

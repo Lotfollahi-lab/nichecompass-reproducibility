@@ -1,4 +1,26 @@
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking/../train_nichecompass_benchmarking_models.py", line 741
-    model = NicheCompass(adata,
-                         ^
-SyntaxError: keyword argument repeated: n_layers_encoder
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking/../train_nichecompass_benchmarking_models.py", line 763, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 741, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 378, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 607, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 202, in forward
+    mu = self.conv_mu(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 236, in forward
+    out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 366, in propagate
+    coll_dict = self.__collect__(self.__user_args__, edge_index,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 260, in __collect__
+    data = self.__lift__(data, edge_index, dim)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 230, in __lift__
+    return src.index_select(self.node_dim, index)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 24.42 GiB (GPU 0; 39.42 GiB total capacity; 36.42 GiB already allocated; 1.14 GiB free; 37.40 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

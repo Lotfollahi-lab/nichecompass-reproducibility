@@ -100,7 +100,8 @@ file_folder_path = f"{artifact_folder_path}/{args.task}"
 
 # Initialize metrics dicts
 benchmark_dict_acc = {"dataset": [],
-                      "run_number": []}
+                      "run_number": [],
+                      "run_time": []}
 for metric in args.metrics:
     if args.batch_key is None:
         if metric in ["basw", "bgc", "bilisi"]:
@@ -116,6 +117,9 @@ adata = sc.read_h5ad(f"{file_folder_path}/{args.file_name}")
 for run_number in args.run_numbers:
     benchmark_dict_acc["dataset"].append(args.dataset)
     benchmark_dict_acc["run_number"].append(run_number)
+    benchmark_dict_acc["run_time"].append(
+        adata.uns[f"{args.latent_key.split('_')[0]}_model_training_duration_"
+                  f"run{run_number}"])
     
     benchmark_dict = compute_benchmarking_metrics(
             adata=adata,

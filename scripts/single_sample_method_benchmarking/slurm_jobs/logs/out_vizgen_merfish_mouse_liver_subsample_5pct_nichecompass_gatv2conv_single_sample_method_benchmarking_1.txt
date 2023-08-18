@@ -1,0 +1,29 @@
+Run timestamp: 17082023_102351_1.
+Script arguments:
+['../train_nichecompass_benchmarking_models.py', '--adata_new_name', 'None', '--n_neighbors_list', '16', '16', '12', '12', '8', '8', '4', '4', '--edge_batch_size_list', '4096', '4096', '4096', '4096', '4096', '4096', '4096', '4096', '--node_batch_size_list', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', '--seeds', '7', '6', '5', '4', '3', '2', '1', '0', '--run_index', '8', '7', '6', '5', '4', '3', '2', '1', '--cell_type_key', 'Cell_Type', '--nichenet_keep_target_genes_ratio', '1.0', '--nichenet_max_n_target_genes_per_gp', '250', '--include_mebocost_gps', '--species', 'mouse', '--gp_filter_mode', 'subset', '--combine_overlap_gps', '--overlap_thresh_source_genes', '0.9', '--overlap_thresh_target_genes', '0.9', '--overlap_thresh_genes', '0.9', '--dataset', 'vizgen_merfish_mouse_liver_subsample_5pct', '--reference_batches', 'None', '--counts_key', 'counts', '--spatial_key', 'spatial', '--adj_key', 'spatial_connectivities', '--mapping_entity_key', 'mapping_entity', '--no-filter_genes', '--gp_targets_mask_key', 'nichecompass_gp_targets', '--gp_sources_mask_key', 'nichecompass_gp_sources', '--gp_names_key', 'nichecompass_gp_names', '--model_label', 'gatv2conv_single_sample_method_benchmarking', '--active_gp_names_key', 'nichecompass_active_gp_names', '--latent_key', 'nichecompass_latent', '--n_addon_gp', '10', '--active_gp_thresh_ratio', '0.', '--gene_expr_recon_dist', 'nb', '--log_variational', '--node_label_method', 'one-hop-norm', '--n_layers_encoder', '1', '--n_hidden_encoder', 'None', '--conv_layer_encoder', 'gatv2conv', '--n_epochs', '400', '--n_epochs_all_gps', '25', '--lr', '0.001', '--lambda_edge_recon', '5000000.', '--lambda_gene_expr_recon', '3000.', '--lambda_group_lasso', '0.', '--lambda_l1_masked', '0.', '--lambda_l1_addon', '0.', '--n_sampled_neighbors', '4', '--timestamp_suffix', '_1']
+
+Preparing the gene program mask...
+Number of gene programs before filtering and combining: 2324.
+Number of gene programs after filtering and combining: 1818.
+
+Training model...
+--- INITIALIZING NEW NETWORK MODULE: VARIATIONAL GENE PROGRAM GRAPH AUTOENCODER ---
+LOSS -> include_edge_recon_loss: True, include_gene_expr_recon_loss: True, rna_recon_loss: nb
+NODE LABEL METHOD -> one-hop-norm
+ACTIVE GP THRESHOLD RATIO -> 0.0
+LOG VARIATIONAL -> True
+ONE HOP GCN NORM RNA NODE LABEL AGGREGATOR
+ENCODER -> n_input: 347, n_cat_covariates_embed_input: 0, n_hidden: 347, n_latent: 1378, n_addon_latent: 10, n_fc_layers: 1, n_layers: 1, conv_layer: gatv2conv, n_attention_heads: 4, dropout_rate: 0.0, use_bn: False
+COSINE SIM GRAPH DECODER -> dropout_rate: 0.0
+MASKED TARGET RNA DECODER -> n_prior_gp_input: 1378, n_addon_gp_input: 10, n_cat_covariates_embed_input: 0, n_output: 347
+MASKED SOURCE RNA DECODER -> n_prior_gp_input: 1378, n_addon_gp_input: 10, n_cat_covariates_embed_input: 0, n_output: 347
+
+--- INITIALIZING TRAINER ---
+Number of training nodes: 16529
+Number of validation nodes: 1837
+Number of training edges: 143567
+Number of validation edges: 15951
+Edge batch size: 4096
+Node batch size: None
+
+--- MODEL TRAINING ---

@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking
-python ../compute_benchmarking_metrics.py --dataset seqfish_mouse_organogenesis_subsample_5pct_embryo2 --task single_sample_method_benchmarking --file_name seqfish_mouse_organogenesis_subsample_5pct_embryo2_scvi.h5ad --cell_type_key cell_type --batch_key None --latent_key graphst_latent --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_benchmarking_metrics.py --dataset seqfish_mouse_organogenesis_subsample_5pct_embryo2 --task single_sample_method_benchmarking --file_name seqfish_mouse_organogenesis_subsample_5pct_embryo2_sagenet.h5ad --cell_type_key cell_type --batch_key None --latent_key sagenet_latent --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
