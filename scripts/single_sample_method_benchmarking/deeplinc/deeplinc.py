@@ -10,7 +10,9 @@ TODO:
 """
 
 
+import json
 import os
+import time
 import argparse
 
 
@@ -131,6 +133,8 @@ if __name__ == '__main__':
     # Create storage folders
     os.mkdir("./model")
 
+    start_time = time.time()
+    
     # Building model and optimizer
     # dims = []
     deeplinc = Deeplinc(var_placeholders, feas['num_features'], feas['num_nodes'], feas['features_nonzero'], args.encode_dim[0], args.encode_dim[1])
@@ -173,7 +177,14 @@ if __name__ == '__main__':
             np.save("emb_hidden2_"+str(epoch+1)+'.npy', emb_hidden2_train)
 
             latent_feature = copy.deepcopy(emb_hidden2_train)
-
+            
+    # Measure time for model training
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    run_time_dict = {"run_time": elapsed_time}
+    with open("run_time.json", "w") as file:
+        json.dump(run_time_dict, file)
+    
     plot_evaluating_metrics(test_ap, "epoch", "score", ["AUPRC"], "AUPRC")
     write_pickle(feas, 'feas')
 

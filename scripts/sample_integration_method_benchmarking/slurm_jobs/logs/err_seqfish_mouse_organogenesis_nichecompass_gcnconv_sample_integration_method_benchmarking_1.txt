@@ -1,9 +1,12 @@
-2023/08/16 22:16:39 INFO mlflow.tracking.fluent: Experiment with name 'seqfish_mouse_organogenesis_gcnconv_sample_integration_method_benchmarking' does not exist. Creating a new experiment.
-/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/distances.py:1063: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
-  @numba.jit()
-/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/distances.py:1071: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
-  @numba.jit()
-/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/distances.py:1086: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
-  @numba.jit()
-/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/umap/umap_.py:660: NumbaDeprecationWarning: [1mThe 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.[0m
-  @numba.jit()
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/sample_integration_method_benchmarking/../train_nichecompass_benchmarking_models.py", line 763, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 741, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 384, in train
+    train_loss_dict = self.model.loss(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 1022, in loss
+    loss_dict["kl_reg_loss"] += compute_kl_reg_loss(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/losses.py", line 283, in compute_kl_reg_loss
+    torch.sum(1 + 2 * logstd - mu ** 2 - torch.exp(logstd) ** 2, 1))
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB (GPU 0; 31.74 GiB total capacity; 25.78 GiB already allocated; 2.01 GiB free; 29.14 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

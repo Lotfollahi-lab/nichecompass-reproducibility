@@ -7,8 +7,8 @@ cd "$dataset"
 mkdir runs
 cd runs
 
-# Nested loop to execute run1 to run10
-for i in {1..10}
+# Nested loop to execute run1 to run8
+for i in {1..8}
 do
     mkdir "run$i"
     cd "run$i"
@@ -22,8 +22,6 @@ do
         adj_file="adj12.csv"
     elif [[ "$i" -le 8 ]]; then
         adj_file="adj16.csv"
-    else
-        adj_file="adj20.csv"
     fi
 
     # Build and execute the Python script command with line breaks

@@ -10,7 +10,7 @@
 #SBATCH --mem=128G
 #SBATCH --nice=10000
 
-dataset="seqfish_mouse_organogenesis_subsample_50pct_embryo2"
+dataset="seqfish_mouse_organogenesis_subsample_1pct_embryo2"
 
 source $HOME/.bashrc
 conda activate deeplinc

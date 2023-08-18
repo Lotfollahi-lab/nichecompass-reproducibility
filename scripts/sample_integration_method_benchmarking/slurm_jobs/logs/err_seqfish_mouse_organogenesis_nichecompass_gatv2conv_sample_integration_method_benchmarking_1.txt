@@ -1,4 +1,3 @@
-2023/08/16 22:17:15 INFO mlflow.tracking.fluent: Experiment with name 'seqfish_mouse_organogenesis_gatv2conv_sample_integration_method_benchmarking' does not exist. Creating a new experiment.
 Traceback (most recent call last):
   File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/sample_integration_method_benchmarking/../train_nichecompass_benchmarking_models.py", line 763, in <module>
     model.train(n_epochs=args.n_epochs,
@@ -22,4 +21,30 @@ Traceback (most recent call last):
     out = self.message(**msg_kwargs)
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 262, in message
     x = x_i + x_j
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 18.19 GiB (GPU 0; 79.19 GiB total capacity; 63.75 GiB already allocated; 13.00 GiB free; 65.32 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 18.20 GiB (GPU 0; 79.19 GiB total capacity; 63.43 GiB already allocated; 13.36 GiB free; 64.95 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/sample_integration_method_benchmarking/../train_nichecompass_benchmarking_models.py", line 763, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 741, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 378, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 607, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 202, in forward
+    mu = self.conv_mu(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 236, in forward
+    out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 366, in propagate
+    coll_dict = self.__collect__(self.__user_args__, edge_index,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 260, in __collect__
+    data = self.__lift__(data, edge_index, dim)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 230, in __lift__
+    return src.index_select(self.node_dim, index)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 17.15 GiB (GPU 0; 31.74 GiB total capacity; 15.01 GiB already allocated; 14.36 GiB free; 16.79 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
