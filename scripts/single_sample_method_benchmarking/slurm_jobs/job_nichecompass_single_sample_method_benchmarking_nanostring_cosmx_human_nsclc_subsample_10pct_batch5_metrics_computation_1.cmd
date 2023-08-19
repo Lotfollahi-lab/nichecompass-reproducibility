@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking
-python ../compute_benchmarking_metrics.py --dataset nanostring_cosmx_human_nsclc_subsample_10pct_batch5 --task single_sample_method_benchmarking --file_name nanostring_cosmx_human_nsclc_subsample_10pct_batch5_nichecompass_gcnconv.h5ad --cell_type_key cell_type --batch_key None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_benchmarking_metrics.py --dataset nanostring_cosmx_human_nsclc_subsample_10pct_batch5 --task single_sample_method_benchmarking --file_name nanostring_cosmx_human_nsclc_subsample_10pct_batch5_nichecompass_gatv2conv.h5ad --cell_type_key cell_type --batch_key None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
