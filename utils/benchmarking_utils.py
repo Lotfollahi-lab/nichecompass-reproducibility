@@ -6,7 +6,162 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 
-from nichecompass.benchmarking import compute_benchmarking_metrics, compute_clisis, compute_cas
+import matplotlib
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib import gridspec
+from matplotlib.colors import LinearSegmentedColormap
+from plottable import ColumnDefinition, Table
+from plottable.cmap import normed_cmap
+from plottable.formatters import tickcross
+from plottable.plots import bar
+
+#from nichecompass.benchmarking import compute_benchmarking_metrics, compute_clisis, compute_cas
+
+
+def plot_metrics_table(df,
+                       model_col,
+                       model_col_width,
+                       group_col,
+                       metric_cols,
+                       metric_col_weights,
+                       metric_col_titles=None,
+                       metric_col_width=1.5,
+                       plot_width=15,
+                       plot_height=10,
+                       group_label_dict={"seqfish_mouse_organogenesis_embryo2": "seqFISH \n Mouse Organogenesis \n (100%)",
+                                         "seqfish_mouse_organogenesis_subsample_50pct_embryo2": "seqFISH \n Mouse Organogenesis (50%)",
+                                         "seqfish_mouse_organogenesis_subsample_25pct_embryo2": "seqFISH \n Mouse Organogenesis (25%)",
+                                         "seqfish_mouse_organogenesis_subsample_10pct_embryo2": "seqFISH \n Mouse Organogenesis (10%)",
+                                         "seqfish_mouse_organogenesis_subsample_5pct_embryo2": "seqFISH \n Mouse Organogenesis (5%)",
+                                         "seqfish_mouse_organogenesis_subsample_1pct_embryo2": "seqFISH \n Mouse Organogenesis (1%)",
+                                         "nanostring_cosmx_human_nsclc_batch5": "nanoString CosMx \n Human NSCLC \n (100%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_50pct_batch5": "nanoString CosMx \n Human NSCLC (50%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_25pct_batch5": "nanoString CosMx \n Human NSCLC (25%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_10pct_batch5": "nanoString CosMx \n Human NSCLC (10%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_5pct_batch5": "nanoString CosMx \n Human NSCLC (5%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_1pct_batch5": "nanoString CosMx \n Human NSCLC (1%)",
+                                         "vizgen_merfish_mouse_liver": "MERFISH \n Mouse Liver \n (100%)",
+                                         "vizgen_merfish_mouse_liver_subsample_50pct": "MERFISH \n Mouse Liver (50%)",
+                                         "vizgen_merfish_mouse_liver_subsample_25pct": "MERFISH \n Mouse Liver (25%)",
+                                         "vizgen_merfish_mouse_liver_subsample_10pct": "MERFISH \n Mouse Liver (10%)",
+                                         "vizgen_merfish_mouse_liver_subsample_5pct": "MERFISH \n Mouse Liver (5%)",
+                                         "vizgen_merfish_mouse_liver_subsample_1pct": "MERFISH \n Mouse Liver (1%)",
+                                         "slideseqv2_mouse_hippocampus": "SlideSeqV2 \n Mouse Hippocampus \n (100%)",
+                                         "slideseqv2_mouse_hippocampus_subsample_50pct": "SlideSeqV2 \n Mouse Hippocampus (50%)",
+                                         "slideseqv2_mouse_hippocampus_subsample_25pct": "SlideSeqV2 \n Mouse Hippocampus (25%)",
+                                         "slideseqv2_mouse_hippocampus_subsample_10pct": "SlideSeqV2 \n Mouse Hippocampus (10%)",
+                                         "slideseqv2_mouse_hippocampus_subsample_5pct": "SlideSeqV2 \n Mouse Hippocampus (5%)",
+                                         "slideseqv2_mouse_hippocampus_subsample_1pct": "SlideSeqV2 \n Mouse Hippocampus (1%)"},
+                       show=True,
+                       save_dir=None,
+                       save_name=f"benchmarking_results.png"):
+    """"""
+    if metric_col_titles is None:
+        metric_col_titles = [col.upper().replace("_", " ").replace(" ", "\n") for col in metric_cols]
+    
+    groups = df[group_col].unique().tolist()
+    df = df.pivot(index=[model_col, "spatially_aware"], columns=[group_col, "score_type"], values="score")
+    df.reset_index(inplace=True)
+    df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
+    if len(groups) > 1:
+        sorted_metrics_col_list = []
+        for i, group in enumerate(groups):
+            sorted_group_metrics_col_list = sorted([col for col in list(df.columns) if ((group  in col) & (("subsample" in group) == ("subsample" in col)))],
+                                           key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
+            df[f"Overall Score ({i})"] = np.average(df[sorted_group_metrics_col_list],
+                                                    weights=metric_col_weights,
+                                                    axis=1)
+            sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
+        df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
+        df["Overall Score (All)"] = np.average(df[sorted_metrics_col_list],
+                                               weights=metric_col_weights * len(groups),
+                                               axis=1)
+        df.sort_values(by=["Overall Score (All)"], inplace=True, ascending=False)
+        
+    else:
+        sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
+                                  key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
+        df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list]
+        df["Overall Score"] = np.average(df[sorted_metrics_col_list],
+                                         weights=metric_col_weights,
+                                         axis=1)
+        df.sort_values(by=["Overall Score"], inplace=True, ascending=False)
+    
+    cmap_fn = lambda col_data: normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
+
+    column_definitions = [
+        ColumnDefinition(name=model_col,
+                         title=model_col.replace("_", " ").title(),
+                         width=model_col_width,
+                         textprops={"ha": "left", "weight": "bold"}),
+        ColumnDefinition(name="spatially_aware",
+                 title="Spatially \n Aware",
+                 width=1.,
+                 formatter=tickcross)]
+    
+    aggregate_cols = [col for col in list(df.columns) if "Overall" in col]
+
+    for i, group in enumerate(groups):
+        if len(groups) > 1:
+            group_number_string = f"({i})"
+        else:
+            group_number_string = ""
+        # Circles for the metric columns
+        column_definitions += [
+            ColumnDefinition(
+                name=f"{group}_{col}",
+                title=metric_col_titles[j],
+                width=metric_col_width,
+                textprops={
+                    "ha": "center",
+                    "bbox": {"boxstyle": "circle", "pad": 0.25}},
+                cmap=cmap_fn(df[f"{group}_{col}"]),
+                group=f"{group_label_dict[group]} {group_number_string}",
+                border="left" if j == 0 else None,
+                formatter="{:.3f}")
+            for j, col in enumerate(metric_cols)]
+
+        # Circles for the aggregate columns
+        column_definitions += [
+            ColumnDefinition(
+                name=col,
+                title=col.replace(" ", "\n"),
+                width=metric_col_width,
+                textprops={
+                    "ha": "center",
+                    "bbox": {"boxstyle": "circle", "pad": 0.25}},
+                cmap=cmap_fn(df[col]),
+                group="Aggregates",
+                border="left" if j == 0 else None,
+                formatter="{:.3f}")
+            for j, col in enumerate(aggregate_cols)]
+        
+    # Allow to manipulate text post-hoc (in illustrator)
+    with matplotlib.rc_context({"svg.fonttype": "none"}):
+        fig, ax = plt.subplots(figsize=(plot_width, plot_height))
+        tab = Table(
+            df,
+            cell_kw={
+                "linewidth": 0,
+                "edgecolor": "k"},
+            column_definitions=column_definitions,
+            ax=ax,
+            row_dividers=True,
+            footer_divider=True,
+            textprops={"fontsize": 10, "ha": "center"},
+            row_divider_kw={"linewidth": 1, "linestyle": (0, (1, 5))},
+            col_label_divider_kw={"linewidth": 1, "linestyle": "-"},
+            column_border_kw={"linewidth": 1, "linestyle": "-"},
+            index_col=model_col,
+        ).autoset_fontcolors(colnames=df.columns)
+    if show:
+        plt.show()
+    if save_dir is not None:
+        os.makedirs(save_dir, exist_ok=True)        
+        fig.savefig(os.path.join(save_dir, save_name), facecolor=ax.get_facecolor(), dpi=300)
+    return tab
 
 
 def compute_latent_space_comparison(dataset,
