@@ -302,16 +302,16 @@ def train_expimap_models(dataset,
         adata_new.obsm[latent_key + f"_run{run_number}"] = adata.obsm[latent_key]
 
         # Store intermediate adata to disk
-        adata_new.write(f"{benchmarking_folder_path}/{dataset}_{model_name}5.h5ad")
+        adata_new.write(f"{benchmarking_folder_path}/{dataset}_{model_name}8.h5ad")
 
     # Store final adata to disk
-    adata_new.write(f"{benchmarking_folder_path}/{dataset}_{model_name}5.h5ad")    
+    adata_new.write(f"{benchmarking_folder_path}/{dataset}_{model_name}8.h5ad")    
 
 
-train_expimap_models(dataset="vizgen_merfish_mouse_liver",
+train_expimap_models(dataset="vizgen_merfish_mouse_liver_subsample_50pct",
                      gp_dict=mouse_combined_new_gp_dict,
                      cell_type_key="Cell_Type",
                      adata_new=None,
-                     n_start_run=1,
+                     n_start_run=5,
                      n_end_run=8,
-                     n_neighbor_list=[4, 4, 8, 8, 12, 12, 16, 16])
+                     n_neighbor_list=[12, 12, 16, 16])
