@@ -33,7 +33,7 @@ def plot_simple_metrics_table(df,
                               group_label_dict={"seqfish_mouse_organogenesis_embryo2": "seqFISH \n Mouse Organogenesis",
                                                 "nanostring_cosmx_human_nsclc_batch5": "nanoString CosMx \n Human NSCLC",
                                                 "vizgen_merfish_mouse_liver": "MERFISH \n Mouse Liver",
-                                                "slideseqv2_mouse_hippocampus": "SlideSeqV2 \n Mouse Hippocampus"},
+                                                "slideseqv2_mouse_hippocampus": "Slide-seqV2 \n Mouse Hippocampus"},
                        show=True,       
                        save_dir=None,
                        save_name=f"benchmarking_results.png"):

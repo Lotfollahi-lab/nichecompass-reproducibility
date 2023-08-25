@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking
-python ../compute_benchmarking_metrics.py --dataset vizgen_merfish_mouse_liver_subsample_1pct --task single_sample_method_benchmarking --file_name vizgen_merfish_mouse_liver_subsample_1pct_nichecompass_gcnconv.h5ad --cell_type_key cell_type --batch_key None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_benchmarking_metrics.py --dataset vizgen_merfish_mouse_liver_subsample_1pct --task single_sample_method_benchmarking --file_name vizgen_merfish_mouse_liver_subsample_1pct_nichecompass_gatv2conv.h5ad --cell_type_key cell_type --batch_key None --metrics gcs mlami cas clisis nasw cnmi cari casw clisi

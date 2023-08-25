@@ -104,7 +104,7 @@ benchmark_dict_acc = {"dataset": [],
                       "run_time": []}
 for metric in args.metrics:
     if args.batch_key is None:
-        if metric in ["basw", "bgc", "bilisi"]:
+        if metric in ["basw", "bgc", "blisi"]:
             continue
         else:
             benchmark_dict_acc[metric] = [] 
