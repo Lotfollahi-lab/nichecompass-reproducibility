@@ -222,6 +222,7 @@ def plot_metrics_table(df,
                                                weights=metric_col_weights * len(groups),
                                                axis=1)
         df.sort_values(by=["Overall Score (All)"], inplace=True, ascending=False)
+        df.drop("Overall Score (All)", axis=1, inplace=True)
         
     else:
         sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
@@ -231,6 +232,7 @@ def plot_metrics_table(df,
                                          weights=metric_col_weights,
                                          axis=1)
         df.sort_values(by=["Overall Score"], inplace=True, ascending=False)
+        df.drop("Overall Score (All)", axis=1, inplace=True)
     
     cmap_fn = lambda col_data: normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
 
@@ -274,17 +276,18 @@ def plot_metrics_table(df,
                 width=metric_col_width,
                 plot_fn=bar,
                 plot_kw={
-                    "cmap": truncate_colormap(matplotlib.cm.YlOrRd, 0, 0.8),
+                    "cmap": cmap_fn(df[col]),
                     "plot_bg_bar": False,
                     "annotate": True,
+                    "xlim": (0, 1),
                     "height": 0.9,
-                    "formatter": "{:.2f}",
+                    "formatter": "{:.3f}",
                     "textprops": {"fontsize": 12}
                 },
                 group="Aggregates",
                 border="left" if j == 0 else None)
             for j, col in enumerate(aggregate_cols)]
-        
+      
     # Allow to manipulate text post-hoc (in illustrator)
     with matplotlib.rc_context({"svg.fonttype": "none"}):
         fig, ax = plt.subplots(figsize=(plot_width, plot_height))
