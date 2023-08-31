@@ -66,7 +66,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_neighbors",
     type=int,
-    default=12,
+    default=4,
     help="Number of neighbors used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--spatial_key",
@@ -107,7 +107,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=200,
+    default=400,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -127,12 +127,12 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=500000.,
+    default=5000000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=300.,
+    default=3000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_cat_covariates_contrastive",
