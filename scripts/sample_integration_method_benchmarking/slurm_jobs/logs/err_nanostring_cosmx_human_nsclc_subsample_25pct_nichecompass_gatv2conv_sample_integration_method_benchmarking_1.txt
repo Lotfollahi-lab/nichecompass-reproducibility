@@ -7,22 +7,10 @@ Traceback (most recent call last):
     model.train(n_epochs=args.n_epochs,
   File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 741, in train
     self.trainer.train(
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 376, in train
-    edge_train_model_output = self.model(
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 611, in forward
-    encoder_outputs = self.encoder(
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 203, in forward
-    logstd = self.conv_logstd(hidden, edge_index)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 236, in forward
-    out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 374, in propagate
-    out = self.message(**msg_kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 273, in message
-    alpha = (x * self.att).sum(dim=-1)
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.68 GiB (GPU 0; 31.74 GiB total capacity; 20.79 GiB already allocated; 289.12 MiB free; 30.86 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 414, in train
+    train_optim_loss.backward()
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/_tensor.py", line 487, in backward
+    torch.autograd.backward(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/autograd/__init__.py", line 200, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.72 GiB (GPU 0; 31.74 GiB total capacity; 23.15 GiB already allocated; 2.68 GiB free; 28.46 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
