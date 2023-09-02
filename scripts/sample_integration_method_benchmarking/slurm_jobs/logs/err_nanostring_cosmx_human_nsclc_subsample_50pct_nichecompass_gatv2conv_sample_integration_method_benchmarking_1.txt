@@ -23,6 +23,8 @@ Traceback (most recent call last):
     out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 374, in propagate
     out = self.message(**msg_kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 273, in message
-    alpha = (x * self.att).sum(dim=-1)
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.66 GiB (GPU 0; 31.74 GiB total capacity; 20.80 GiB already allocated; 455.12 MiB free; 30.70 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 272, in message
+    x = F.leaky_relu(x, self.negative_slope)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/functional.py", line 1632, in leaky_relu
+    result = torch._C._nn.leaky_relu(input, negative_slope)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.62 GiB (GPU 0; 31.74 GiB total capacity; 17.86 GiB already allocated; 1.04 GiB free; 30.10 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
