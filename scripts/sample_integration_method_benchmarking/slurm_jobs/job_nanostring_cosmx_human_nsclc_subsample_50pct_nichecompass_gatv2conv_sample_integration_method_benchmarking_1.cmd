@@ -9,6 +9,7 @@
 #SBATCH --qos=gpu
 #SBATCH --mem=128G
 #SBATCH --nice=10000
+#SBATCH --exclude=supergpu02,supergpu03
 source $HOME/.bashrc
 conda activate nichecompass-test
 cd /
