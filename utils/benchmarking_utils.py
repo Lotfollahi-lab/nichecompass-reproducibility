@@ -191,7 +191,25 @@ def plot_metrics_table(df,
                                          "slideseqv2_mouse_hippocampus_subsample_25pct": "SlideSeqV2 \n Mouse Hippocampus (25%)",
                                          "slideseqv2_mouse_hippocampus_subsample_10pct": "SlideSeqV2 \n Mouse Hippocampus (10%)",
                                          "slideseqv2_mouse_hippocampus_subsample_5pct": "SlideSeqV2 \n Mouse Hippocampus (5%)",
-                                         "slideseqv2_mouse_hippocampus_subsample_1pct": "SlideSeqV2 \n Mouse Hippocampus (1%)"},
+                                         "slideseqv2_mouse_hippocampus_subsample_1pct": "SlideSeqV2 \n Mouse Hippocampus (1%)",
+                                         "seqfish_mouse_organogenesis": "seqFISH \n Mouse Organogenesis (100%)",
+                                         "seqfish_mouse_organogenesis_subsample_50pct": "seqFISH \n Mouse Organogenesis (50%)",
+                                         "seqfish_mouse_organogenesis_subsample_25pct": "seqFISH \n Mouse Organogenesis (25%)",
+                                         "seqfish_mouse_organogenesis_subsample_10pct": "seqFISH \n Mouse Organogenesis (10%)",
+                                         "seqfish_mouse_organogenesis_subsample_5pct": "seqFISH \n Mouse Organogenesis (5%)",
+                                         "seqfish_mouse_organogenesis_subsample_1pct": "seqFISH \n Mouse Organogenesis (1%)",
+                                         "nanostring_cosmx_human_nsclc": "nanoString CosMx \n Human NSCLC (100%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_50pct": "nanoString CosMx \n Human NSCLC (50%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_25pct": "nanoString CosMx \n Human NSCLC (25%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_10pct": "nanoString CosMx \n Human NSCLC (10%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_5pct": "nanoString CosMx \n Human NSCLC (5%)",
+                                         "nanostring_cosmx_human_nsclc_subsample_1pct": "nanoString CosMx \n Human NSCLC (1%)",
+                                         "seqfish_mouse_organogenesis_imputed": "seqFISH \n Mouse Organogenesis (100%)",
+                                         "seqfish_mouse_organogenesis_imputed_subsample_50pct": "seqFISH \n Mouse Organogenesis (Imputed; 50%)",
+                                         "seqfish_mouse_organogenesis_imputed_subsample_25pct": "seqFISH \n Mouse Organogenesis (Imputed; 25%)",
+                                         "seqfish_mouse_organogenesis_imputed_subsample_10pct": "seqFISH \n Mouse Organogenesis (Imputed; 10%)",
+                                         "seqfish_mouse_organogenesis_imputed_subsample_5pct": "seqFISH \n Mouse Organogenesis (Imputed; 5%)",
+                                         "seqfish_mouse_organogenesis_imputed_subsample_1pct": "seqFISH \n Mouse Organogenesis (Imputed; 1%)",},
                        show=True,
                        save_dir=None,
                        save_name=f"benchmarking_results.png"):
@@ -213,6 +231,7 @@ def plot_metrics_table(df,
                                                     axis=1)
             sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
         df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
+        df.sort_values(by=[f"Overall Score (0)"], inplace=True, ascending=False)
         
         # Create separate dataframe to fill nan values with values of worst method
         overall_sore_metrics_df = df[sorted_metrics_col_list].copy()
@@ -223,7 +242,7 @@ def plot_metrics_table(df,
         df["Overall Score (All)"] = np.average(overall_sore_metrics_df,
                                                weights=metric_col_weights * len(groups),
                                                axis=1)
-        df.sort_values(by=["Overall Score (All)"], inplace=True, ascending=False)
+        #df.sort_values(by=["Overall Score (All)"], inplace=True, ascending=False)
         df.drop("Overall Score (All)", axis=1, inplace=True)
         
     else:
