@@ -234,6 +234,12 @@ parser.add_argument(
     default=0.0005,
     help="Ratio of cells in which peaks need to be detected to not be "
          "discarded.")
+parser.add_argument(
+    "--min_cell_gene_thresh_ratio",
+    type=float,
+    default=0.0005,
+    help="Ratio of cells in which peaks need to be detected to not be "
+         "discarded.")
 
 # Model
 parser.add_argument(
@@ -752,10 +758,11 @@ if args.filter_genes:
         gp_dict=combined_new_gp_dict,
         retrieved_gene_entities=["sources", "targets"])
     print(f"Starting with {len(adata.var_names)} genes.")
+    min_cells = int(adata.shape[0] * args.min_cell_gene_thresh_ratio)
     sc.pp.filter_genes(adata,
-                       min_cells=0)
+                       min_cells=min_cells)
     print(f"Keeping {len(adata.var_names)} genes after filtering genes with "
-          "expression in 0 cells.")
+          "expression in {} cells.")
 
     if args.counts_key is not None:
         hvg_layer = args.counts_key
