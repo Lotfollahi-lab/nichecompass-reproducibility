@@ -26,7 +26,7 @@ import squidpy as sq
 from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 extract_gp_dict_from_mebocost_es_interactions,
-                                extract_gp_dict_from_nichenet_ligand_target_mx,
+                                extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
                                 get_unique_genes_from_gp_dict)
@@ -66,7 +66,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_neighbors",
     type=int,
-    default=12,
+    default=4,
     help="Number of neighbors used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--spatial_key",
@@ -107,7 +107,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=100,
+    default=400,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -115,7 +115,7 @@ parser.add_argument(
     default=25,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--n_epochs_no_cond_contrastive",
+    "--n_epochs_no_cat_covariates_contrastive",
     type=int,
     default=5,
     help="s. NicheCompass train method signature")
@@ -127,22 +127,27 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=500000.,
+    default=5000000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=100.,
+    default=3000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--lambda_cond_contrastive",
+    "--lambda_cat_covariates_contrastive",
     type=float,
-    default=100000.,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--contrastive_logits_ratio",
+    "--contrastive_logits_pos_ratio",
     type=float,
-    default=0.0078125,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--contrastive_logits_neg_ratio",
+    type=float,
+    default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_group_lasso",
@@ -164,12 +169,17 @@ parser.add_argument(
     type=none_or_int,
     default=None,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--n_sampled_neighbors",
+    type=int,
+    default=-1,
+    help="s. NicheCompass train method signature")
 
 args = parser.parse_args()
 
 if args.query_batches == [None]:
     args.query_batches = None
-xw
+
 print("Script arguments:")
 print(sys.argv)
 
@@ -183,21 +193,22 @@ mlflow.log_param("timestamp", args.load_timestamp)
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_artifacts_folder_path = f"{root_dir}/artifacts/{args.dataset}/models/" \
-                              f"{args.load_timestamp}"
-gp_data_folder_path = f"{root_dir}/datasets/gp_data" # gene program data
-srt_data_folder_path = f"{root_dir}/datasets/srt_data" # spatially-resolved
-                                                       # transcriptomics data
-srt_data_gold_folder_path = f"{srt_data_folder_path}/gold"
-srt_data_results_folder_path = f"{srt_data_folder_path}/results"
+root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+artifacts_folder_path = f"{root_folder_path}/artifacts"
+model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models"
+gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
+                                                             # data
+so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
+                                                               # data
+so_data_gold_folder_path = f"{so_data_folder_path}/gold"
+so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
                                       "/nichenet_ligand_target_matrix.csv"
 omnipath_lr_interactions_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_interactions.csv"
-os.makedirs(f"{srt_data_results_folder_path}/{args.reference_query_model_label}",
+os.makedirs(f"{so_data_results_folder_path}/{args.reference_query_model_label}",
             exist_ok=True)
-os.makedirs(f"{srt_data_results_folder_path}/{args.query_model_label}",
+os.makedirs(f"{so_data_results_folder_path}/{args.query_model_label}",
             exist_ok=True)
 
 ###############################################################################
@@ -207,16 +218,23 @@ os.makedirs(f"{srt_data_results_folder_path}/{args.query_model_label}",
 # Retrieve reference model attributes and adata
 print("Retrieving reference model...")
 reference_model = NicheCompass.load(
-    dir_path=model_artifacts_folder_path + f"/{args.reference_model_label}",
+    dir_path=model_folder_path + f"/{args.reference_model_label}/" \
+             f"{args.load_timestamp}",
     adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key)
 
 reference_adata = reference_model.adata
 counts_key = reference_model.counts_key_
-condition_key = reference_model.condition_key_
+cat_covariates_keys = reference_model.cat_covariates_keys_
 adj_key = reference_model.adj_key_
 gp_targets_mask_key = reference_model.gp_targets_mask_key_
 gp_sources_mask_key = reference_model.gp_sources_mask_key_
+gp_targets_categories_mask_key = reference_model.gp_targets_categories_mask_key_
+gp_sources_categories_mask_key = reference_model.gp_sources_categories_mask_key_
+targets_categories_label_encoder_key = (
+    reference_model.targets_categories_label_encoder_key_)
+sources_categories_label_encoder_key = (
+    reference_model.sources_categories_label_encoder_key_)
 target_genes_idx_key = reference_model.target_genes_idx_key_
 source_genes_idx_key = reference_model.source_genes_idx_key_
 genes_idx_key = reference_model.genes_idx_key_
@@ -238,7 +256,7 @@ if args.query_batches is not None:
         print(f"\nProcessing batch {batch}...")
         print("Loading data...")
         adata_batch = ad.read_h5ad(
-            f"{srt_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+            f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
         adata_batch.obs[args.mapping_entity_key] = "query"
         print("Computing spatial neighborhood graph...")
         # Compute (separate) spatial neighborhood graphs
@@ -290,7 +308,7 @@ if args.query_batches is not None:
     adata.obsp[adj_key] = connectivities
 else:
     adata = ad.read_h5ad(
-            f"{srt_data_gold_folder_path}/{args.dataset}.h5ad")
+            f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
     # Compute (separate) spatial neighborhood graphs
     sq.gr.spatial_neighbors(adata,
                             coord_type="generic",
@@ -316,6 +334,14 @@ adata = adata[:, genes]
 # training. Use the same masks as for the reference model
 adata.varm[gp_targets_mask_key] = reference_adata.varm[gp_targets_mask_key]
 adata.varm[gp_sources_mask_key] = reference_adata.varm[gp_sources_mask_key]
+adata.varm[gp_targets_categories_mask_key] = (
+    reference_adata.varm[gp_targets_categories_mask_key])
+adata.varm[gp_sources_categories_mask_key] = (
+    reference_adata.varm[gp_sources_categories_mask_key])
+adata.uns[targets_categories_label_encoder_key] = (
+    reference_adata.uns[targets_categories_label_encoder_key])
+adata.uns[sources_categories_label_encoder_key] = (
+    reference_adata.uns[sources_categories_label_encoder_key])
 adata.uns[args.gp_names_key] = reference_adata.uns[args.gp_names_key]
 adata.uns[genes_idx_key] = reference_adata.uns[genes_idx_key]
 adata.uns[target_genes_idx_key] = reference_adata.uns[target_genes_idx_key]
@@ -333,33 +359,37 @@ print("\nTraining model...")
 # Load model trained on reference data for transfer learning with query data
 # Freeze all weights except for conditional weights
 model = NicheCompass.load(
-    dir_path=model_artifacts_folder_path + f"/{args.reference_model_label}",
+    dir_path=model_folder_path + f"/{args.reference_model_label}/" \
+             f"{args.load_timestamp}",
     adata=adata,
     adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key,
     unfreeze_all_weights=False,
-    unfreeze_cond_embed_weights=True)
+    unfreeze_cat_covariates_embedder_weights=True)
 
 # Train model
 model.train(n_epochs=args.n_epochs,
             n_epochs_all_gps=args.n_epochs_all_gps,
-            n_epochs_no_cond_contrastive=args.n_epochs_no_cond_contrastive,
+            n_epochs_no_cat_covariates_contrastive=args.n_epochs_no_cat_covariates_contrastive,
             lr=args.lr,
             lambda_edge_recon=args.lambda_edge_recon,
             lambda_gene_expr_recon=args.lambda_gene_expr_recon,
-            lambda_cond_contrastive=args.lambda_cond_contrastive,
-            contrastive_logits_ratio=args.contrastive_logits_ratio,
+            lambda_cat_covariates_contrastive=args.lambda_cat_covariates_contrastive,
+            contrastive_logits_pos_ratio=args.contrastive_logits_pos_ratio,
+            contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
             edge_batch_size=args.edge_batch_size,
             node_batch_size=args.node_batch_size,
+            n_sampled_neighbors=args.n_sampled_neighbors,
             mlflow_experiment_id=mlflow_experiment_id,
             verbose=True)
 
 print("\nSaving query model...")
 # Save trained model
 model.save(
-    dir_path=model_artifacts_folder_path + f"/{args.query_model_label}",
+    dir_path=model_folder_path + f"/{args.query_model_label}/" \
+             f"{args.load_timestamp}",
     overwrite=True,
     save_adata=True,
     adata_file_name=f"{args.dataset}_{args.query_model_label}.h5ad")
@@ -422,7 +452,7 @@ model.adata.obsm[latent_key], _ = model.get_latent_representation(
    adata=model.adata,
    counts_key=counts_key,
    adj_key=adj_key,
-   condition_key=condition_key,
+   cat_covariates_keys=cat_covariates_keys,
    only_active_gps=True,
    return_mu_std=True,
    node_batch_size=model.node_batch_size_)
@@ -439,14 +469,14 @@ sc.tl.umap(model.adata,
 
 # Store adata to disk
 model.adata.write(
-    f"{srt_data_results_folder_path}/{args.reference_query_model_label}/"
+    f"{so_data_results_folder_path}/"
     f"{args.dataset}_nichecompass_{args.reference_query_model_label}.h5ad")
 
 print("\nSaving reference query model...")
 # Save trained model
 model.save(
-    dir_path=model_artifacts_folder_path + \
-             f"/{args.reference_query_model_label}",
+    dir_path=model_folder_path + f"/{args.reference_query_model_label}/" \
+             f"{args.load_timestamp}",
     overwrite=True,
     save_adata=True,
     adata_file_name=f"{args.dataset}_{args.reference_query_model_label}.h5ad")
