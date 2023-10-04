@@ -44,7 +44,7 @@ def plot_simple_metrics_table(df,
         metric_col_titles = [col.upper().replace("_", " ").replace(" ", "\n") for col in metric_cols]
     
     groups = df[group_col].unique().tolist()
-    df = df.pivot(index=[model_col, "spatially_aware"], columns=[group_col, "score_type"], values="score")
+    df = df.pivot(index=[model_col], columns=[group_col, "score_type"], values="score")
     df.reset_index(inplace=True)
     df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
     if len(groups) > 1:
@@ -56,7 +56,7 @@ def plot_simple_metrics_table(df,
                                                     weights=metric_col_weights,
                                                     axis=1)
             sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
-        df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
+        df = df[[model_col] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
         
         # Create separate dataframe to fill nan values with values of worst method
         overall_sore_metrics_df = df[sorted_metrics_col_list].copy()
@@ -72,7 +72,7 @@ def plot_simple_metrics_table(df,
     else:
         sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
                                   key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
-        df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list]
+        df = df[[model_col] + sorted_metrics_col_list]
         df["Overall Score"] = np.average(df[sorted_metrics_col_list],
                                          weights=metric_col_weights,
                                          axis=1)
@@ -85,10 +85,11 @@ def plot_simple_metrics_table(df,
                          title=model_col.replace("_", " ").title(),
                          width=model_col_width,
                          textprops={"ha": "left", "weight": "bold"}),
-        ColumnDefinition(name="spatially_aware",
-                 title="Spatially \n Aware",
-                 width=1.,
-                 formatter=tickcross)]
+        #ColumnDefinition(name="spatially_aware",
+        #         title="Spatially \n Aware",
+        #         width=1.,
+        #         formatter=tickcross)
+    ]
     
     aggregate_cols = [col for col in list(df.columns) if "Overall" in col]
 
@@ -218,7 +219,7 @@ def plot_metrics_table(df,
         metric_col_titles = [col.upper().replace("_", " ").replace(" ", "\n") for col in metric_cols]
     
     groups = df[group_col].unique().tolist()
-    df = df.pivot(index=[model_col, "spatially_aware"], columns=[group_col, "score_type"], values="score")
+    df = df.pivot(index=[model_col], columns=[group_col, "score_type"], values="score")
     df.reset_index(inplace=True)
     df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
     if len(groups) > 1:
@@ -230,7 +231,7 @@ def plot_metrics_table(df,
                                                     weights=metric_col_weights,
                                                     axis=1)
             sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
-        df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
+        df = df[[model_col] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
         df.sort_values(by=[f"Overall Score (0)"], inplace=True, ascending=False)
         
         # Create separate dataframe to fill nan values with values of worst method
@@ -248,7 +249,7 @@ def plot_metrics_table(df,
     else:
         sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
                                   key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
-        df = df[[model_col, "spatially_aware"] + sorted_metrics_col_list]
+        df = df[[model_col] + sorted_metrics_col_list]
         df["Overall Score"] = np.average(df[sorted_metrics_col_list],
                                          weights=metric_col_weights,
                                          axis=1)
@@ -262,10 +263,11 @@ def plot_metrics_table(df,
                          title=model_col.replace("_", " ").title(),
                          width=model_col_width,
                          textprops={"ha": "left", "weight": "bold"}),
-        ColumnDefinition(name="spatially_aware",
-                 title="Spatially \n Aware",
-                 width=1.,
-                 formatter=tickcross)]
+        #ColumnDefinition(name="spatially_aware",
+        #         title="Spatially \n Aware",
+        #         width=1.,
+        #         formatter=tickcross)
+    ]
     
     aggregate_cols = [col for col in list(df.columns) if "Overall" in col]
 
