@@ -28,6 +28,7 @@ def plot_simple_metrics_table(df,
                               metric_col_weights,
                               metric_col_titles=None,
                               metric_col_width=1.5,
+                              aggregate_col_width=1.5,
                               plot_width=15,
                               plot_height=10,
                               group_label_dict={"seqfish_mouse_organogenesis_embryo2": "seqFISH \n Mouse Organogenesis",
@@ -47,23 +48,22 @@ def plot_simple_metrics_table(df,
     df = df.pivot(index=[model_col], columns=[group_col, "score_type"], values="score")
     df.reset_index(inplace=True)
     df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
+    df.columns = [col if "Overall Score" not in col else "Overall Score" for col in df.columns.values]
     if len(groups) > 1:
         sorted_metrics_col_list = []
         for i, group in enumerate(groups):
             sorted_group_metrics_col_list = sorted([col for col in list(df.columns) if ((group  in col) & (("subsample" in group) == ("subsample" in col)))],
                                            key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
+            print(sorted_group_metrics_col_list)
             df[f"Overall Score ({i})"] = np.average(df[sorted_group_metrics_col_list],
                                                     weights=metric_col_weights,
                                                     axis=1)
             sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
         df = df[[model_col] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
+
+        overall_sore_metrics_df = df[sorted_metrics_col_list]
         
-        # Create separate dataframe to fill nan values with values of worst method
-        overall_sore_metrics_df = df[sorted_metrics_col_list].copy()
-        for column in overall_sore_metrics_df.columns:
-            min_value = overall_sore_metrics_df[column].min()
-            overall_sore_metrics_df[column].fillna(min_value, inplace=True)
-        
+        print(sorted_metrics_col_list)
         df["Overall Score (All)"] = np.average(overall_sore_metrics_df,
                                                weights=metric_col_weights * len(groups),
                                                axis=1)
@@ -72,10 +72,7 @@ def plot_simple_metrics_table(df,
     else:
         sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
                                   key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
-        df = df[[model_col] + sorted_metrics_col_list]
-        df["Overall Score"] = np.average(df[sorted_metrics_col_list],
-                                         weights=metric_col_weights,
-                                         axis=1)
+        df = df[[model_col] + sorted_metrics_col_list + ["Overall Score"]]
         df.sort_values(by=["Overall Score"], inplace=True, ascending=False)
     
     cmap_fn = lambda col_data: normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
@@ -118,7 +115,7 @@ def plot_simple_metrics_table(df,
             ColumnDefinition(
                 name=col,
                 title=col.replace(" ", "\n"),
-                width=metric_col_width,
+                width=aggregate_col_width,
                 plot_fn=bar,
                 plot_kw={
                     "cmap": cmap_fn(df[col]),
@@ -167,6 +164,7 @@ def plot_metrics_table(df,
                        metric_col_weights,
                        metric_col_titles=None,
                        metric_col_width=1.5,
+                       aggregate_col_width=1.5,
                        plot_width=15,
                        plot_height=10,
                        group_label_dict={"seqfish_mouse_organogenesis_embryo2": "seqFISH \n Mouse Organogenesis (100%)",
@@ -225,11 +223,9 @@ def plot_metrics_table(df,
     if len(groups) > 1:
         sorted_metrics_col_list = []
         for i, group in enumerate(groups):
-            sorted_group_metrics_col_list = sorted([col for col in list(df.columns) if ((group  in col) & (("subsample" in group) == ("subsample" in col)))],
+            sorted_group_metrics_col_list = sorted([col for col in list(df.columns) if (("Overall" not in col) & (group  in col) & (("subsample" in group) == ("subsample" in col)))],
                                            key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
-            df[f"Overall Score ({i})"] = np.average(df[sorted_group_metrics_col_list],
-                                                    weights=metric_col_weights,
-                                                    axis=1)
+            df.rename(columns={f"{group}_Overall Score": f"Overall Score ({i})"}, inplace=True)
             sorted_metrics_col_list.extend(sorted_group_metrics_col_list)
         df = df[[model_col] + sorted_metrics_col_list + [f"Overall Score ({i})" for i in range(len(groups))]]
         df.sort_values(by=[f"Overall Score (0)"], inplace=True, ascending=False)
@@ -239,13 +235,6 @@ def plot_metrics_table(df,
         for column in overall_sore_metrics_df.columns:
             min_value = overall_sore_metrics_df[column].min()
             overall_sore_metrics_df[column].fillna(min_value, inplace=True)
-        
-        df["Overall Score (All)"] = np.average(overall_sore_metrics_df,
-                                               weights=metric_col_weights * len(groups),
-                                               axis=1)
-        #df.sort_values(by=["Overall Score (All)"], inplace=True, ascending=False)
-        df.drop("Overall Score (All)", axis=1, inplace=True)
-        
     else:
         sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
                                   key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
@@ -296,7 +285,7 @@ def plot_metrics_table(df,
             ColumnDefinition(
                 name=col,
                 title=col.replace(" ", "\n"),
-                width=metric_col_width,
+                width=aggregate_col_width,
                 plot_fn=bar,
                 plot_kw={
                     "cmap": cmap_fn(df[col]),

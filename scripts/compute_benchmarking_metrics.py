@@ -19,6 +19,7 @@ import os
 # has to be before scanpy
 from nichecompass.benchmarking import compute_benchmarking_metrics
 
+import anndata as ad
 import pandas as pd
 import scanpy as sc
 
@@ -64,6 +65,12 @@ parser.add_argument(
     default="nichecompass_latent",
     help="Batch key corresponding to the dataset.")
 parser.add_argument(
+    "--batches",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="Batches.")
+parser.add_argument(
     "--spatial_key",
     type=str,
     default="spatial",
@@ -92,6 +99,8 @@ args = parser.parse_args()
 
 root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 artifact_folder_path = f"{root_folder_path}/artifacts"
+so_data_folder_path = f"{root_folder_path}/datasets/srt_data"
+so_data_gold_folder_path = f"{so_data_folder_path}/gold"
 file_folder_path = f"{artifact_folder_path}/{args.task}"
 
 ###############################################################################
@@ -114,6 +123,19 @@ for metric in args.metrics:
 print("Loading adata}.")
 adata = sc.read_h5ad(f"{file_folder_path}/{args.file_name}")
 
+if ("pcr" in args.metrics) & (args.batches is not None):
+    adata_batch_list = []
+    for batch in args.batches:
+        print(f"\nProcessing batch {batch}...")
+        print("Loading data...")
+        adata_batch = ad.read_h5ad(
+            f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+        adata_batch_list.append(adata_batch)
+    adata_raw = ad.concat(adata_batch_list, join="inner")
+    sc.tl.pca(adata_raw, use_highly_variable=False)
+    pcr_X_pre = adata_raw.obsm["X_pca"]
+    del(adata_raw)
+
 for run_number in args.run_numbers:
     benchmark_dict_acc["dataset"].append(args.dataset)
     benchmark_dict_acc["run_number"].append(run_number)
@@ -128,6 +150,7 @@ for run_number in args.run_numbers:
             batch_key=args.batch_key,
             spatial_key=args.spatial_key,
             latent_key=f"{args.latent_key}_run{run_number}",
+            pcr_X_pre=pcr_X_pre,
             n_jobs=1,
             seed=0,
             mlflow_experiment_id=None)
