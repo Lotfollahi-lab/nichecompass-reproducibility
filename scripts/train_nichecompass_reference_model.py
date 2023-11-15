@@ -76,6 +76,11 @@ parser.add_argument(
     default=25344,
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
+    "--include_nichenet_gps",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether to include NicheNet gene programs.")
+parser.add_argument(
     "--include_mebocost_gps",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -439,6 +444,8 @@ mlflow.log_param("nichenet_keep_target_genes_ratio",
                  args.nichenet_keep_target_genes_ratio)
 mlflow.log_param("nichenet_max_n_target_genes_per_gp",
                  args.nichenet_max_n_target_genes_per_gp)
+mlflow.log_param("include_nichenet_gps",
+                 args.include_nichenet_gps)
 mlflow.log_param("include_mebocost_gps",
                  args.include_mebocost_gps)
 mlflow.log_param("include_collectri_gps",
@@ -533,26 +540,28 @@ omnipath_genes = get_unique_genes_from_gp_dict(
     gp_dict=omnipath_gp_dict,
     retrieved_gene_entities=["sources", "targets"])
 
-# NicheNet gene programs
-nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
-    species=args.species,
-    version="v2",
-    keep_target_genes_ratio=args.nichenet_keep_target_genes_ratio,
-    max_n_target_genes_per_gp=args.nichenet_max_n_target_genes_per_gp,
-    load_from_disk=True,
-    save_to_disk=False,
-    lr_network_file_path=nichenet_lr_network_file_path,
-    ligand_target_matrix_file_path=nichenet_ligand_target_matrix_file_path,
-    gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
-    plot_gp_gene_count_distributions=False)
-
-nichenet_lr_genes = get_unique_genes_from_gp_dict(
-    gp_dict=nichenet_gp_dict,
-    retrieved_gene_categories=["ligand", "receptor"])
-
 # Combine gene programs into one dictionary
 combined_gp_dict = dict(omnipath_gp_dict)
-combined_gp_dict.update(nichenet_gp_dict)
+
+if args.include_nichenet_gps:
+    # NicheNet gene programs
+    nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
+        species=args.species,
+        version="v2",
+        keep_target_genes_ratio=args.nichenet_keep_target_genes_ratio,
+        max_n_target_genes_per_gp=args.nichenet_max_n_target_genes_per_gp,
+        load_from_disk=True,
+        save_to_disk=False,
+        lr_network_file_path=nichenet_lr_network_file_path,
+        ligand_target_matrix_file_path=nichenet_ligand_target_matrix_file_path,
+        gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
+        plot_gp_gene_count_distributions=False)
+
+    nichenet_lr_genes = get_unique_genes_from_gp_dict(
+        gp_dict=nichenet_gp_dict,
+        retrieved_gene_categories=["ligand", "receptor"])
+    
+    combined_gp_dict.update(nichenet_gp_dict)
 
 if args.filter_genes:
     # Get gene program relevant genes
