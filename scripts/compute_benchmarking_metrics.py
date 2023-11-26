@@ -135,6 +135,8 @@ if ("pcr" in args.metrics) & (args.batches is not None):
     sc.tl.pca(adata_raw, use_highly_variable=False)
     pcr_X_pre = adata_raw.obsm["X_pca"]
     del(adata_raw)
+else:
+    pcr_X_pre = None
 
 for run_number in args.run_numbers:
     benchmark_dict_acc["dataset"].append(args.dataset)

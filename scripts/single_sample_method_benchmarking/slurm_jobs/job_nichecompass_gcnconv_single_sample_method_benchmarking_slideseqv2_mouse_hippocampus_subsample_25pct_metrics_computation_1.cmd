@@ -6,7 +6,7 @@
 #SBATCH -p gpu_p
 #SBATCH -c 6
 #SBATCH --gres=gpu:1
-#SBATCH --qos=gpu
+#SBATCH --qos=gpu_normal
 #SBATCH --mem=128G
 #SBATCH --nice=10000
 source $HOME/.bashrc
