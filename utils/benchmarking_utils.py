@@ -36,7 +36,8 @@ def plot_simple_metrics_table(df,
                                                 "nanostring_cosmx_human_nsclc": "nanoString CosMx \n Human NSCLC",
                                                 "nanostring_cosmx_human_nsclc_subsample_10pct": "nanoString CosMx \n Human NSCLC (10% Subsample)",
                                                 "vizgen_merfish_mouse_liver": "MERFISH \n Mouse Liver",
-                                                "slideseqv2_mouse_hippocampus": "Slide-seqV2 \n Mouse Hippocampus"},
+                                                "slideseqv2_mouse_hippocampus": "Slide-seqV2 \n Mouse Hippocampus",
+                                                "slideseqv2_mouse_hippocampus_subsample_25pct": "Slide-seqV2 \n Mouse Hippocampus (25% Subsample)"},
                        show=True,       
                        save_dir=None,
                        save_name=f"benchmarking_results.png"):
@@ -94,7 +95,7 @@ def plot_simple_metrics_table(df,
         if len(groups) > 1:
             group_number_string = f"({i})"
         else:
-            group_number_string = "\n Metrics"
+            group_number_string = "\nRaw Metrics"
         # Circles for the metric columns
         column_definitions += [
             ColumnDefinition(
@@ -126,7 +127,7 @@ def plot_simple_metrics_table(df,
                     "formatter": "{:.3f}",
                     "textprops": {"fontsize": 12}
                 },
-                group="Aggregates",
+                group="Scaled\nAggregates",
                 border="left" if j == 0 else None)
             for j, col in enumerate(aggregate_cols)]
         
@@ -203,7 +204,7 @@ def plot_metrics_table(df,
                                          "nanostring_cosmx_human_nsclc_subsample_10pct": "nanoString CosMx \n Human NSCLC (10%)",
                                          "nanostring_cosmx_human_nsclc_subsample_5pct": "nanoString CosMx \n Human NSCLC (5%)",
                                          "nanostring_cosmx_human_nsclc_subsample_1pct": "nanoString CosMx \n Human NSCLC (1%)",
-                                         "seqfish_mouse_organogenesis_imputed": "seqFISH \n Mouse Organogenesis (100%)",
+                                         "seqfish_mouse_organogenesis_imputed": "seqFISH \n Mouse Organogenesis (Imputed; 100%)",
                                          "seqfish_mouse_organogenesis_imputed_subsample_50pct": "seqFISH \n Mouse Organogenesis (Imputed; 50%)",
                                          "seqfish_mouse_organogenesis_imputed_subsample_25pct": "seqFISH \n Mouse Organogenesis (Imputed; 25%)",
                                          "seqfish_mouse_organogenesis_imputed_subsample_10pct": "seqFISH \n Mouse Organogenesis (Imputed; 10%)",
@@ -338,11 +339,16 @@ def plot_category_in_latent_and_physical_space(
         size,
         spot_size,
         save_fig,
-        file_path):
+        file_path,
+        figsize=None):
     """Plot latent clusters in latent and physical space."""
     ncols = 1
+    if samples is None:
+        samples = []
+    if figsize is None:
+        figsize = (10, 20 + (len(samples) - 1) * 10)
     # Create plot of cell type annotations in physical and latent space
-    fig = plt.figure(figsize=(10, 20 + (len(samples) - 1) * 10))
+    fig = plt.figure(figsize=figsize)
     title = fig.suptitle(t=f"{plot_label} in {model_label} " \
                            "Latent and Physical Space",
                          y=0.96,
