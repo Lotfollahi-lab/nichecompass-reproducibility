@@ -45,18 +45,25 @@ RUN wget \
 RUN conda init bash
 
 # Create nichecompass-reproducibility conda environment
-COPY environment.yml .
+COPY nichecompass-reproducibility/envs/environment.yml .
 RUN conda env create -f environment.yml
 
 # Create deeplinc conda environment
-COPY environment_deeplinc.yml .
+COPY nichecompass-reproducibility/envs/environment_deeplinc.yml .
 RUN conda env create -f environment_deeplinc.yml
 
 # Copy environment file (for Charliecloud)
-COPY environment /environment
+COPY nichecompass-reproducibility/envs/environment /environment
 
-# Expose mlflow server port
-EXPOSE 8338
+# Expose mlflow server ports
+EXPOSE 8889
+EXPOSE 8890
+
+# Install NicheCompass
+COPY nichecompass .
+RUN cd nichecompass
+SHELL ["conda", "run", "-n", "nichecompass-reproducibility", "/bin/bash", "-c"]
+RUN poetry install
 
 # Remove retrieved packages from local cache and remove orphaned dependency packages 
 RUN apt-get clean -y && apt-get autoremove -y

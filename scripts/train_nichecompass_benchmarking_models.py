@@ -31,7 +31,7 @@ import torch
 from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 extract_gp_dict_from_mebocost_es_interactions,
-                                extract_gp_dict_from_nichenet_ligand_target_mx,
+                                extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
                                 get_unique_genes_from_gp_dict)
@@ -52,6 +52,11 @@ def none_or_int(value):
         return None
     return int(value)
 
+def none_or_bool(value):
+    if value == "None":
+        return None
+    return value == "True"
+
 # Benchmarking-specific
 parser.add_argument(
     "--adata_new_name",
@@ -62,40 +67,40 @@ parser.add_argument(
 parser.add_argument(
     "--n_neighbors_list",
     nargs="+",
-    default="4 4 8 8 12 12 16 16 20 20",
+    default="4 4 8 8 12 12 16 16",
     help="Number of neighbors per model training run.")
 parser.add_argument(
     "--edge_batch_size_list",
     nargs="+",
-    default="256 256 256 256 128 128 64 64 64 64",
+    default="256 256 256 256 128 128 64 64",
     help="Edge batch sizes per model training run.")
 parser.add_argument(
     "--node_batch_size_list",
     type=none_or_value,
     nargs="+",
-    default="32 32 32 32 16 16 8 8 8 8",
+    default="None None None None None None None None None None",
     help="Node batch sizes per model training run.")
 parser.add_argument(
     "--seeds",
     nargs="+",
-    default="0 1 2 3 4 5 6 7 8 9",
+    default="0 1 2 3 4 5 6 7",
     help="Random seeds per model training run.")
 parser.add_argument(
     "--run_index",
     nargs="+",
-    default="1 2 3 4 5 6 7 8 9 10",
+    default="1 2 3 4 5 6 7 8",
     help="Index per model training run.")
 
 # Gene program mask
 parser.add_argument(
     "--nichenet_keep_target_genes_ratio",
     type=float,
-    default=0.01,
+    default=1.,
     help="Ratio how many of the overall top scored target genes are kept.")
 parser.add_argument(
     "--nichenet_max_n_target_genes_per_gp",
     type=int,
-    default=25344,
+    default=250,
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
     "--include_mebocost_gps",
@@ -103,7 +108,7 @@ parser.add_argument(
     default=True,
     help="Indicator whether to include mebocost gene programs.")
 parser.add_argument(
-    "--mebocost_species",
+    "--species",
     type=str,
     default="mouse",
     help="Species that is used for the retrieval of mebocost gene programs.")
@@ -160,6 +165,18 @@ parser.add_argument(
     default="batch",
     help="s. NicheCompass class signature.")
 parser.add_argument(
+    "--cat_covariates_keys",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="s. NicheCompass class signature")
+parser.add_argument(
+    "--cat_covariates_no_edges",
+    nargs='+',
+    type=none_or_bool,
+    default=None,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--spatial_key",
     type=str,
     default="spatial",
@@ -187,9 +204,15 @@ parser.add_argument(
 parser.add_argument(
     "--n_hvg",
     type=int,
-    default=3000,
+    default=0,
     help="Number of highly variable genes that are kept if `filter_genes` is "
          "`True`.")
+parser.add_argument(
+    "--n_svg",
+    type=int,
+    default=3000,
+    help="Number of spatially variable genes that are kept if `filter_genes` "
+         "is `True`.")
 parser.add_argument(
     "--gp_targets_mask_key",
     type=str,
@@ -223,6 +246,11 @@ parser.add_argument(
     default="nichecompass_latent",
     help="s. NicheCompass class signature")
 parser.add_argument(
+    "--n_addon_gp",
+    type=int,
+    default=10,
+    help="s. NicheCompass class signature")
+parser.add_argument(
     "--active_gp_thresh_ratio",
     type=float,
     default=0.05,
@@ -233,15 +261,16 @@ parser.add_argument(
     default="nb",
     help="s. NicheCompass class signature")
 parser.add_argument(
-    "--cond_embed_injection",
+    "--cat_covariates_embeds_injection",
     nargs='+',
     default=["gene_expr_decoder"],
     help="s. NicheCompass class signature")
 parser.add_argument(
-    "--n_cond_embed",
+    "--cat_covariates_embeds_nums",
+    nargs='+',
     type=none_or_int,
     default=None,
-    help="s. NicheCompass train method signature")
+    help="s. NicheCompass class signature")
 parser.add_argument(
     "--log_variational",
     action=argparse.BooleanOptionalAction,
@@ -250,10 +279,15 @@ parser.add_argument(
 parser.add_argument(
     "--node_label_method",
     type=str,
-    default="one-hop-attention",
+    default="one-hop-norm",
     help="s. NicheCompass class signature")
 parser.add_argument(
     "--n_layers_encoder",
+    type=int,
+    default=1,
+    help="s. NicheCompass class signature")
+parser.add_argument(
+    "--n_fc_layers_encoder",
     type=int,
     default=1,
     help="s. NicheCompass class signature")
@@ -270,7 +304,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_epochs",
     type=int,
-    default=200,
+    default=400,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--n_epochs_all_gps",
@@ -278,7 +312,7 @@ parser.add_argument(
     default=25,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--n_epochs_no_cond_contrastive",
+    "--n_epochs_no_cat_covariates_contrastive",
     type=int,
     default=5,
     help="s. NicheCompass train method signature")
@@ -290,20 +324,25 @@ parser.add_argument(
 parser.add_argument(
     "--lambda_edge_recon",
     type=float,
-    default=500000.,
+    default=5000000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
     "--lambda_gene_expr_recon",
     type=float,
-    default=300.,
+    default=3000.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--lambda_cond_contrastive",
+    "--lambda_cat_covariates_contrastive",
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
-    "--contrastive_logits_ratio",
+    "--contrastive_logits_pos_ratio",
+    type=float,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--contrastive_logits_neg_ratio",
     type=float,
     default=0.,
     help="s. NicheCompass train method signature")
@@ -316,6 +355,16 @@ parser.add_argument(
     "--lambda_l1_masked",
     type=float,
     default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--lambda_l1_addon",
+    type=float,
+    default=0.,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--n_sampled_neighbors",
+    type=int,
+    default=-1,
     help="s. NicheCompass train method signature")
 
 # Other
@@ -338,8 +387,14 @@ run_index = [int(run_idx) for run_idx in args.run_index]
 
 if args.reference_batches == [None]:
     args.reference_batches = None
-if args.cond_embed_injection == [None]:
-    args.cond_embed_injection = []
+if args.cat_covariates_embeds_injection == [None]:
+    args.cat_covariates_embeds_injection = []
+if args.cat_covariates_keys == [None]:
+    args.cat_covariates_keys = None
+if args.cat_covariates_no_edges == [None]:
+    args.cat_covariates_no_edges = None
+if args.cat_covariates_embeds_nums == [None]:
+    args.cat_covariates_embeds_nums = None
 
 # Get time of script execution for timestamping saved artifacts
 now = datetime.now()
@@ -363,13 +418,21 @@ result_folder_path = f"{artifacts_folder_path}/{args.dataset}/results/" \
                      f"{args.timestamp_suffix}"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program 
                                                              # data
+ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
+                                                             # data
 so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
                                                               # data
 so_data_gold_folder_path = f"{so_data_folder_path}/gold"
-nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
-                                      "/nichenet_ligand_target_matrix.csv"
-omnipath_lr_interactions_file_path = gp_data_folder_path + \
-                                     "/omnipath_lr_interactions.csv"
+nichenet_lr_network_file_path = gp_data_folder_path + \
+                                "/nichenet_lr_network_v2_" \
+                                f"{args.species}.csv"
+nichenet_ligand_target_matrix_file_path = gp_data_folder_path + \
+                                          "/nichenet_ligand_target_matrix_" \
+                                          f"v2_{args.species}.csv"
+omnipath_lr_network_file_path = gp_data_folder_path + \
+                                     "/omnipath_lr_network.csv"
+gene_orthologs_mapping_file_path = ga_data_folder_path + \
+                                   "/human_mouse_gene_orthologs.csv"
 os.makedirs(model_folder_path, exist_ok=True)
 os.makedirs(result_folder_path, exist_ok=True)
 
@@ -380,10 +443,12 @@ os.makedirs(result_folder_path, exist_ok=True)
 print("\nPreparing the gene program mask...")
 # OmniPath gene programs
 omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
+    species=args.species,
     min_curation_effort=0,
     load_from_disk=True,
     save_to_disk=False,
-    file_path=omnipath_lr_interactions_file_path,
+    lr_network_file_path=omnipath_lr_network_file_path,
+    gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
     plot_gp_gene_count_distributions=False)
 
 omnipath_genes = get_unique_genes_from_gp_dict(
@@ -391,17 +456,21 @@ omnipath_genes = get_unique_genes_from_gp_dict(
     retrieved_gene_entities=["sources", "targets"])
 
 # NicheNet gene programs
-nichenet_gp_dict = extract_gp_dict_from_nichenet_ligand_target_mx(
+nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
+    species=args.species,
+    version="v2",
     keep_target_genes_ratio=args.nichenet_keep_target_genes_ratio,
     max_n_target_genes_per_gp=args.nichenet_max_n_target_genes_per_gp,
     load_from_disk=True,
     save_to_disk=False,
-    file_path=nichenet_ligand_target_mx_file_path,
+    lr_network_file_path=nichenet_lr_network_file_path,
+    ligand_target_matrix_file_path=nichenet_ligand_target_matrix_file_path,
+    gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
     plot_gp_gene_count_distributions=False)
 
-nichenet_source_genes = get_unique_genes_from_gp_dict(
+nichenet_lr_genes = get_unique_genes_from_gp_dict(
     gp_dict=nichenet_gp_dict,
-    retrieved_gene_entities=["sources"])
+    retrieved_gene_categories=["ligand", "receptor"])
 
 # Combine gene programs into one dictionary
 combined_gp_dict = dict(omnipath_gp_dict)
@@ -409,14 +478,14 @@ combined_gp_dict.update(nichenet_gp_dict)
 
 if args.filter_genes:
     # Get gene program relevant genes
-    gp_relevant_genes = list(set(omnipath_genes + nichenet_source_genes))
+    gp_relevant_genes = [gene.upper() for gene in list(set(
+        omnipath_genes + nichenet_lr_genes))]
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
     mebocost_gp_dict = extract_gp_dict_from_mebocost_es_interactions(
     dir_path=f"{gp_data_folder_path}/metabolite_enzyme_sensor_gps",
-    species=args.mebocost_species,
-    genes_uppercase=True,
+    species=args.species,
     plot_gp_gene_count_distributions=False)
     
     mebocost_genes = get_unique_genes_from_gp_dict(
@@ -425,9 +494,9 @@ if args.include_mebocost_gps:
 
     combined_gp_dict.update(mebocost_gp_dict)
     
-    if args.filter_genes:
+    #if args.filter_genes:
         # Update gene program relevant genes
-        gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
+        #gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
     
 # Filter and combine gene programs
 combined_new_gp_dict = filter_and_combine_gp_dict_gps(
@@ -473,7 +542,10 @@ if args.adata_new_name is None:
     adata_new.obs_names = adata_original.obs_names
     adata_new.obs["cell_type"] = adata_original.obs[args.cell_type_key].values
     adata_new.obsm[args.spatial_key] = adata_original.obsm[args.spatial_key]
-    adata_new.obs[args.condition_key] = adata_original.obs[args.condition_key]
+    if args.cat_covariates_keys is not None:
+        for cat_covariate_key in args.cat_covariates_keys:
+            adata_new.obs[cat_covariate_key] = (
+                adata_original.obs[cat_covariate_key])
     if args.model_label == "sample_integration_method_benchmarking":
         adata_new.obs[args.mapping_entity_key] = (
             adata_original.obs[args.mapping_entity_key])
@@ -561,51 +633,64 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     # Filter genes if specified
     if args.filter_genes:
         print("\nFiltering genes...")
-        # Filter genes and only keep ligand, receptor, metabolitye enzyme, 
-        # metabolite sensor and the 'n_hvg' highly variable genes
-        # (potential target genes of nichenet)
+        # Filter genes and only keep gp relevant, the 'n_svg' spatially variable,
+        # and 'n_hvg' highly variable genes
         gp_dict_genes = get_unique_genes_from_gp_dict(
             gp_dict=combined_new_gp_dict,
             retrieved_gene_entities=["sources", "targets"])
         print(f"Starting with {len(adata.var_names)} genes.")
         sc.pp.filter_genes(adata,
                            min_cells=0)
-        print(f"Keeping {len(adata.var_names)} genes after filtering "
-              "genes with expression in 0 cells.")
+        print(f"Keeping {len(adata.var_names)} genes after filtering genes with "
+              "expression in 0 cells.")
 
         if args.counts_key is not None:
-            if (adata.layers[args.counts_key].astype(int).astype(
-            np.float32).sum() == adata.layers[args.counts_key].sum()): # raw counts
+            hvg_layer = args.counts_key
+            if (adata.layers[args.counts_key].astype(int).astype(np.float32).sum() == 
+            adata.layers[args.counts_key].sum()): # raw counts
                 hvg_flavor = "seurat_v3"
-            else:
-                hvg_flavor = "seurat" # log normalized counts
+            else: # log normalized counts
+                hvg_flavor = "seurat"
         else:
-            if adata.X.astype(int).astype(np.float32).sum() == adata.X.sum(): # raw counts
+            hvg_layer = None
+            if adata.X.astype(int).astype(np.float32).sum() == adata.X.sum():
+            # raw counts
                 hvg_flavor = "seurat_v3"
             else: # log normalized counts
                 hvg_flavor = "seurat"
 
-        sc.pp.highly_variable_genes(
-            adata,
-            layer=args.counts_key,
-            n_top_genes=args.n_hvg,
-            flavor=hvg_flavor,
-            batch_key=args.condition_key,
-            subset=False)
+        if args.n_hvg != 0:
+            sc.pp.highly_variable_genes(
+                adata,
+                layer=hvg_layer,
+                n_top_genes=args.n_hvg,
+                flavor=hvg_flavor,
+                batch_key=args.condition_key,
+                subset=False)
+        else:
+            adata.var["highly_variable"] = False
 
+        # Filter spatially variable genes
+        if args.n_svg != 0:
+            sq.gr.spatial_autocorr(adata, mode="moran", genes=adata.var_names)
+            sv_genes = adata.uns["moranI"].index[:args.n_svg].tolist()
+            adata.var["spatially_variable"] = adata.var_names.isin(sv_genes)
+        else:
+            adata.var["spatially_variable"] = False
+        
+        gp_relevant_genes = [] # remove gp relevant genes
         adata.var["gp_relevant"] = (
             adata.var.index.str.upper().isin(gp_relevant_genes))
-        adata.var["keep_gene"] = (
-            adata.var["gp_relevant"] | adata.var["highly_variable"])
+        adata.var["keep_gene"] = (adata.var["gp_relevant"] | 
+                                  adata.var["highly_variable"] |
+                                  adata.var["spatially_variable"])
         adata = adata[:, adata.var["keep_gene"] == True]
-        print(f"Keeping {len(adata.var_names)} highly variable or gene "
-              "program relevant genes.")
-        adata = (
-            adata[:, adata.var_names[
-                adata.var_names.str.upper().isin(
-                    gp_dict_genes)].sort_values()])
-        print(f"Keeping {len(adata.var_names)} genes after filtering "
-              "genes not in gp dict.")
+        print(f"Keeping {len(adata.var_names)} spatially variable, highly "
+              "variable or gene program relevant genes.")
+        #adata = (adata[:, adata.var_names[adata.var_names.str.upper().isin(
+    #            [gene.upper() for gene in gp_dict_genes])].sort_values()])
+    #print(f"Keeping {len(adata.var_names)} genes after filtering genes not in "
+    #      "gp dict.")
 
     # Add the gene program dictionary as binary masks to the adata for
     # model training
@@ -640,7 +725,7 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     mlflow.log_param("nichenet_max_n_target_genes_per_gp",
                      args.nichenet_max_n_target_genes_per_gp)
     mlflow.log_param("include_mebocost_gps", args.include_mebocost_gps)
-    mlflow.log_param("mebocost_species", args.mebocost_species)
+    mlflow.log_param("species", args.species)
     mlflow.log_param("gp_filter_mode", args.gp_filter_mode)
     mlflow.log_param("combine_overlap_gps", args.combine_overlap_gps)
     mlflow.log_param("overlap_thresh_source_genes",
@@ -656,17 +741,19 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     model = NicheCompass(adata,
                          counts_key=args.counts_key,
                          adj_key=args.adj_key,
-                         condition_key=args.condition_key,
-                         cond_embed_injection=args.cond_embed_injection,
-                         n_cond_embed=args.n_cond_embed,
+                         cat_covariates_embeds_injection=args.cat_covariates_embeds_injection,
+                         cat_covariates_keys=args.cat_covariates_keys,
+                         cat_covariates_no_edges=args.cat_covariates_no_edges,
+                         cat_covariates_embeds_nums=args.cat_covariates_embeds_nums,
                          gp_names_key=args.gp_names_key,
                          active_gp_names_key=args.active_gp_names_key,
                          gp_targets_mask_key=args.gp_targets_mask_key,
                          gp_sources_mask_key=args.gp_sources_mask_key,
                          latent_key=args.latent_key,
+                         n_addon_gp=args.n_addon_gp,
                          active_gp_thresh_ratio=args.active_gp_thresh_ratio,
                          gene_expr_recon_dist=args.gene_expr_recon_dist,
-                         n_layers_encoder=args.n_layers_encoder,
+                         n_fc_layers_encoder=args.n_fc_layers_encoder,
                          conv_layer_encoder=args.conv_layer_encoder,
                          n_hidden_encoder=args.n_hidden_encoder,
                          log_variational=args.log_variational,
@@ -675,16 +762,19 @@ for k, (run_number, n_neighbors) in enumerate(zip(run_index,
     # Train model
     model.train(n_epochs=args.n_epochs,
                 n_epochs_all_gps=args.n_epochs_all_gps,
-                n_epochs_no_cond_contrastive=args.n_epochs_no_cond_contrastive,
+                n_epochs_no_cat_covariates_contrastive=args.n_epochs_no_cat_covariates_contrastive,
                 lr=args.lr,
                 lambda_edge_recon=args.lambda_edge_recon,
                 lambda_gene_expr_recon=args.lambda_gene_expr_recon,
-                lambda_cond_contrastive=args.lambda_cond_contrastive,
-                contrastive_logits_ratio=args.contrastive_logits_ratio,
+                lambda_cat_covariates_contrastive=args.lambda_cat_covariates_contrastive,
+                contrastive_logits_pos_ratio=args.contrastive_logits_pos_ratio,
+                contrastive_logits_neg_ratio=args.contrastive_logits_neg_ratio,
                 lambda_group_lasso=args.lambda_group_lasso,
                 lambda_l1_masked=args.lambda_l1_masked,
+                lambda_l1_addon=args.lambda_l1_addon,
                 edge_batch_size=edge_batch_size_list[k],
                 node_batch_size=node_batch_size_list[k],
+                n_sampled_neighbors=args.n_sampled_neighbors,
                 mlflow_experiment_id=mlflow_experiment_id,
                 seed=seeds[k],
                 verbose=True)
