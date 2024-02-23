@@ -23,7 +23,7 @@ incompatible with dependencies of other methods): <br>
 ```conda activate nichecompass-reproducibility```
 
 6) Install NicheCompass:
-Follow the instructions in the [documentation](https://nichecompass.readthedocs.io/en/latest/installation.html)
+Follow the instructions in the [documentation](https://nichecompass.readthedocs.io/en/latest/installation.html).
  
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
