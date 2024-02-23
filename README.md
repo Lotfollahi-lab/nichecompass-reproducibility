@@ -13,23 +13,18 @@
 ```conda config --set solver libmamba```
 
 3) Create the nichecompass-reproducibility conda environment: <br>
-```conda env create -f envs/environment.yml```
+```conda env create -f envs/environment.yaml```
 
 4) Create the deeplinc conda environment (for benchmarking deeplinc method which relies on legacy packages and is
 incompatible with dependencies of other methods): <br>
-```conda env create -f envs/environment_deeplinc.yml```
+```conda env create -f envs/environment_deeplinc.yaml```
 
 5) Activate the nichecompass-reproducibility conda environment: <br>
 ```conda activate nichecompass-reproducibility```
 
-6) Clone the nichecompass repository and navigate into it: <br>
-```cd ..``` <br>
-```git clone https://github.com/sebastianbirk/nichecompass.git``` <br>
-```cd nichecompass```
-
-7) Install all NicheCompass Python dependencies via Poetry: <br>
-```poetry install```
-
+6) Install NicheCompass:
+Follow the instructions in the [documentation](https://nichecompass.readthedocs.io/en/latest/installation.html)
+ 
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
 ```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
@@ -42,4 +37,7 @@ incompatible with dependencies of other methods): <br>
 
 4) (For Charliecloud) Export the Docker image to a tarball: <br>
 ```docker export $(docker create nichecompass) | gzip -c > ./nichecompass.tar.gz```
+
+## Data & Models
+All preprocessed data used in the manuscript and trained models are downloadable from [GDrive](https://drive.google.com/drive/folders/1sqoqCq1y5NMIbC1K7uq6v4PBWDPQQJgY).
 
