@@ -1,6 +1,6 @@
 # NicheCompass Reproducibility
 
-This repository contains the code to reproduce the analysis and benchmarking experiments performed in the NicheCompass manuscript.
+This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass manuscript.
 The NicheCompass source code is available in another [repository](https://github.com/Lotfollahi-lab/nichecompass).
 
 ## Installation
