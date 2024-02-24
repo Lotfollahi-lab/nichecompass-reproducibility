@@ -44,3 +44,16 @@ Follow the instructions in the [documentation](https://nichecompass.readthedocs.
 ## Data & Models
 All preprocessed data used in the manuscript and trained models are downloadable from [GDrive](https://drive.google.com/drive/folders/1sqoqCq1y5NMIbC1K7uq6v4PBWDPQQJgY).
 
+## Reference
+```
+@article{Birk2024,
+  title = {Large-scale characterization of cell niches in spatial atlases using bio-inspired graph learning},
+  author = {Birk, S. and others},
+  journal = {bioRxiv},
+  year = {2024},
+  doi = {10.1101/2024.02.21.581428},
+  url = {https://www.biorxiv.org/content/early/2024/02/23/2024.02.21.581428}
+}
+```
+
+
