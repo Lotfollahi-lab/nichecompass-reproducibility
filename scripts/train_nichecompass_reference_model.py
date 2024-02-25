@@ -265,7 +265,7 @@ parser.add_argument(
 parser.add_argument(
     "--n_addon_gp",
     type=int,
-    default=10,
+    default=100,
     help="s. NicheCompass class signature")
 parser.add_argument(
     "--active_gp_thresh_ratio",
@@ -394,12 +394,32 @@ parser.add_argument(
     default=None,
     help="s. NicheCompass train method signature")
 parser.add_argument(
+    "--edge_val_ratio",
+    type=float,
+    default=0.1,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--node_val_ratio",
+    type=float,
+    default=0.1,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
     "--n_sampled_neighbors",
     type=int,
     default=-1,
     help="s. NicheCompass train method signature")
 
 # Other
+parser.add_argument(
+    "--mlflow_tracking",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether to use mlflow tracking.")
+parser.add_argument(
+    "--compute_knn_graph",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether to compute the knn graph.")
 parser.add_argument(
     "--timestamp_suffix",
     type=str,
@@ -435,55 +455,58 @@ print("Script arguments:")
 print(sys.argv)
 
 # Set mlflow experiment
-experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
-mlflow_experiment_id = experiment.experiment_id
-
-# Track params that are not part of model
-mlflow.log_param("timestamp", current_timestamp + args.timestamp_suffix)
-mlflow.log_param("nichenet_keep_target_genes_ratio",
-                 args.nichenet_keep_target_genes_ratio)
-mlflow.log_param("nichenet_max_n_target_genes_per_gp",
-                 args.nichenet_max_n_target_genes_per_gp)
-mlflow.log_param("include_nichenet_gps",
-                 args.include_nichenet_gps)
-mlflow.log_param("include_mebocost_gps",
-                 args.include_mebocost_gps)
-mlflow.log_param("include_collectri_gps",
-                 args.include_collectri_gps)
-mlflow.log_param("include_brain_marker_gps",
-                 args.include_brain_marker_gps)
-mlflow.log_param("species",
-                 args.species)
-mlflow.log_param("gp_filter_mode",
-                 args.gp_filter_mode)
-mlflow.log_param("combine_overlap_gps",
-                 args.combine_overlap_gps)
-mlflow.log_param("overlap_thresh_source_genes",
-                 args.overlap_thresh_source_genes)
-mlflow.log_param("overlap_thresh_target_genes",
-                 args.overlap_thresh_target_genes)
-mlflow.log_param("overlap_thresh_genes",
-                 args.overlap_thresh_genes)
-mlflow.log_param("add_fc_gps_instead_of_gp_dict_gps",
-                 args.add_fc_gps_instead_of_gp_dict_gps)
-mlflow.log_param("reference_batches",
-                 args.reference_batches)
-mlflow.log_param("n_neighbors",
-                 args.n_neighbors)
-mlflow.log_param("filter_genes",
-                 args.filter_genes)
-mlflow.log_param("n_hvg",
-                 args.n_hvg)
-mlflow.log_param("n_svg",
-                 args.n_svg)
-mlflow.log_param("n_svp",
-                 args.n_svp)
-mlflow.log_param("include_atac_modality",
-                 args.include_atac_modality)
-if args.include_atac_modality:
-    mlflow.log_param("filter_peaks", args.filter_peaks)
-    mlflow.log_param("min_cell_peak_thresh_ratio",
-                     args.min_cell_peak_thresh_ratio)
+if args.mlflow_tracking:
+    experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
+    mlflow_experiment_id = experiment.experiment_id
+    
+    # Track params that are not part of model
+    mlflow.log_param("timestamp", current_timestamp + args.timestamp_suffix)
+    mlflow.log_param("nichenet_keep_target_genes_ratio",
+                     args.nichenet_keep_target_genes_ratio)
+    mlflow.log_param("nichenet_max_n_target_genes_per_gp",
+                     args.nichenet_max_n_target_genes_per_gp)
+    mlflow.log_param("include_nichenet_gps",
+                     args.include_nichenet_gps)
+    mlflow.log_param("include_mebocost_gps",
+                     args.include_mebocost_gps)
+    mlflow.log_param("include_collectri_gps",
+                     args.include_collectri_gps)
+    mlflow.log_param("include_brain_marker_gps",
+                     args.include_brain_marker_gps)
+    mlflow.log_param("species",
+                     args.species)
+    mlflow.log_param("gp_filter_mode",
+                     args.gp_filter_mode)
+    mlflow.log_param("combine_overlap_gps",
+                     args.combine_overlap_gps)
+    mlflow.log_param("overlap_thresh_source_genes",
+                     args.overlap_thresh_source_genes)
+    mlflow.log_param("overlap_thresh_target_genes",
+                     args.overlap_thresh_target_genes)
+    mlflow.log_param("overlap_thresh_genes",
+                     args.overlap_thresh_genes)
+    mlflow.log_param("add_fc_gps_instead_of_gp_dict_gps",
+                     args.add_fc_gps_instead_of_gp_dict_gps)
+    mlflow.log_param("reference_batches",
+                     args.reference_batches)
+    mlflow.log_param("n_neighbors",
+                     args.n_neighbors)
+    mlflow.log_param("filter_genes",
+                     args.filter_genes)
+    mlflow.log_param("n_hvg",
+                     args.n_hvg)
+    mlflow.log_param("n_svg",
+                     args.n_svg)
+    mlflow.log_param("n_svp",
+                     args.n_svp)
+    mlflow.log_param("include_atac_modality",
+                     args.include_atac_modality)
+    if args.include_atac_modality:
+        mlflow.log_param("filter_peaks", args.filter_peaks)
+        mlflow.log_param("min_cell_peak_thresh_ratio",
+                         args.min_cell_peak_thresh_ratio)
+else:
+    mlflow_experiment_id = None
 
 ###############################################################################
 ### 1.3 Configure Paths and Create Directories ###
@@ -737,6 +760,7 @@ else:
         adata.obsp[args.adj_key].maximum(
             adata.obsp[args.adj_key].T))
 adata.obs[args.mapping_entity_key] = "reference"
+adata.obs_names_make_unique()
 
 # ATAC data (if included)
 if args.include_atac_modality:
@@ -751,6 +775,7 @@ if args.include_atac_modality:
     else:
         adata_atac = ad.read_h5ad(
             f"{so_data_gold_folder_path}/{args.dataset}_atac.h5ad")
+    adata_atac.obs_names_make_unique()
 else:
     adata_atac = None
     
@@ -949,19 +974,24 @@ model.train(n_epochs=args.n_epochs,
             lambda_l1_addon=args.lambda_l1_addon,
             edge_batch_size=args.edge_batch_size,
             node_batch_size=args.node_batch_size,
+            edge_val_ratio=args.edge_val_ratio,
+            node_val_ratio=args.node_val_ratio,
             n_sampled_neighbors=args.n_sampled_neighbors,
             mlflow_experiment_id=mlflow_experiment_id,
             verbose=True)
 
-print("\nComputing neighbor graph...")
-# Use latent representation for UMAP generation
-sc.pp.neighbors(model.adata,
-                use_rep=args.latent_key,
-                key_added=args.latent_key)
+print("\nFinished model training...")
 
-print("\nComputing UMAP embedding...")
-sc.tl.umap(model.adata,
-           neighbors_key=args.latent_key)
+if args.compute_knn_graph:
+    print("\nComputing neighbor graph...")
+    # Use latent representation for UMAP generation
+    sc.pp.neighbors(model.adata,
+                    use_rep=args.latent_key,
+                    key_added=args.latent_key)
+
+    print("\nComputing UMAP embedding...")
+    sc.tl.umap(model.adata,
+               neighbors_key=args.latent_key)
 
 # Store adata to disk
 model.adata.write(
