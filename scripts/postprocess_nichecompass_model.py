@@ -96,6 +96,11 @@ parser.add_argument(
     default=True,
     help="Indicator whether to compute knn graph from PCA representations.")
 parser.add_argument(
+    "--compute_knn_graph",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether to compute a knn graph.")
+parser.add_argument(
     "--compute_umap",
     action=argparse.BooleanOptionalAction,
     default=False,
