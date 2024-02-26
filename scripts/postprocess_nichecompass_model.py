@@ -171,6 +171,7 @@ if args.compute_latent:
        return_mu_std=False,
        node_batch_size=args.node_batch_size,
        dtype=np.float16)
+else:
     print("\nSkipping latent representations computation...")
     
 if args.compute_pca:
@@ -182,18 +183,21 @@ else:
 if args.compute_knn_graph:
     if args.use_pca_knn_graph:
         neighbor_rep_key = args.pca_key
+        print("\nComputing neighbor graph on PCA representations...")
     else:
         neighbor_rep_key = model.latent_key_
-    print("\nComputing neighbor graph on PCA representations...")
+        print("\nComputing neighbor graph on latent representations...")
     sc.pp.neighbors(model.adata,
                     use_rep=neighbor_rep_key,
                     key_added=model.latent_key_)
+else:
     print("\nSkipping neighbor graph computation...")
 
 if args.compute_umap:
     print("\nComputing UMAP embedding...")
     sc.tl.umap(model.adata,
                neighbors_key=model.latent_key_)
+else:
     print("\nSkipping UMAP embedding computation...")
     
 if args.compute_leiden:
@@ -202,6 +206,7 @@ if args.compute_leiden:
                  resolution=args.latent_leiden_resolution,
                  key_added=latent_cluster_key,
                  neighbors_key=model.latent_key_)
+else:
     print("\nSkipping Leiden clustering computation...")
 
 print("\nSaving model...")
