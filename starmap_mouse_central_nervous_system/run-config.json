@@ -1,0 +1,71 @@
+{
+  "artefact_directory": "artefacts",
+  "gene_programs": {
+    "sources": [
+      "omnipath",
+      "nichenet",
+      "mebocost"
+    ],
+    "species": "mouse",
+    "filter_mode": "subset",
+    "gene_orthologs_mapping_file_path": "staging/human_mouse_gene_orthologs.csv",
+    "nichenet": {
+      "keep_target_genes_ratio": 1,
+      "max_target_genes_per_gene_program": 250
+    },
+    "mebocost": {
+      "metabolite_enzyme_sensor_directory_path": "staging/metabolite_enzyme_sensor_gps"
+    }
+  },
+  "dataset": {
+    "file_path": "staging/spatial_8327576.h5ad",
+    "library_key": "label",
+    "spatial_key": "spatial",
+    "export_file_path": "spatial_8327576.h5ad",
+    "gene_programs": "artefacts/puffy_script/gene_programs.pkl",
+    "n_neighbors": 8,
+    "gene_filters": {
+      "n_highly_variable": null,
+      "n_spatially_variable": null,
+      "min_cell_gene_thresh_ratio": 0.1,
+      "gene_program_relevant": null
+    }
+  },
+  "model": {
+    "dataset_file_path": "artefacts/brave_banyan/spatial_8327576.h5ad",
+    "cat_covariates_embeds_injection": [
+      "gene_expr_decoder"
+    ],
+    "cat_covariates_keys": [
+      "label"
+    ],
+    "cat_covariates_no_edges": null,
+    "cat_covariates_embeds_nums": [
+      8
+    ],
+    "n_addon_gp": 100,
+    "active_gp_thresh_ratio": 0.01,
+    "n_fc_layers_encoder": 1,
+    "n_layers_encoder": 1,
+    "conv_layer_encoder": "gcnconv",
+    "n_hidden_encoder": null,
+    "node_label_method": "one-hop-norm"
+  },
+  "training": {
+    "n_epochs": 100,
+    "n_epochs_all_gps": 25,
+    "n_epochs_no_cat_covariates_contrastive": 0,
+    "lr": 0.001,
+    "lambda_edge_recon": 5000000,
+    "lambda_gene_expr_recon": 3000,
+    "lambda_cat_covariates_contrastive": 0,
+    "contrastive_logits_pos_ratio": 0,
+    "contrastive_logits_neg_ratio": 0,
+    "lambda_group_lasso": 0,
+    "lambda_l1_masked": 0,
+    "lambda_l1_addon": 0,
+    "edge_batch_size": 256,
+    "node_batch_size": 256,
+    "n_sampled_neighbors": 4
+  }
+}
