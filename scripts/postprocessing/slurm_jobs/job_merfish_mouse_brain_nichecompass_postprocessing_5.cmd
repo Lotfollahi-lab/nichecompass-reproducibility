@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J merfish_mouse_brain_nichecompass_postprocessing_3
-#SBATCH -o ../scripts/postprocessing/slurm_jobs/logs/out_merfish_mouse_brain_nichecompass_postprocessing_3.txt
-#SBATCH -e ../scripts/postprocessing/slurm_jobs/logs/err_merfish_mouse_brain_nichecompass_postprocessing_3.txt
+#SBATCH -J merfish_mouse_brain_nichecompass_postprocessing_5
+#SBATCH -o ../scripts/postprocessing/slurm_jobs/logs/out_merfish_mouse_brain_nichecompass_postprocessing_5.txt
+#SBATCH -e ../scripts/postprocessing/slurm_jobs/logs/err_merfish_mouse_brain_nichecompass_postprocessing_5.txt
 #SBATCH -t 48:00:00
 #SBATCH -p gpu_p
 #SBATCH -c 6
