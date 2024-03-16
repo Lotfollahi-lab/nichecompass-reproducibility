@@ -6,11 +6,11 @@
 #SBATCH -p gpu_p
 #SBATCH -c 6
 #SBATCH --gres=gpu:1
-#SBATCH --qos=gpu
-#SBATCH --mem=128G
+#SBATCH --qos=gpu_normal
+#SBATCH --mem=156G
 #SBATCH --nice=10000
 source $HOME/.bashrc
-conda activate nichecompass-test
+conda activate nichecompass
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/single_sample_method_benchmarking
-python ../compute_benchmarking_metrics.py --dataset seqfish_mouse_organogenesis_embryo2 --task single_sample_method_benchmarking --file_name seqfish_mouse_organogenesis_embryo2_sagenet.h5ad --cell_type_key cell_type --batch_key None --latent_key sagenet_latent --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
+python ../compute_benchmarking_metrics.py --dataset seqfish_mouse_organogenesis_embryo2 --task single_sample_method_benchmarking --file_name seqfish_mouse_organogenesis_embryo2_scvi.h5ad --cell_type_key cell_type --batch_key None --latent_key scvi_latent --metrics gcs mlami cas clisis nasw cnmi cari casw clisi
