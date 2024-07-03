@@ -49,7 +49,7 @@ srtsim_cci_ref = function(
     region_cell_map,
     GP_in,
     sim_seed = 1,
-    numKNN = 8,
+    numKNN = 6,
     numSingleCellType = 2000){	
   
   set.seed(sim_seed)
@@ -143,21 +143,31 @@ srtsim_cci_ref = function(
           nearest_celltypeB = c_simu[nearid]
           for(increment_param in unique(GP_in$increment_param[GP_in$increment_param != 1])){
             tmp_GP = GP_in[which(GP_in$celltypeA == celltype_A &
-                                   GP_in$regionA == region_A &
-                                   GP_in$increment_param == increment_param &
-                                   GP_in$celltypeB %in% nearest_celltypeB),]
+                                 GP_in$regionA == region_A &
+                                 GP_in$increment_param == increment_param &
+                                 GP_in$celltypeB %in% nearest_celltypeB),]
             source_gene_ind=na.omit(match(c(unlist(tmp_GP$sources)),rownames(simu_count)))
             target_gene_ind=na.omit(match(c(unlist(tmp_GP$targets)),rownames(simu_count)))
             if(length(target_gene_ind)>0){
-              increment_mu <- increment_param
+              if(length(target_gene_ind)>1){
+                increment_mu <- rowMeans(sim_cnt[target_gene_ind,]) * increment_param
+              } else {
+                increment_mu <- mean(sim_cnt[target_gene_ind,]) * increment_param
+              }
               increment_prob <- increment_param/10
               increment <- rbinom(length(target_gene_ind), 1, increment_prob) * rnbinom(length(target_gene_ind), size = Inf, mu = increment_mu)
-              simu_count[target_gene_ind,nearid] = sim_cnt[target_gene_ind,nearid] + increment}
+              simu_count[target_gene_ind,nearid] = sim_cnt[target_gene_ind,nearid] + increment
+            }
             if(length(source_gene_ind)>0){
-              increment_mu <- increment_param
+              if(length(source_gene_ind)>1){
+                increment_mu <- rowMeans(sim_cnt[source_gene_ind,]) * increment_param
+              } else {
+                increment_mu <- mean(sim_cnt[source_gene_ind,]) * increment_param
+              }
               increment_prob <- increment_param/10
               increment <- rbinom(length(source_gene_ind), 1, increment_prob) * rnbinom(length(source_gene_ind), size = Inf, mu = increment_mu)
-              simu_count[source_gene_ind,nearid] = sim_cnt[source_gene_ind,nearid] + increment}
+              simu_count[source_gene_ind,nearid] = sim_cnt[source_gene_ind,nearid] + increment
+            }
           }
         }
       }
@@ -188,7 +198,7 @@ srtsim_cci_free = function(
   region_cell_map,
   GP_in,
   sim_seed = 1,
-  numKNN = 8,
+  numKNN = 6,
   numSingleCellType = 2000){	
   
   
@@ -267,15 +277,25 @@ srtsim_cci_free = function(
             source_gene_ind=na.omit(match(c(unlist(tmp_GP$sources)),rownames(simu_count)))
             target_gene_ind=na.omit(match(c(unlist(tmp_GP$targets)),rownames(simu_count)))
             if(length(target_gene_ind)>0){
-              increment_mu <- increment_param
+              if(length(target_gene_ind)>1){
+                increment_mu <- rowMeans(sim_cnt[target_gene_ind,]) * increment_param
+              } else {
+                increment_mu <- mean(sim_cnt[target_gene_ind,]) * increment_param
+              }
               increment_prob <- increment_param/10
               increment <- rbinom(length(target_gene_ind), 1, increment_prob) * rnbinom(length(target_gene_ind), size = Inf, mu = increment_mu)
-              simu_count[target_gene_ind,nearid] = sim_cnt[target_gene_ind,nearid] + increment}
+              simu_count[target_gene_ind,nearid] = sim_cnt[target_gene_ind,nearid] + increment
+            }
             if(length(source_gene_ind)>0){
-              increment_mu <- increment_param
+              if(length(source_gene_ind)>1){
+                increment_mu <- rowMeans(sim_cnt[source_gene_ind,]) * increment_param
+              } else {
+                increment_mu <- mean(sim_cnt[source_gene_ind,]) * increment_param
+              }
               increment_prob <- increment_param/10
               increment <- rbinom(length(source_gene_ind), 1, increment_prob) * rnbinom(length(source_gene_ind), size = Inf, mu = increment_mu)
-              simu_count[source_gene_ind,nearid] = sim_cnt[source_gene_ind,nearid] + increment}
+              simu_count[source_gene_ind,nearid] = sim_cnt[source_gene_ind,nearid] + increment
+            }
           }
         }
       }
@@ -316,7 +336,7 @@ isid = 1
 set.seed(isid)
 
 for(increment_mode in c("strong")){
-  n_genes = c(951, 13993)
+  n_genes = c(1090, 10854)
   gp_file_paths = c(paste(sim_folder_path, "sim_gps_filtered_", increment_mode, "increments.csv", sep = ""),
                     paste(sim_folder_path, "sim_gps_", increment_mode, "increments.csv", sep = ""))
   for(nLoc in c(10000)){
