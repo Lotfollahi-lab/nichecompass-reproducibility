@@ -1,13 +1,13 @@
 # NicheCompass Reproducibility
 
-This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass manuscript.
-The NicheCompass source code is available in another [repository](https://github.com/Lotfollahi-lab/nichecompass).
+This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass [manuscript](https://www.biorxiv.org/content/10.1101/2024.02.21.581428v3).
+The NicheCompass source code can be found [here](https://github.com/Lotfollahi-lab/nichecompass).
 
 ## Installation
 
 ### Standard
 1) Clone the nichecompass-reproducibility repository and navigate into it: <br>
-```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
+```git clone https://github.com/Lotfollahi-lab/nichecompass-reproducibility.git``` <br>
 ```cd nichecompass-reproducibility```
 
 2) (Optional) Install the Libmamba solver to make the installation faster: <br>
