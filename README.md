@@ -46,7 +46,7 @@ All preprocessed data used in the manuscript and trained models are downloadable
 
 ## Reference
 ```
-@article{Birk2024,
+@article{Birk2024Quantitative,
   title = {Quantitative characterization of cell niches in spatial atlases},
   author = {Birk, S. and others},
   journal = {bioRxiv},
