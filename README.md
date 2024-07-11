@@ -30,10 +30,10 @@ Follow the instructions in the [documentation](https://nichecompass.readthedocs.
  
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
-```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
+```git clone https://github.com/Lotfollahi-lab/nichecompass-reproducibility.git``` <br>
 
 2) Clone the nichecompass repository: <br>
-```git clone https://github.com/sebastianbirk/nichecompass.git```
+```git clone https://github.com/Lotfollahi-lab/nichecompass.git```
 
 3) From the root repository that contains both the nichecompass and nichecompass-reproducibility repositories, run: <br>
 ```docker buildx build --load --platform linux/amd64 --file nichecompass-reproducibility/envs/Dockerfile --tag nichecompass . --no-cache``` (macOS)
