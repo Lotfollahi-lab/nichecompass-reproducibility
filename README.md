@@ -22,10 +22,14 @@ The NicheCompass source code can be found [here](https://github.com/Lotfollahi-l
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_deeplinc.yaml```
 
-5) Activate the nichecompass-reproducibility conda environment: <br>
+5) Create the cellcharter conda environment (for benchmarking cellcharter method which relies on legacy packages and is
+incompatible with dependencies of other methods): <br>
+```conda env create -f envs/environment_cellcharter.yaml```
+
+6) Activate the nichecompass-reproducibility conda environment: <br>
 ```conda activate nichecompass-reproducibility```
 
-6) Install NicheCompass: <br>
+7) Install NicheCompass: <br>
 Follow the instructions in the [documentation](https://nichecompass.readthedocs.io/en/latest/installation.html).
  
 ### Docker / Charliecloud Container
