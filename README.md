@@ -1,13 +1,13 @@
 # NicheCompass Reproducibility
 
-This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass manuscript.
-The NicheCompass source code is available in another [repository](https://github.com/Lotfollahi-lab/nichecompass).
+This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass [manuscript](https://www.biorxiv.org/content/10.1101/2024.02.21.581428v3).
+The NicheCompass source code can be found [here](https://github.com/Lotfollahi-lab/nichecompass).
 
 ## Installation
 
 ### Standard
 1) Clone the nichecompass-reproducibility repository and navigate into it: <br>
-```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
+```git clone https://github.com/Lotfollahi-lab/nichecompass-reproducibility.git``` <br>
 ```cd nichecompass-reproducibility```
 
 2) (Optional) Install the Libmamba solver to make the installation faster: <br>
@@ -30,10 +30,10 @@ Follow the instructions in the [documentation](https://nichecompass.readthedocs.
  
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
-```git clone https://github.com/sebastianbirk/nichecompass-reproducibility.git``` <br>
+```git clone https://github.com/Lotfollahi-lab/nichecompass-reproducibility.git``` <br>
 
 2) Clone the nichecompass repository: <br>
-```git clone https://github.com/sebastianbirk/nichecompass.git```
+```git clone https://github.com/Lotfollahi-lab/nichecompass.git```
 
 3) From the root repository that contains both the nichecompass and nichecompass-reproducibility repositories, run: <br>
 ```docker buildx build --load --platform linux/amd64 --file nichecompass-reproducibility/envs/Dockerfile --tag nichecompass . --no-cache``` (macOS)
@@ -46,7 +46,7 @@ All preprocessed data used in the manuscript and trained models are downloadable
 
 ## Reference
 ```
-@article{Birk2024,
+@article{Birk2024Quantitative,
   title = {Quantitative characterization of cell niches in spatial atlases},
   author = {Birk, S. and others},
   journal = {bioRxiv},
