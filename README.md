@@ -18,11 +18,11 @@ The NicheCompass source code can be found [here](https://github.com/Lotfollahi-l
 3) Create the nichecompass-reproducibility conda environment: <br>
 ```conda env create -f envs/environment.yaml```
 
-To enable GPU support for JAX, after the installation run: <br>
+   To enable GPU support for JAX, after the installation run: <br>
 ```conda activate nichecompass-reproducibility``` <br>
 ```pip install jaxlib==0.3.25+cuda${CUDA}.cudnn${CUDNN} -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html```
 
-For example, for CUDA 11.7, type: <br>
+   For example, for CUDA 11.7, type: <br>
 ```conda activate nichecompass-reproducibility``` <br>
 ```pip install jaxlib==0.4.7+cuda11.cudnn86 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html```
 
