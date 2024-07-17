@@ -18,18 +18,27 @@ The NicheCompass source code can be found [here](https://github.com/Lotfollahi-l
 3) Create the nichecompass-reproducibility conda environment: <br>
 ```conda env create -f envs/environment.yaml```
 
-4) Create the deeplinc conda environment (for benchmarking deeplinc method which relies on legacy packages and is
+To enable GPU support for JAX, after the installation run: <br>
+```conda activate nichecompass-reproducibility``` <br>
+```pip install jaxlib==0.3.25+cuda${CUDA}.cudnn${CUDNN} -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html```
+
+For example, for CUDA 11.7, type: <br>
+```conda activate nichecompass-reproducibility``` <br>
+```pip install jaxlib==0.4.7+cuda11.cudnn86 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html```
+
+
+5) Create the deeplinc conda environment (for benchmarking deeplinc method which relies on legacy packages and is
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_deeplinc.yaml```
 
-5) Create the cellcharter conda environment (for benchmarking cellcharter method which relies on legacy packages and is
+6) Create the cellcharter conda environment (for benchmarking cellcharter method which relies on legacy packages and is
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_cellcharter.yaml```
 
-6) Activate the nichecompass-reproducibility conda environment: <br>
+7) Activate the nichecompass-reproducibility conda environment: <br>
 ```conda activate nichecompass-reproducibility```
 
-7) Install NicheCompass: <br>
+8) Install NicheCompass: <br>
 Follow the instructions in the [documentation](https://nichecompass.readthedocs.io/en/latest/installation.html).
  
 ### Docker / Charliecloud Container
