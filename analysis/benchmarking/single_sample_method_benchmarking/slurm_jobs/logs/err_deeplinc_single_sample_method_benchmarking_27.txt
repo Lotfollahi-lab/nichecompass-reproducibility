@@ -19,30 +19,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-17 23:41:19.637699: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-17 23:41:21.135972: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-17 23:41:21.354005: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x1d9bae0 executing computations on platform Host. Devices:
-2024-07-17 23:41:21.363089: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:30:27.647141: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:30:27.693651: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:30:27.697223: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x714d070 executing computations on platform Host. Devices:
+2024-07-22 13:30:27.697519: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -64,30 +56,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 00:06:03.623430: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 00:06:04.774974: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 00:06:04.859505: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0xb9cb930 executing computations on platform Host. Devices:
-2024-07-18 00:06:04.912875: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:33:16.572645: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:33:16.591693: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:33:16.592204: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x592dcdf0 executing computations on platform Host. Devices:
+2024-07-22 13:33:16.592286: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -109,30 +93,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 00:30:27.131485: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 00:30:27.278979: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 00:30:27.281967: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x3af30fe0 executing computations on platform Host. Devices:
-2024-07-18 00:30:27.282121: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:36:10.277068: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:36:10.295673: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:36:10.296167: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x4484fc0 executing computations on platform Host. Devices:
+2024-07-22 13:36:10.296229: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -154,30 +130,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 00:55:02.854492: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 00:55:03.836978: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 00:55:03.971664: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x3dbcbd00 executing computations on platform Host. Devices:
-2024-07-18 00:55:03.987470: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:39:04.246051: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:39:04.263672: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:39:04.264421: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x32bbf10 executing computations on platform Host. Devices:
+2024-07-22 13:39:04.264472: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -199,30 +167,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 01:19:49.962625: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 01:19:50.063974: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 01:19:50.066986: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x3c0a5b10 executing computations on platform Host. Devices:
-2024-07-18 01:19:50.067141: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:42:12.463775: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:42:12.481689: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:42:12.482194: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x368b3e0 executing computations on platform Host. Devices:
+2024-07-22 13:42:12.482257: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -244,30 +204,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 01:44:41.890793: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 01:44:41.926969: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 01:44:41.929780: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x35517b0 executing computations on platform Host. Devices:
-2024-07-18 01:44:41.929936: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:47:51.428135: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:47:51.446685: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:47:51.447207: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x36a4fa0 executing computations on platform Host. Devices:
+2024-07-22 13:47:51.447264: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -289,30 +241,22 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 02:09:50.248762: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 02:09:51.257970: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 02:09:51.389713: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x3b34a4c0 executing computations on platform Host. Devices:
-2024-07-18 02:09:51.394135: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:51:14.782196: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:51:14.875658: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:51:14.876675: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x7f6f520 executing computations on platform Host. Devices:
+2024-07-22 13:51:14.876753: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:526: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
   _np_qint8 = np.dtype([("qint8", np.int8, 1)])
 /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:527: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
@@ -334,27 +278,19 @@ Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep
 WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
 Instructions for updating:
 Use tf.cast instead.
-2024-07-18 02:35:51.121407: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
-2024-07-18 02:35:51.216975: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000000000 Hz
-2024-07-18 02:35:51.220358: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x2ad5110 executing computations on platform Host. Devices:
-2024-07-18 02:35:51.220537: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
-WARNING:tensorflow:From /home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/tensorflow/python/training/saver.py:966: remove_checkpoint (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use standard file APIs to delete files with this prefix.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
-findfont: Font family ['Arial'] not found. Falling back to DejaVu Sans.
+2024-07-22 13:54:38.812521: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2024-07-22 13:54:38.830691: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2595190000 Hz
+2024-07-22 13:54:38.831194: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x69419cf0 executing computations on platform Host. Devices:
+2024-07-22 13:54:38.831249: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
 Traceback (most recent call last):
-  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 215, in <module>
-    plot_histogram(all_new_edges_dist, xlabel='distance', ylabel='density', filename='all_new_edges_distance', color="coral")
-  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/plot.py", line 31, in plot_histogram
-    sns.distplot(data, hist=ifhist, rug=ifrug, kde=ifkde, color=color)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/seaborn/distributions.py", line 218, in distplot
-    color=hist_color, **hist_kws)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/__init__.py", line 1414, in inner
-    return func(ax, *map(sanitize_sequence, args), **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/axes/_axes.py", line 6793, in hist
-    p.update(kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/matplotlib/artist.py", line 1067, in update
-    raise AttributeError(f"{type(self).__name__!r} object "
-AttributeError: 'Rectangle' object has no property 'normed'
+  File "../../../../../../analysis/benchmarking/DeepLinc/deeplinc.py", line 167, in <module>
+    roc_score, ap_score, acc_score, _ = lm_train.get_roc_score(emb_hidden2_train, feas)
+  File "/ictstr01/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/DeepLinc/deeplinc/metrics.py", line 55, in get_roc_score
+    roc_score = roc_auc_score(labels_all, preds_all)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/metrics/_ranking.py", line 546, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 800, in check_array
+    _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+  File "/home/aih/sebastian.birk/miniconda3/envs/deeplinc/lib/python3.7/site-packages/sklearn/utils/validation.py", line 116, in _assert_all_finite
+    type_err, msg_dtype if msg_dtype is not None else X.dtype
+ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
