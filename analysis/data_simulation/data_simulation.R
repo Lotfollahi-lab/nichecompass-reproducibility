@@ -1,38 +1,3 @@
-# **Creator**: Sebastian Birk (<sebastian.birk@helmholtz-munich.de>)
-# **Date of Creation:** 24.05.2024
-# **Date of Last Modification:** 09.07.2024
-
-##========================
-## Installation (MacOS)
-##========================
-# SRTsim requirements
-install.packages("rgl") # on MacOS this requires brew install xquartz, brew install mesa, brew install libpng
-install.packages("units") # on MacOS, this requires brew install udunits
-Sys.setenv(PATH = paste("/opt/homebrew/bin", Sys.getenv("PATH"), sep = ":"))
-install.packages("sf") # on MacOS, this requires brew install gdal
-if (!require("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install("S4Vectors")
-install.packages("nloptr") # on MacOS, this requires brew install cmake
-install.packages("lme4")
-install.packages("ggpubr")
-
-# SRTsim
-install.packages('devtools')
-devtools::install_github('xzhoulab/SRTsim')
-
-# SingleCellExperiment
-Sys.setenv(PATH = paste("/opt/gcc/bin", Sys.getenv("PATH"), sep = ":"))
-Sys.setenv(PATH = paste("/opt/llvm/bin", Sys.getenv("PATH"), sep = ":"))
-BiocManager::install(version = "3.19")
-BiocManager::install("zellkonverter") # on MacOS, use gcc compiler
-# brew install gcc
-# mkdir -p ~/.R
-# nano ~/.R/Makevars
-# CC = /usr/local/bin/gcc-10
-# CXX = /usr/local/bin/g++-10
-install.packages("readr")
-
 ##========================
 ## Imports
 ##========================
@@ -218,9 +183,9 @@ srtsim_cci_ref = function(
           for(nearid in nearest_cells){
             nearest_celltypeB = c_simu[nearid]
             tmp_GP = GP_in[which(GP_in$celltypeA == celltype_A &
-                                 GP_in$regionA == region_A &
-                                 GP_in$increment_param == increment_param &
-                                 GP_in$celltypeB %in% nearest_celltypeB),]
+                                   GP_in$regionA == region_A &
+                                   GP_in$increment_param == increment_param &
+                                   GP_in$celltypeB %in% nearest_celltypeB),]
             source_gene_ind=na.omit(match(c(unlist(tmp_GP$sources)),rownames(simu_count)))
             target_gene_ind=na.omit(match(c(unlist(tmp_GP$targets)),rownames(simu_count)))
             if(length(target_gene_ind)>0){
@@ -230,8 +195,8 @@ srtsim_cci_ref = function(
               } else {
                 target_gene_mean_params <- ct_params[[celltype_A]][target_gene_ind,1:3]
               }
-              increments <- t(apply(target_gene_mean_params,1,function(param){rbinom(length(cellid), 1, 1-param[1]) * rnbinom(length(cellid), size = param[2] * disper_fc, mu = (increment_param/numKNN) * param[3])}))
-              simu_count[target_gene_ind,cellid] = simu_count[target_gene_ind,cellid] + increments
+              increments <- t(apply(target_gene_mean_params,1,function(param){rbinom(length(cellid), 1, 1-param[1]) * rnbinom(length(cellid), size = param[2] * disper_fc, mu = increment_param * param[3])}))
+              simu_count[target_gene_ind,cellid] = sim_cnt[target_gene_ind,cellid] + increments
             }
             if(length(source_gene_ind)>0){
               # Simulate CCI source gene count increments
@@ -240,8 +205,8 @@ srtsim_cci_ref = function(
               } else {
                 source_gene_mean_params <- ct_params[[nearest_celltypeB]][source_gene_ind,1:3]
               }
-              increments <- t(apply(source_gene_mean_params,1,function(param){rbinom(length(nearid), 1, 1-param[1]) * rnbinom(length(nearid), size = param[2] * disper_fc, mu = (increment_param/numKNN) * param[3])}))
-              simu_count[source_gene_ind,nearid] = simu_count[source_gene_ind,nearid] + increments
+              increments <- t(apply(source_gene_mean_params,1,function(param){rbinom(length(nearid), 1, 1-param[1]) * rnbinom(length(nearid), size = param[2] * disper_fc, mu = increment_param * param[3])}))
+              simu_count[source_gene_ind,nearid] = sim_cnt[source_gene_ind,nearid] + increments
             }
           }
         }
