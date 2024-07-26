@@ -30,10 +30,11 @@ import torch
 
 from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
-                                extract_gp_dict_from_mebocost_es_interactions,
+                                extract_gp_dict_from_mebocost_ms_interactions,
                                 extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
+                                filter_and_combine_gp_dict_gps_v2,
                                 get_unique_genes_from_gp_dict)
 
 ###############################################################################
@@ -366,6 +367,11 @@ parser.add_argument(
     type=int,
     default=-1,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--use_new_gp_mask",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether new gene program mask should be used.")
 
 # Other
 parser.add_argument(
@@ -443,10 +449,15 @@ os.makedirs(result_folder_path, exist_ok=True)
 ###############################################################################
 
 print("\nPreparing the gene program mask...")
+if args.use_new_gp_mask:
+    min_curation_effort = 2
+else:
+    min_curation_effort = 0
+
 # OmniPath gene programs
 omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
     species=args.species,
-    min_curation_effort=0,
+    min_curation_effort=min_curation_effort,
     load_from_disk=True,
     save_to_disk=False,
     lr_network_file_path=omnipath_lr_network_file_path,
@@ -475,6 +486,8 @@ nichenet_lr_genes = get_unique_genes_from_gp_dict(
     retrieved_gene_categories=["ligand", "receptor"])
 
 # Combine gene programs into one dictionary
+if args.use_new_gp_mask:
+    gp_dicts = [omnipath_gp_dict, nichenet_gp_dict]
 combined_gp_dict = dict(omnipath_gp_dict)
 combined_gp_dict.update(nichenet_gp_dict)
 
@@ -485,7 +498,7 @@ if args.filter_genes:
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
-    mebocost_gp_dict = extract_gp_dict_from_mebocost_es_interactions(
+    mebocost_gp_dict = extract_gp_dict_from_mebocost_ms_interactions(
     dir_path=f"{gp_data_folder_path}/metabolite_enzyme_sensor_gps",
     species=args.species,
     plot_gp_gene_count_distributions=False)
@@ -493,22 +506,29 @@ if args.include_mebocost_gps:
     mebocost_genes = get_unique_genes_from_gp_dict(
         gp_dict=mebocost_gp_dict,
         retrieved_gene_entities=["sources", "targets"])
-
+    
+    if args.use_new_gp_mask:
+        gp_dicts.append(mebocost_gp_dict)
     combined_gp_dict.update(mebocost_gp_dict)
     
     #if args.filter_genes:
         # Update gene program relevant genes
         #gp_relevant_genes = list(set(gp_relevant_genes + mebocost_genes))
-    
-# Filter and combine gene programs
-combined_new_gp_dict = filter_and_combine_gp_dict_gps(
-    gp_dict=combined_gp_dict,
-    gp_filter_mode=args.gp_filter_mode,
-    combine_overlap_gps=args.combine_overlap_gps,
-    overlap_thresh_source_genes=args.overlap_thresh_source_genes,
-    overlap_thresh_target_genes=args.overlap_thresh_target_genes,
-    overlap_thresh_genes=args.overlap_thresh_genes,
-    verbose=False)
+        
+if args.use_new_gp_mask:
+    combined_new_gp_dict = filter_and_combine_gp_dict_gps_v2(
+        gp_dicts,
+        verbose=True)
+else:
+    # Filter and combine gene programs
+    combined_new_gp_dict = filter_and_combine_gp_dict_gps(
+        gp_dict=combined_gp_dict,
+        gp_filter_mode=args.gp_filter_mode,
+        combine_overlap_gps=args.combine_overlap_gps,
+        overlap_thresh_source_genes=args.overlap_thresh_source_genes,
+        overlap_thresh_target_genes=args.overlap_thresh_target_genes,
+        overlap_thresh_genes=args.overlap_thresh_genes,
+        verbose=False)
 
 print("Number of gene programs before filtering and combining: "
       f"{len(combined_gp_dict)}.")

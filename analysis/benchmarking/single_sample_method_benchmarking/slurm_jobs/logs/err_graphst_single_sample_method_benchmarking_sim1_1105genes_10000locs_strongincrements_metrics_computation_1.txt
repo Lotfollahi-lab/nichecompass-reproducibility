@@ -1,5 +1,7 @@
 WARNING:root:Failed to download from `https://omnipathdb.org/`.
 WARNING:root:Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 715, in urlopen
+    httplib_response = self._make_request(
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 404, in _make_request
     self._validate_conn(conn)
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 1058, in _validate_conn
@@ -16,7 +18,7 @@ WARNING:root:Traceback (most recent call last):
     self.do_handshake()
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/ssl.py", line 1310, in do_handshake
     self._sslobj.do_handshake()
-socket.timeout: _ssl.c:1112: The handshake operation timed out
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:1129)
 
 During handling of the above exception, another exception occurred:
 
@@ -25,17 +27,9 @@ Traceback (most recent call last):
     resp = conn.urlopen(
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 799, in urlopen
     retries = retries.increment(
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/util/retry.py", line 550, in increment
-    raise six.reraise(type(error), error, _stacktrace)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/packages/six.py", line 770, in reraise
-    raise value
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 715, in urlopen
-    httplib_response = self._make_request(
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 407, in _make_request
-    self._raise_timeout(err=e, url=url, timeout_value=conn.timeout)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/connectionpool.py", line 358, in _raise_timeout
-    raise ReadTimeoutError(
-urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='omnipathdb.org', port=443): Read timed out. (read timeout=3.0)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/urllib3/util/retry.py", line 592, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='omnipathdb.org', port=443): Max retries exceeded with url: /queries/enzsub?format=json (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
 
 During handling of the above exception, another exception occurred:
 
@@ -46,8 +40,8 @@ Traceback (most recent call last):
     with self._session.send(
   File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/requests/sessions.py", line 703, in send
     r = adapter.send(request, **kwargs)
-  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/requests/adapters.py", line 532, in send
-    raise ReadTimeout(e, request=request)
-requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='omnipathdb.org', port=443): Read timed out. (read timeout=3.0)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass/lib/python3.9/site-packages/requests/adapters.py", line 517, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='omnipathdb.org', port=443): Max retries exceeded with url: /queries/enzsub?format=json (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:1129)')))
 
 WARNING:jax._src.xla_bridge:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)

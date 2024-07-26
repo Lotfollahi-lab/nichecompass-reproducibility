@@ -13,4 +13,4 @@ source $HOME/.bashrc
 conda activate nichecompass
 cd /
 cd /home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/analysis/benchmarking/single_sample_method_benchmarking
-python ../compute_benchmarking_metrics.py --dataset stereoseq_mouse_embryo --task single_sample_method_benchmarking --file_name stereoseq_mouse_embryo_banksy.h5ad --cell_type_key leiden --niche_type_key niche_type --batch_key None --latent_key banksy_latent --metrics gcs mlami cas clisis nasw cnmi cari casw clisi --include_sdmbench
+python ../compute_benchmarking_metrics.py --dataset stereoseq_mouse_embryo --task single_sample_method_benchmarking --file_name stereoseq_mouse_embryo_banksy.h5ad --cell_type_key cell_type --niche_type_key niche_type --batch_key None --latent_key banksy_latent --metrics gcs mlami cas clisis nasw cnmi cari casw clisi --include_sdmbench
