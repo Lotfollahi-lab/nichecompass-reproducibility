@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/reference/../train_nichecompass_reference_model.py", line 920, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/models/nichecompass.py", line 741, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/train/trainer.py", line 378, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/modules/vgpgae.py", line 607, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass/nichecompass/nn/encoders.py", line 203, in forward
+    logstd = self.conv_logstd(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 236, in forward
+    out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 374, in propagate
+    out = self.message(**msg_kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 272, in message
+    x = F.leaky_relu(x, self.negative_slope)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-test/lib/python3.9/site-packages/torch/nn/functional.py", line 1632, in leaky_relu
+    result = torch._C._nn.leaky_relu(input, negative_slope)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 5.31 GiB (GPU 0; 39.42 GiB total capacity; 37.95 GiB already allocated; 97.00 MiB free; 38.45 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

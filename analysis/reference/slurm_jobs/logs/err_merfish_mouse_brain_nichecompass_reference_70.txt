@@ -1,0 +1,26 @@
+/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch_geometric/sampler/neighbor_sampler.py:54: UserWarning: The usage of the 'directed' argument in 'NeighborSampler' is deprecated. Use `subgraph_type='induced'` instead.
+  warnings.warn(f"The usage of the 'directed' argument in "
+Traceback (most recent call last):
+  File "/home/aih/sebastian.birk/workspace/projects/nichecompass-reproducibility/scripts/reference/../train_nichecompass_reference_model.py", line 962, in <module>
+    model.train(n_epochs=args.n_epochs,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/nichecompass/models/nichecompass.py", line 755, in train
+    self.trainer.train(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/nichecompass/train/trainer.py", line 376, in train
+    edge_train_model_output = self.model(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/nichecompass/modules/vgpgae.py", line 620, in forward
+    encoder_outputs = self.encoder(
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/nichecompass/nn/encoders.py", line 198, in forward
+    logstd = self.conv_logstd(hidden, edge_index)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 250, in forward
+    out = self.propagate(edge_index, x=(x_l, x_r), edge_attr=edge_attr,
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch_geometric/nn/conv/message_passing.py", line 463, in propagate
+    out = self.message(**msg_kwargs)
+  File "/home/aih/sebastian.birk/miniconda3/envs/nichecompass-reproducibility/lib/python3.9/site-packages/torch_geometric/nn/conv/gatv2_conv.py", line 292, in message
+    alpha = (x * self.att).sum(dim=-1)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.87 GiB (GPU 0; 19.50 GiB total capacity; 16.88 GiB already allocated; 1.63 GiB free; 17.23 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
