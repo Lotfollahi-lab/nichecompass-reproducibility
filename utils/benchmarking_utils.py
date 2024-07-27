@@ -253,7 +253,11 @@ def plot_simple_metrics_table(df,
                                                 "nanostring_cosmx_human_nsclc_subsample_10pct": "nanoString CosMx \n Human NSCLC (10% Subsample)",
                                                 "vizgen_merfish_mouse_liver": "MERFISH \n Mouse Liver",
                                                 "slideseqv2_mouse_hippocampus": "Slide-seqV2 \n Mouse Hippocampus",
-                                                "slideseqv2_mouse_hippocampus_subsample_25pct": "Slide-seqV2 \n Mouse Hippocampus (25% Subsample)"},
+                                                "slideseqv2_mouse_hippocampus_subsample_25pct": "Slide-seqV2 \n Mouse Hippocampus (25% Subsample)",
+                                                "sim1_1105genes_10000locs_strongincrements": "Simulation Data",
+                                                "stereoseq_mouse_embryo": "StereoSeq Mouse Embryo",
+                                                "starmap_mouse_mpfc": "STARmap Mouse MPFC"},
+                              overall_score_col="Overall Score",
                        show=True,       
                        save_dir=None,
                        save_name=f"benchmarking_results.png"):
@@ -265,7 +269,7 @@ def plot_simple_metrics_table(df,
     df = df.pivot(index=[model_col], columns=[group_col, "score_type"], values="score")
     df.reset_index(inplace=True)
     df.columns = ['_'.join(col).strip("_") for col in df.columns.values]
-    df.columns = [col if "Overall Score" not in col else "Overall Score" for col in df.columns.values]
+    df.columns = [col if overall_score_col not in col else overall_score_col for col in df.columns.values]
     if len(groups) > 1:
         sorted_metrics_col_list = []
         for i, group in enumerate(groups):
@@ -289,8 +293,8 @@ def plot_simple_metrics_table(df,
     else:
         sorted_metrics_col_list = sorted([col for col in list(df.columns) if any(col.endswith(metric) for metric in metric_cols)],
                                   key=lambda x: [metric_cols.index(metric) for metric in metric_cols if x.endswith(metric)])
-        df = df[[model_col] + sorted_metrics_col_list + ["Overall Score"]]
-        df.sort_values(by=["Overall Score"], inplace=True, ascending=False)
+        df = df[[model_col] + sorted_metrics_col_list + [overall_score_col]]
+        df.sort_values(by=[overall_score_col], inplace=True, ascending=False)
     
     cmap_fn = lambda col_data: normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
 
@@ -305,7 +309,7 @@ def plot_simple_metrics_table(df,
         #         formatter=tickcross)
     ]
     
-    aggregate_cols = [col for col in list(df.columns) if "Overall" in col]
+    aggregate_cols = [col for col in list(df.columns) if overall_score_col in col]
 
     for i, group in enumerate(groups):
         if len(groups) > 1:
@@ -608,8 +612,8 @@ def plot_category_in_latent_and_physical_space(
                      loc="center left",
                      bbox_to_anchor=(0.98, 0.5))
 
-    for handle in lgd.legendHandles:
-        handle.set_sizes([100])  # Adjust the size as needed
+    #for handle in lgd.legendHandles:
+    #    handle.set_sizes([100])  # Adjust the size as needed
     axs[0].get_legend().remove()
 
     # Adjust, save and display plot
