@@ -34,6 +34,7 @@ from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps,
+                                filter_and_combine_gp_dict_gps_v2,
                                 generate_multimodal_mapping_dict,
                                 get_gene_annotations,
                                 get_unique_genes_from_gp_dict)

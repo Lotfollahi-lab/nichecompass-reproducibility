@@ -24,12 +24,6 @@ import scipy.sparse as sp
 import squidpy as sq
 
 from nichecompass.models import NicheCompass
-from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
-                                extract_gp_dict_from_mebocost_es_interactions,
-                                extract_gp_dict_from_nichenet_lrt_interactions,
-                                extract_gp_dict_from_omnipath_lr_interactions,
-                                filter_and_combine_gp_dict_gps,
-                                get_unique_genes_from_gp_dict)
 
 ###############################################################################
 ### 1.2 Define Parameters ###
@@ -193,13 +187,15 @@ mlflow.log_param("timestamp", args.load_timestamp)
 ### 1.3 Configure Paths and Create Directories ###
 ###############################################################################
 
-root_folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+root_folder_path = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))))
 artifacts_folder_path = f"{root_folder_path}/artifacts"
 model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
                                                              # data
-so_data_folder_path = f"{root_folder_path}/datasets/srt_data" # spatial omics
-                                                               # data
+so_data_folder_path = f"{root_folder_path}/datasets/st_data" # spatial omics
+                                                             # data
 so_data_gold_folder_path = f"{so_data_folder_path}/gold"
 so_data_results_folder_path = f"{so_data_folder_path}/results"
 nichenet_ligand_target_mx_file_path = gp_data_folder_path + \
