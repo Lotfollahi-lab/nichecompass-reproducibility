@@ -98,7 +98,10 @@ def plot_category_in_latent_and_physical_space(
 
     for handle in lgd.legendHandles:
         handle.set_sizes([100])  # Adjust the size as needed
-    axs[0].get_legend().remove()
+    try:
+        axs[0].get_legend().remove()
+    except:
+        print("Could not remove axis.")
 
     # Adjust, save and display plot
     plt.subplots_adjust(wspace=0.2, hspace=0.25)
