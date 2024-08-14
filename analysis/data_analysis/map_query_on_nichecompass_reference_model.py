@@ -70,8 +70,8 @@ parser.add_argument(
          "Either 'radius' or 'knn'.")
 parser.add_argument(
     "--radius",
-    type=int,
-    default=0,
+    type=float,
+    default=0.,
     help="Radius used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--n_neighbors",
