@@ -15,8 +15,8 @@ srtsim_cci_ref = function(
     free_zero_prop_in = 0.022, # average of reference-based genes
     free_disper_in = 0.97, # average of reference-based genes
     free_mu_in = 0.35, # average of reference-based genes
-    ref_p = 0.1,
-    free_p = 0.9,
+    ref_p = 0.04,
+    free_p = 0.96,
     disper_fc = 1,
     EstParam = NULL,
     numGene = 1000,
@@ -236,10 +236,10 @@ lockBinding("srtsim_cci_ref", asNamespace("SRTsim"))
 ##========================
 ## Run all simulations
 ##========================
-st_data_bronze_folder_path = "./" # "./", "../../datasets/srt_data/bronze"
-sim_folder_path = "./" # "./", "../../datasets/gp_data/data_simulation"
+st_data_bronze_folder_path = "../../datasets/st_data/bronze" # "./", "../../datasets/st_data/bronze"
+sim_folder_path = "../../datasets/gp_data/data_simulation" # "./", "../../datasets/gp_data/data_simulation"
 
-setwd("/Users/sebastian.birk/Downloads")
+#setwd("/Users/sebastian.birk/Downloads")
 
 isid = 1
 nSim = 1
@@ -248,132 +248,6 @@ set.seed(isid)
 
 for(increment_mode in c("strong")){
   n_genes = c(1105)
-  gp_file_paths = c(paste(sim_folder_path, "sim_gps_filtered_", increment_mode, "increments.csv", sep = ""),
-                    paste(sim_folder_path, "sim_gps_", increment_mode, "increments.csv", sep = ""))
-  for(nLoc in c(10000)){
-    for (i in seq_along(n_genes)){
-      nGene = n_genes[i]  
-      load(paste0(st_data_bronze_folder_path, "starmap_mouse_visual_cortex_simulation_reference/starmap_1020_0410_seurat_filter_layer.rds"))
-      info2   <- info %>% select(c(x,y,label)) %>% 
-        filter(label!="Smc") %>% as.data.frame()
-      
-      region_celltype_df <- matrix(0.1,8,8)
-      diag(region_celltype_df) <- 0.7
-      rownames(region_celltype_df) <- paste0("Region",1:8)
-      colnames(region_celltype_df) <- paste0("Celltype",1:8)
-      region_celltype_df[1, 5] <- 0.
-      region_celltype_df[1, 6] <- 0.
-      region_celltype_df[1, 7] <- 0.
-      region_celltype_df[1, 8] <- 0.
-      region_celltype_df[2, 5] <- 0.
-      region_celltype_df[2, 6] <- 0.
-      region_celltype_df[2, 7] <- 0.
-      region_celltype_df[2, 8] <- 0.
-      region_celltype_df[3, 3] <- 0.5
-      region_celltype_df[3, 7] <- 0.
-      region_celltype_df[3, 8] <- 0.
-      region_celltype_df[4, 4] <- 0.5
-      region_celltype_df[4, 7] <- 0.
-      region_celltype_df[4, 8] <- 0.
-      region_celltype_df[5, 1] <- 0.
-      region_celltype_df[5, 2] <- 0.
-      region_celltype_df[5, 3] <- 0.
-      region_celltype_df[5, 4] <- 0.
-      region_celltype_df[5, 5] <- 1
-      region_celltype_df[5, 6] <- 0.
-      region_celltype_df[5, 7] <- 0.
-      region_celltype_df[5, 8] <- 0.
-      region_celltype_df[6, 1] <- 0.
-      region_celltype_df[6, 2] <- 0.
-      region_celltype_df[6, 3] <- 0.
-      region_celltype_df[6, 4] <- 0.
-      region_celltype_df[6, 5] <- 0.
-      region_celltype_df[6, 6] <- 1
-      region_celltype_df[6, 7] <- 0.
-      region_celltype_df[6, 8] <- 0.
-      region_celltype_df[7, 1] <- 0.125
-      region_celltype_df[7, 2] <- 0.125
-      region_celltype_df[7, 3] <- 0.125
-      region_celltype_df[7, 4] <- 0.125
-      region_celltype_df[7, 5] <- 0.125
-      region_celltype_df[7, 6] <- 0.125
-      region_celltype_df[7, 7] <- 0.125
-      region_celltype_df[7, 8] <- 0.125
-      region_celltype_df[8, 1] <- 0.
-      region_celltype_df[8, 2] <- 0.
-      region_celltype_df[8, 3] <- 0.
-      region_celltype_df[8, 4] <- 0.
-      region_celltype_df[8, 5] <- 0.25
-      region_celltype_df[8, 6] <- 0.25
-      region_celltype_df[8, 7] <- 0.25
-      region_celltype_df[8, 8] <- 0.25
-      
-      simLoc <- simNewLocs(newN= nLoc,lay_out="random",preLoc = info2)
-      
-      simLoc %<>% mutate(region_label = case_when(
-        x <= 0.5*median(x) & y <= median(y) ~ "Region1",
-        x <= 0.5*median(x) & y > median(y) ~ "Region2",
-        x > 0.5*median(x) & x <= median(x) & y <= median(y) ~ "Region3",
-        x > 0.5*median(x) & x <= median(x) & y > median(y) ~ "Region4",
-        x > median(x) & x <= 1.5*median(x) & y <= median(y) ~ "Region5",
-        x > median(x) & x <= 1.5*median(x) & y > median(y) ~ "Region6",
-        x > 1.5*median(x) & y <= median(y) ~ "Region7",
-        TRUE ~ "Region8"
-      )) %>% as.data.frame()
-      
-      simSRT  <- createSRT(count_in=sp_count[,rownames(info2)],loc_in =info2)
-      simSRT1 <- srtsim_fit(simSRT,sim_schem=sim_schem)
-      
-      gp_df <- read_csv(gp_file_paths[i])
-      gp_df$sources <- lapply(gp_df$sources, function(x) unlist(strsplit(x, ",")))
-      gp_df$targets <- lapply(gp_df$targets, function(x) unlist(strsplit(x, ","))) 
-      
-      example_CCI_ref = srtsim_cci_ref(
-        free_zero_prop_in = 0.022, # average of reference-based genes
-        free_disper_in = 0.97, # average of reference-based genes
-        free_mu_in = 0.35, # average of reference-based genes
-        ref_p = 0.04,
-        free_p = 0.96,
-        disper_fc = 1, # increase variance based on nLoc
-        EstParam = simSRT1@EstParam,
-        numGene = nGene,
-        location_in  = simLoc[,c("x","y","region_label")],
-        # region_label = region_label,
-        region_cell_map = region_celltype_df,
-        sim_seed = isid,
-        GP_in = gp_df,
-        use_ct_specific_increments = FALSE,
-        numSingleCellType = nLoc/5*2
-      )
-      
-      gp_df$sources <- sapply(gp_df$sources, function(x) paste(x, collapse = ","))
-      gp_df$targets <- sapply(gp_df$targets, function(x) paste(x, collapse = ","))
-      
-      sce_ref <- SingleCellExperiment(
-        list(counts=example_CCI_ref@simCounts),
-        colData=DataFrame(region_label=example_CCI_ref@simcolData$region_label,
-                          cell_type=example_CCI_ref@simcolData$celltype,
-                          x=example_CCI_ref@simcolData$x,
-                          y=example_CCI_ref@simcolData$y))
-      
-      rownames(sce_ref) <- example_CCI_ref@simCounts@Dimnames[[1]]
-      colnames(sce_ref) <- example_CCI_ref@simCounts@Dimnames[[2]]
-      metadata(sce_ref)$gp_data <- gp_df
-      
-      dir.create(paste(st_data_bronze_folder_path, "sim", nSim, "_", nGene, "genes_", nLoc, "locs_", increment_mode, "increments", sep = ""))
-      save_path <- paste(st_data_bronze_folder_path, "sim", nSim, "_", nGene, "genes_", nLoc, "locs_", increment_mode, "increments", "/sim", nSim, "_", nGene, "genes_", nLoc, "locs_", increment_mode, "increments", ".h5ad", sep = "")
-      writeH5AD(sce_ref, file = save_path)
-    }
-  }
-}
-
-isid = 1
-nSim = 2
-sim_schem = "domain"
-set.seed(isid)
-
-for(increment_mode in c("strong")){
-  n_genes = c(12086)
   gp_file_paths = c(paste(sim_folder_path, "sim_gps_filtered_", increment_mode, "increments.csv", sep = ""),
                     paste(sim_folder_path, "sim_gps_", increment_mode, "increments.csv", sep = ""))
   for(nLoc in c(10000)){

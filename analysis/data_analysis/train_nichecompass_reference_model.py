@@ -77,6 +77,11 @@ parser.add_argument(
     default=25344,
     help="After this number of genes the genes are clipped from the gp.")
 parser.add_argument(
+    "--include_omnipath_gps",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether to include Omnipath gene programs.")
+parser.add_argument(
     "--include_nichenet_gps",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -171,6 +176,17 @@ parser.add_argument(
     type=none_or_bool,
     default=None,
     help="s. NicheCompass class signature")
+parser.add_argument(
+    "--graph_type",
+    type=str,
+    default="knn",
+    help="Determines how the spatial neighborhood graphs are computed."
+         "Either 'radius' or 'knn'.")
+parser.add_argument(
+    "--radius",
+    type=int,
+    default=0,
+    help="Radius used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--n_neighbors",
     type=int,
@@ -414,6 +430,11 @@ parser.add_argument(
     type=int,
     default=-1,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--seed",
+    type=int,
+    default=0,
+    help="s. NicheCompass class or train method signature")
 
 # Other
 parser.add_argument(
@@ -557,29 +578,34 @@ os.makedirs(result_folder_path, exist_ok=True)
 ###############################################################################
 
 print("\nPreparing the gene program mask...")
-if args.use_new_gp_mask:
-    min_curation_effort = 2
+if args.include_omnipath_gps:
+    if args.use_new_gp_mask:
+        min_curation_effort = 2
+    else:
+        min_curation_effort = 0
+
+    # OmniPath gene programs
+    omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
+        species=args.species,
+        min_curation_effort=min_curation_effort,
+        load_from_disk=True,
+        save_to_disk=False,
+        lr_network_file_path=omnipath_lr_network_file_path,
+        gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
+        plot_gp_gene_count_distributions=False)
+
+    omnipath_genes = get_unique_genes_from_gp_dict(
+        gp_dict=omnipath_gp_dict,
+        retrieved_gene_entities=["sources", "targets"])
+
+    # Combine gene programs into one dictionary
+    if args.use_new_gp_mask:
+        gp_dicts = [omnipath_gp_dict]
+    combined_gp_dict = dict(omnipath_gp_dict)
 else:
-    min_curation_effort = 0
-    
-# OmniPath gene programs
-omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
-    species=args.species,
-    min_curation_effort=min_curation_effort,
-    load_from_disk=True,
-    save_to_disk=False,
-    lr_network_file_path=omnipath_lr_network_file_path,
-    gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
-    plot_gp_gene_count_distributions=False)
-
-omnipath_genes = get_unique_genes_from_gp_dict(
-    gp_dict=omnipath_gp_dict,
-    retrieved_gene_entities=["sources", "targets"])
-
-# Combine gene programs into one dictionary
-if args.use_new_gp_mask:
-    gp_dicts = [omnipath_gp_dict]
-combined_gp_dict = dict(omnipath_gp_dict)
+    if args.use_new_gp_mask:
+        gp_dicts = []
+    combined_gp_dict = dict()    
 
 if args.include_nichenet_gps:
     # NicheNet gene programs
@@ -603,10 +629,10 @@ if args.include_nichenet_gps:
         gp_dicts.append(nichenet_gp_dict)
     combined_gp_dict.update(nichenet_gp_dict)
 
-if args.filter_genes:
-    # Get gene program relevant genes
-    gp_relevant_genes = [gene.upper() for gene in list(set(
-        omnipath_genes + nichenet_lr_genes))]
+#if args.filter_genes:
+#    # Get gene program relevant genes
+#    gp_relevant_genes = [gene.upper() for gene in list(set(
+#        omnipath_genes + nichenet_lr_genes))]
 
 # Mebocost gene programs
 if args.include_mebocost_gps:
@@ -728,11 +754,17 @@ if args.reference_batches is not None:
         adata_batch = ad.read_h5ad(
             f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
         print("Computing spatial neighborhood graph...")
-        # Compute (separate) spatial neighborhood graphs
-        sq.gr.spatial_neighbors(adata_batch,
-                                coord_type="generic",
-                                spatial_key=args.spatial_key,
-                                n_neighs=args.n_neighbors)
+        # Compute spatial neighborhood graphs
+        if args.graph_type == "radius":
+            sq.gr.spatial_neighbors(adata_batch,
+                                    coord_type="generic",
+                                    spatial_key=args.spatial_key,
+                                    radius=args.radius)
+        elif args.graph_type == "knn":
+            sq.gr.spatial_neighbors(adata_batch,
+                                    coord_type="generic",
+                                    spatial_key=args.spatial_key,
+                                    n_neighs=args.n_neighbors)
         # Make adjacency matrix symmetric
         adata_batch.obsp[args.adj_key] = (
             adata_batch.obsp[args.adj_key].maximum(
@@ -779,10 +811,16 @@ else:
     adata = ad.read_h5ad(
             f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
     # Compute (separate) spatial neighborhood graphs
-    sq.gr.spatial_neighbors(adata,
-                            coord_type="generic",
-                            spatial_key=args.spatial_key,
-                            n_neighs=args.n_neighbors)
+    if args.graph_type == "radius":
+        sq.gr.spatial_neighbors(adata_batch,
+                                coord_type="generic",
+                                spatial_key=args.spatial_key,
+                                radius=args.radius)
+    elif args.graph_type == "knn":
+        sq.gr.spatial_neighbors(adata_batch,
+                                coord_type="generic",
+                                spatial_key=args.spatial_key,
+                                n_neighs=args.n_neighbors)
     # Make adjacency matrix symmetric
     adata.obsp[args.adj_key] = (
         adata.obsp[args.adj_key].maximum(
@@ -984,7 +1022,8 @@ model = NicheCompass(adata,
                      conv_layer_encoder=args.conv_layer_encoder,
                      n_hidden_encoder=args.n_hidden_encoder,
                      log_variational=args.log_variational,
-                     node_label_method=args.node_label_method)
+                     node_label_method=args.node_label_method,
+                     seed=args.seed)
 
 # Train model
 model.train(n_epochs=args.n_epochs,
@@ -1006,6 +1045,7 @@ model.train(n_epochs=args.n_epochs,
             node_val_ratio=args.node_val_ratio,
             n_sampled_neighbors=args.n_sampled_neighbors,
             mlflow_experiment_id=mlflow_experiment_id,
+            seed=args.seed,
             verbose=True)
 
 print("\nFinished model training...")

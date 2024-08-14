@@ -43,11 +43,16 @@ def none_or_int(value):
 
 # Data
 parser.add_argument(
-    "--dataset",
+    "--reference_dataset",
     type=str,
-    help="Input dataset name. The adata file name has to be f'{dataset}.h5ad' "
+    help="Input reference dataset name. "
+         "The adata file name has to be f'{reference_dataset}.h5ad'.")
+parser.add_argument(
+    "--query_dataset",
+    type=str,
+    help="Input query dataset name. The adata file name has to be f'{query_dataset}.h5ad' "
          "if `query_batches` is `None`. If `query_batches` is not `None`, the "
-         "adata file names have to be f'{dataset}_{batch}.h5ad' for each batch "
+         "adata file names have to be f'{query_dataset}_{batch}.h5ad' for each batch "
          "in `query_batches`.")
 parser.add_argument(
     "--query_batches",
@@ -55,12 +60,23 @@ parser.add_argument(
     type=none_or_value,
     default=None,
     help="Batches of the input dataset used as query. If not `None`, the adata "
-         "file names have to be f'{dataset}_{batch}.h5ad' for each batch in "
+         "file names have to be f'{query_dataset}_{batch}.h5ad' for each batch in "
          "`query_batches`.")
+parser.add_argument(
+    "--graph_type",
+    type=str,
+    default="knn",
+    help="Determines how the spatial neighborhood graphs are computed."
+         "Either 'radius' or 'knn'.")
+parser.add_argument(
+    "--radius",
+    type=int,
+    default=0,
+    help="Radius used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--n_neighbors",
     type=int,
-    default=4,
+    default=12,
     help="Number of neighbors used to compute the spatial neighborhood graphs.")
 parser.add_argument(
     "--spatial_key",
@@ -76,6 +92,11 @@ parser.add_argument(
     "--gp_names_key",
     type=str,
     default="nichecompass_gp_names",
+    help="s. NicheCompass class signature")
+parser.add_argument(
+    "--active_gp_names_key",
+    type=str,
+    default="nichecompass_active_gp_names",
     help="s. NicheCompass class signature")
 
 # Model
@@ -168,6 +189,11 @@ parser.add_argument(
     type=int,
     default=-1,
     help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--seed",
+    type=int,
+    default=0,
+    help="s. NicheCompass class or train method signature")
 
 args = parser.parse_args()
 
@@ -179,7 +205,7 @@ print(sys.argv)
 
 # Set mlflow experiment
 experiment = mlflow.set_experiment(
-    f"{args.dataset}_{args.reference_query_model_label}")
+    f"{args.reference_dataset}_{args.reference_query_model_label}")
 mlflow_experiment_id = experiment.experiment_id
 mlflow.log_param("timestamp", args.load_timestamp)
 
@@ -191,7 +217,7 @@ root_folder_path = os.path.dirname(
     os.path.dirname(
         os.path.dirname(os.path.abspath(__file__))))
 artifacts_folder_path = f"{root_folder_path}/artifacts"
-model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models"
+model_folder_path = f"{artifacts_folder_path}/{args.reference_dataset}/models"
 gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
                                                              # data
 so_data_folder_path = f"{root_folder_path}/datasets/st_data" # spatial omics
@@ -216,7 +242,7 @@ print("Retrieving reference model...")
 reference_model = NicheCompass.load(
     dir_path=model_folder_path + f"/{args.reference_model_label}/" \
              f"{args.load_timestamp}",
-    adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
+    adata_file_name=f"{args.reference_dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key)
 
 reference_adata = reference_model.adata
@@ -252,18 +278,24 @@ if args.query_batches is not None:
         print(f"\nProcessing batch {batch}...")
         print("Loading data...")
         adata_batch = ad.read_h5ad(
-            f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
+            f"{so_data_gold_folder_path}/{args.query_dataset}_{batch}.h5ad")
         adata_batch.obs[args.mapping_entity_key] = "query"
         print("Computing spatial neighborhood graph...")
-        # Compute (separate) spatial neighborhood graphs
-        sq.gr.spatial_neighbors(adata_batch,
-                                coord_type="generic",
-                                spatial_key=args.spatial_key,
-                                n_neighs=args.n_neighbors)
+        # Compute spatial neighborhood graphs
+        if args.graph_type == "radius":
+            sq.gr.spatial_neighbors(adata_batch,
+                                    coord_type="generic",
+                                    spatial_key=args.spatial_key,
+                                    radius=args.radius)
+        elif args.graph_type == "knn":
+            sq.gr.spatial_neighbors(adata_batch,
+                                    coord_type="generic",
+                                    spatial_key=args.spatial_key,
+                                    n_neighs=args.n_neighbors)
         # Make adjacency matrix symmetric
-        adata_batch.obsp[adj_key] = (
-            adata_batch.obsp[adj_key].maximum(
-                adata_batch.obsp[adj_key].T))
+        adata_batch.obsp[args.adj_key] = (
+            adata_batch.obsp[args.adj_key].maximum(
+                adata_batch.obsp[args.adj_key].T))
         adata_batch_list.append(adata_batch)
     adata = ad.concat(adata_batch_list, join="inner")
 
@@ -304,16 +336,22 @@ if args.query_batches is not None:
     adata.obsp[adj_key] = connectivities
 else:
     adata = ad.read_h5ad(
-            f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
+            f"{so_data_gold_folder_path}/{args.query_dataset}.h5ad")
     # Compute (separate) spatial neighborhood graphs
-    sq.gr.spatial_neighbors(adata,
-                            coord_type="generic",
-                            spatial_key=args.spatial_key,
-                            n_neighs=args.n_neighbors)
+    if args.graph_type == "radius":
+        sq.gr.spatial_neighbors(adata_batch,
+                                coord_type="generic",
+                                spatial_key=args.spatial_key,
+                                radius=args.radius)
+    elif args.graph_type == "knn":
+        sq.gr.spatial_neighbors(adata_batch,
+                                coord_type="generic",
+                                spatial_key=args.spatial_key,
+                                n_neighs=args.n_neighbors)
     # Make adjacency matrix symmetric
-    adata.obsp[adj_key] = (
-        adata.obsp[adj_key].maximum(
-            adata.obsp[adj_key].T))
+    adata_batch.obsp[args.adj_key] = (
+        adata_batch.obsp[args.adj_key].maximum(
+            adata_batch.obsp[args.adj_key].T))
     
 ###############################################################################
 ### 3.2 Filter Genes ###
@@ -339,6 +377,7 @@ adata.uns[targets_categories_label_encoder_key] = (
 adata.uns[sources_categories_label_encoder_key] = (
     reference_adata.uns[sources_categories_label_encoder_key])
 adata.uns[args.gp_names_key] = reference_adata.uns[args.gp_names_key]
+adata.uns[args.active_gp_names_key] = reference_adata.uns[args.active_gp_names_key]
 adata.uns[genes_idx_key] = reference_adata.uns[genes_idx_key]
 adata.uns[target_genes_idx_key] = reference_adata.uns[target_genes_idx_key]
 adata.uns[source_genes_idx_key] = reference_adata.uns[source_genes_idx_key]
@@ -358,7 +397,7 @@ model = NicheCompass.load(
     dir_path=model_folder_path + f"/{args.reference_model_label}/" \
              f"{args.load_timestamp}",
     adata=adata,
-    adata_file_name=f"{args.dataset}_{args.reference_model_label}.h5ad",
+    adata_file_name=f"{args.reference_dataset}_{args.reference_model_label}.h5ad",
     gp_names_key=args.gp_names_key,
     unfreeze_all_weights=False,
     unfreeze_cat_covariates_embedder_weights=True)
@@ -379,6 +418,7 @@ model.train(n_epochs=args.n_epochs,
             node_batch_size=args.node_batch_size,
             n_sampled_neighbors=args.n_sampled_neighbors,
             mlflow_experiment_id=mlflow_experiment_id,
+            seed=args.seed,
             verbose=True)
 
 print("\nSaving query model...")
@@ -388,7 +428,7 @@ model.save(
              f"{args.load_timestamp}",
     overwrite=True,
     save_adata=True,
-    adata_file_name=f"{args.dataset}_{args.query_model_label}.h5ad")
+    adata_file_name=f"{args.reference_dataset}_{args.query_model_label}.h5ad")
 
 ###############################################################################
 ## 4.2 Integrate AnnData, Add to Model & Save Model ##
@@ -466,7 +506,7 @@ sc.tl.umap(model.adata,
 # Store adata to disk
 model.adata.write(
     f"{so_data_results_folder_path}/"
-    f"{args.dataset}_nichecompass_{args.reference_query_model_label}.h5ad")
+    f"{args.reference_dataset}_nichecompass_{args.reference_query_model_label}.h5ad")
 
 print("\nSaving reference query model...")
 # Save trained model
@@ -475,4 +515,4 @@ model.save(
              f"{args.load_timestamp}",
     overwrite=True,
     save_adata=True,
-    adata_file_name=f"{args.dataset}_{args.reference_query_model_label}.h5ad")
+    adata_file_name=f"{args.reference_dataset}_{args.reference_query_model_label}.h5ad")
