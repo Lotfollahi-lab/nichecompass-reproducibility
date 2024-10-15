@@ -406,6 +406,18 @@ parser.add_argument(
     default=0.,
     help="s. NicheCompass train method signature")
 parser.add_argument(
+    "--l1_targets_categories",
+    nargs='+',
+    type=none_or_value,
+    default="target_gene",
+    help="s. NicheCompass train method signature")
+parser.add_argument(
+    "--l1_sources_categories",
+    nargs='+',
+    type=none_or_value,
+    default=None,
+    help="s. NicheCompass train method signature")
+parser.add_argument(
     "--edge_batch_size",
     type=int,
     default=256,
@@ -1039,6 +1051,8 @@ model.train(n_epochs=args.n_epochs,
             lambda_group_lasso=args.lambda_group_lasso,
             lambda_l1_masked=args.lambda_l1_masked,
             lambda_l1_addon=args.lambda_l1_addon,
+            l1_targets_categories=args.l1_targets_categories,
+            l1_sources_categories=args.l1_sources_categories,
             edge_batch_size=args.edge_batch_size,
             node_batch_size=args.node_batch_size,
             edge_val_ratio=args.edge_val_ratio,
