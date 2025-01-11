@@ -18,6 +18,15 @@ The NicheCompass source code can be found [here](https://github.com/Lotfollahi-l
 3) Create the nichecompass-reproducibility conda environment: <br>
 ```conda env create -f envs/environment.yaml```
 
+   Install pyg dependencies with GPU support: <br>
+```conda activate nichecompass-reproducibility``` <br>
+```pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html```
+where ${TORCH} and ${CUDA} should be replaced by the specific PyTorch and CUDA versions, respectively.
+
+   Install STalign into the environment: <br>
+```conda activate nichecompass-reproducibility``` <br>
+```pip install --upgrade "git+https://github.com/JEFworks-Lab/STalign.git"```
+
    To enable GPU support for JAX, after the installation run: <br>
 ```conda activate nichecompass-reproducibility``` <br>
 ```pip install jaxlib==0.3.25+cuda${CUDA}.cudnn${CUDNN} -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html```
