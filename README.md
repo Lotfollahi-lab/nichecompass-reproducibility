@@ -39,7 +39,7 @@ incompatible with dependencies of other methods): <br>
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_cellcharter.yaml```
 
-7) Create the stalign conda environment (for starmap_plus_mouse_cns analysis, which requires specific dependencies and is
+7) Create the stalign conda environment (for starmap_plus_mouse_cns analysis which requires specific dependencies and is
 incompatible with dependencies of other analyses): <br>
 ```conda env create -f envs/environment_stalign.yaml```
 
