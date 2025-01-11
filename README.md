@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/b023d59a-80f6-475d-8f96-eb83675480c1)# NicheCompass Reproducibility
+# NicheCompass Reproducibility
 
 This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass [manuscript](https://www.biorxiv.org/content/10.1101/2024.02.21.581428v3).
 The NicheCompass source code can be found [here](https://github.com/Lotfollahi-lab/nichecompass).
