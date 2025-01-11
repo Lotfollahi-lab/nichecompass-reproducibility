@@ -4,8 +4,6 @@ import os
 import time
 from datetime import datetime
 
-from nichecompass.benchmarking import compute_cas, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
-
 import matplotlib
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -20,6 +18,7 @@ from plottable.cmap import normed_cmap
 from plottable.formatters import tickcross
 from plottable.plots import bar
 
+from nichecompass.benchmarking import compute_cas, compute_clisis, compute_gcs, compute_mlami, compute_benchmarking_metrics
 from nichecompass.utils import create_new_color_dict
 
     

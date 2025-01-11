@@ -1,10 +1,13 @@
+import collections
+import colorsys
+
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import scanpy as sc
+
 from matplotlib import gridspec
-import collections
-import colorsys
-import matplotlib
+
 
 
 def plot_latent(adata,

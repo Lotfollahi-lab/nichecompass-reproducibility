@@ -1,4 +1,4 @@
-# script written by Nikolay Markov, from:
+# Script written by Nikolay Markov, from:
 # https://github.com/NUPulmonary/scarches-covid-reference/blob/master/sankey.py
 # adapted by Lisa Sikkema to enable coloring by right side rather than left side
 import collections
