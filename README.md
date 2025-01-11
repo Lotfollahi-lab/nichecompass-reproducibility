@@ -20,8 +20,8 @@ The NicheCompass source code can be found [here](https://github.com/Lotfollahi-l
 
    Install pyg dependencies with GPU support: <br>
 ```conda activate nichecompass-reproducibility``` <br>
-```pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html```
-where ${TORCH} and ${CUDA} should be replaced by the specific PyTorch and CUDA versions, respectively.
+```pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html``` <br>
+where ```${TORCH}``` and ```${CUDA}``` should be replaced by the specific PyTorch and CUDA versions, respectively.
 
    Install STalign into the environment: <br>
 ```conda activate nichecompass-reproducibility``` <br>
