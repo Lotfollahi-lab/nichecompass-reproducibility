@@ -45,16 +45,20 @@ RUN wget \
 RUN conda init bash
 
 # Create nichecompass-reproducibility conda environment
-COPY nichecompass-reproducibility/envs/environment.yml .
-RUN conda env create -f environment.yml
+COPY nichecompass-reproducibility/envs/environment.yaml .
+RUN conda env create -f environment.yaml
 
 # Create deeplinc conda environment
-COPY nichecompass-reproducibility/envs/environment_deeplinc.yml .
-RUN conda env create -f environment_deeplinc.yml
+COPY nichecompass-reproducibility/envs/environment_deeplinc.yaml .
+RUN conda env create -f environment_deeplinc.yaml
+
+# Create stalign conda environment
+COPY nichecompass-reproducibility/envs/environment_stalign.yaml .
+RUN conda env create -f environment_stalign.yaml
 
 # Create deeplinc conda environment
-COPY nichecompass-reproducibility/envs/environment_cellcharter.yml .
-RUN conda env create -f environment_cellcharter.yml
+COPY nichecompass-reproducibility/envs/environment_cellcharter.yaml .
+RUN conda env create -f environment_cellcharter.yaml
 
 # Copy environment file (for Charliecloud)
 COPY nichecompass-reproducibility/envs/environment /environment
