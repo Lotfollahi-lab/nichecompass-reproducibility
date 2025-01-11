@@ -38,7 +38,11 @@ incompatible with dependencies of other methods): <br>
 6) Create the cellcharter conda environment (for benchmarking cellcharter method which relies on legacy packages and is
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_cellcharter.yaml```
- 
+
+7) Create the stalign conda environment (for starmap_plus_mouse_cns analysis, which requires specific dependencies and is
+incompatible with dependencies of other analyses): <br>
+```conda env create -f envs/environment_stalign.yaml```
+
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
 ```git clone https://github.com/Lotfollahi-lab/nichecompass-reproducibility.git``` <br>
