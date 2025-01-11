@@ -33,7 +33,7 @@ srtsim_cci_ref = function(
   if(!is.list(EstParam)){stop("EstParam has to be a list!!")}
   if(length(EstParam)< ncol(region_cell_map)){
     warning("The length of EstParam is less than targeted celltype number.")
-    idx1 				<- sample(1:length(EstParam),ncol(region_cell_map),replace=TRUE)
+    idx1 <- sample(1:length(EstParam),ncol(region_cell_map),replace=TRUE)
     newEstParam <- EstParam[idx1]
     names(newEstParam) <- paste0("Celltype",1:ncol(region_cell_map))
   }else if(length(EstParam)> ncol(region_cell_map)){
@@ -67,15 +67,15 @@ srtsim_cci_ref = function(
   mask <- matrix(rep(gene_mask, num_cols), nrow = num_rows, ncol = num_cols)
   
   for(celltype in colnames(region_cell_map)){
-    celltype_param 	<- newEstParam[[celltype]]$marginal_param1
-    idx_gene 				<- sample(1:nrow(celltype_param),numGene,replace=TRUE)
-    tmp_parm 				<- celltype_param[idx_gene,1:3] ## ignore the model
+    celltype_param <- newEstParam[[celltype]]$marginal_param1
+    idx_gene <- sample(1:nrow(celltype_param),numGene,replace=TRUE)
+    tmp_parm <- celltype_param[idx_gene,1:3] ## ignore the model
     
     # Simulate reference-based counts
-    count_simu_ref 			<- t(apply(tmp_parm,1,function(param_in){rbinom(numSingleCellType, 1, 1-param_in[1]) * rnbinom(numSingleCellType, size = param_in[2] * disper_fc, mu = param_in[3])}))
+    count_simu_ref <- t(apply(tmp_parm,1,function(param_in){rbinom(numSingleCellType, 1, 1-param_in[1]) * rnbinom(numSingleCellType, size = param_in[2] * disper_fc, mu = param_in[3])}))
     
     # Simulate reference-free counts
-    count_simu_free     <- matrix(rbinom(numSingleCellType*numGene, 1, 1-free_parm[1]) * rnbinom(numSingleCellType*numGene, size = free_parm[2] * disper_fc, mu = free_parm[3]), numGene, numSingleCellType)
+    count_simu_free <- matrix(rbinom(numSingleCellType*numGene, 1, 1-free_parm[1]) * rnbinom(numSingleCellType*numGene, size = free_parm[2] * disper_fc, mu = free_parm[3]), numGene, numSingleCellType)
     
     # Pick either reference-based or reference-free counts for each gene based on gene mask
     count_simu <- count_simu_ref
@@ -234,7 +234,7 @@ lockBinding("srtsim_cci_ref", asNamespace("SRTsim"))
 
 
 ##========================
-## Run all simulations
+## Run simulations
 ##========================
 st_data_bronze_folder_path = "../../datasets/st_data/bronze" # "./", "../../datasets/st_data/bronze"
 sim_folder_path = "../../datasets/gp_data/data_simulation" # "./", "../../datasets/gp_data/data_simulation"
@@ -254,7 +254,7 @@ for(increment_mode in c("strong")){
     for (i in seq_along(n_genes)){
       nGene = n_genes[i]  
       load(paste0(st_data_bronze_folder_path, "starmap_mouse_visual_cortex_simulation_reference/starmap_1020_0410_seurat_filter_layer.rds"))
-      info2   <- info %>% select(c(x,y,label)) %>% 
+      info2 <- info %>% select(c(x,y,label)) %>% 
         filter(label!="Smc") %>% as.data.frame()
       
       region_celltype_df <- matrix(0.1,8,8)
@@ -321,7 +321,7 @@ for(increment_mode in c("strong")){
         TRUE ~ "Region8"
       )) %>% as.data.frame()
       
-      simSRT  <- createSRT(count_in=sp_count[,rownames(info2)],loc_in =info2)
+      simSRT <- createSRT(count_in=sp_count[,rownames(info2)],loc_in =info2)
       simSRT1 <- srtsim_fit(simSRT,sim_schem=sim_schem)
       
       gp_df <- read_csv(gp_file_paths[i])
