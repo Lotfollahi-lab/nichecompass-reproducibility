@@ -1,4 +1,4 @@
-# NicheCompass Reproducibility
+![image](https://github.com/user-attachments/assets/b023d59a-80f6-475d-8f96-eb83675480c1)# NicheCompass Reproducibility
 
 This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass [manuscript](https://www.biorxiv.org/content/10.1101/2024.02.21.581428v3).
 The NicheCompass source code can be found [here](https://github.com/Lotfollahi-lab/nichecompass).
@@ -42,6 +42,10 @@ incompatible with dependencies of other methods): <br>
 7) Create the stalign conda environment (for starmap_plus_mouse_cns analysis which requires specific dependencies and is
 incompatible with dependencies of other analyses): <br>
 ```conda env create -f envs/environment_stalign.yaml```
+
+   Install STalign into the environment: <br>
+```conda activate stalign``` <br>
+```pip install --upgrade "git+https://github.com/JEFworks-Lab/STalign.git"```
 
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
