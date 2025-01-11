@@ -1,4 +1,4 @@
-# NicheCompass Reproducibility
+![image](https://github.com/user-attachments/assets/b023d59a-80f6-475d-8f96-eb83675480c1)# NicheCompass Reproducibility
 
 This repository contains the code to reproduce the analyses and benchmarking experiments performed in the NicheCompass [manuscript](https://www.biorxiv.org/content/10.1101/2024.02.21.581428v3).
 The NicheCompass source code can be found [here](https://github.com/Lotfollahi-lab/nichecompass).
@@ -18,6 +18,11 @@ The NicheCompass source code can be found [here](https://github.com/Lotfollahi-l
 3) Create the nichecompass-reproducibility conda environment: <br>
 ```conda env create -f envs/environment.yaml```
 
+   Install pyg dependencies with GPU support: <br>
+```conda activate nichecompass-reproducibility``` <br>
+```pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html``` <br>
+where ```${TORCH}``` and ```${CUDA}``` should be replaced by the specific PyTorch and CUDA versions, respectively.
+
    To enable GPU support for JAX, after the installation run: <br>
 ```conda activate nichecompass-reproducibility``` <br>
 ```pip install jaxlib==0.3.25+cuda${CUDA}.cudnn${CUDNN} -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html```
@@ -33,7 +38,15 @@ incompatible with dependencies of other methods): <br>
 6) Create the cellcharter conda environment (for benchmarking cellcharter method which relies on legacy packages and is
 incompatible with dependencies of other methods): <br>
 ```conda env create -f envs/environment_cellcharter.yaml```
- 
+
+7) Create the stalign conda environment (for starmap_plus_mouse_cns analysis which requires specific dependencies and is
+incompatible with dependencies of other analyses): <br>
+```conda env create -f envs/environment_stalign.yaml```
+
+   Install STalign into the environment: <br>
+```conda activate stalign``` <br>
+```pip install --upgrade "git+https://github.com/JEFworks-Lab/STalign.git"```
+
 ### Docker / Charliecloud Container
 1) Clone the nichecompass-reproducibility repository: <br>
 ```git clone https://github.com/Lotfollahi-lab/nichecompass-reproducibility.git``` <br>
