@@ -30,6 +30,7 @@ from nichecompass.models import NicheCompass
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 add_multimodal_mask_to_adata,
                                 extract_gp_dict_from_collectri_tf_network,
+                                extract_gp_dict_from_humanppi_interactions,
                                 extract_gp_dict_from_mebocost_ms_interactions,
                                 extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
@@ -54,6 +55,11 @@ def none_or_int(value):
     if value == "None":
         return None
     return int(value)
+
+def none_or_float(value):
+    if value == "None":
+        return None
+    return float(value)
 
 def none_or_bool(value):
     if value == "None":
@@ -97,13 +103,56 @@ parser.add_argument(
     default=False,
     help="Indicator whether to include CollecTRI gene programs.")
 parser.add_argument(
+    "--include_humanppi_gps",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether to include human PPI gene programs from the "
+         "predicted human interactome (Zhang, Humphreys et al., Science 2025, "
+         "doi:10.1126/science.adt1630).")
+parser.add_argument(
+    "--humanppi_precision",
+    type=str,
+    default="90",
+    help="Expected precision of the human PPI predictions that are used. "
+         "Either '90' (17,849 interactions) or '80' (29,258 interactions).")
+parser.add_argument(
+    "--humanppi_program_type",
+    type=str,
+    default="intercellular",
+    help="Determines which human PPI interactions are retained and how they "
+         "are placed into gene program components. Either 'intercellular' "
+         "(cell surface / secreted partners as source-to-target gene "
+         "programs), 'intracellular' (remaining interactions as target-only "
+         "gene programs) or 'both'.")
+parser.add_argument(
+    "--humanppi_localization_filter",
+    type=str,
+    default="surface_secreted",
+    help="Defines the set of UniProt cellular component keywords used to "
+         "decide whether a human PPI protein can act between cells. Either "
+         "'surface_secreted', 'membrane' or 'all'.")
+parser.add_argument(
+    "--humanppi_min_rf_prob",
+    type=none_or_float,
+    default=None,
+    help="If not `None`, only human PPI interactions with a RoseTTAFold2-PPI "
+         "interaction probability greater than or equal to this value are "
+         "kept.")
+parser.add_argument(
+    "--humanppi_min_af_prob",
+    type=none_or_float,
+    default=None,
+    help="If not `None`, only human PPI interactions with an AlphaFold2 "
+         "interaction probability greater than or equal to this value are "
+         "kept.")
+parser.add_argument(
     "--include_brain_marker_gps",
     action=argparse.BooleanOptionalAction,
     default=False,
     help="Indicator whether to include brain marker gene programs.")
 parser.add_argument(
     "--gp_filter_mode",
-    type=str,
+    type=none_or_value,
     default="subset",
     help="Which kind of gene programs are filtered.")
 parser.add_argument(
@@ -126,6 +175,28 @@ parser.add_argument(
     type=float,
     default=0.9,
     help="Threshold for overall genes above which gene programs are combined.")
+parser.add_argument(
+    "--min_genes_per_gp",
+    type=int,
+    default=1,
+    help="Minimum number of genes (source and target combined) that need to be"
+         " probed in the dataset for a gene program to be retained.")
+parser.add_argument(
+    "--min_source_genes_per_gp",
+    type=int,
+    default=0,
+    help="Minimum number of source genes that need to be probed in the dataset"
+         " for a gene program to be retained. Set to 1 to require that the "
+         "neighborhood (source) side of an interaction is actually measured, "
+         "which is relevant for targeted panels.")
+parser.add_argument(
+    "--min_target_genes_per_gp",
+    type=int,
+    default=0,
+    help="Minimum number of target genes that need to be probed in the dataset"
+         " for a gene program to be retained. Set to 1 to require that the "
+         "self (target) side of an interaction is actually measured, which is "
+         "relevant for targeted panels.")
 parser.add_argument(
     "--add_fc_gps_instead_of_gp_dict_gps",
     action=argparse.BooleanOptionalAction,
@@ -510,6 +581,19 @@ if args.mlflow_tracking:
                      args.include_mebocost_gps)
     mlflow.log_param("include_collectri_gps",
                      args.include_collectri_gps)
+    mlflow.log_param("include_humanppi_gps",
+                     args.include_humanppi_gps)
+    if args.include_humanppi_gps:
+        mlflow.log_param("humanppi_precision",
+                         args.humanppi_precision)
+        mlflow.log_param("humanppi_program_type",
+                         args.humanppi_program_type)
+        mlflow.log_param("humanppi_localization_filter",
+                         args.humanppi_localization_filter)
+        mlflow.log_param("humanppi_min_rf_prob",
+                         args.humanppi_min_rf_prob)
+        mlflow.log_param("humanppi_min_af_prob",
+                         args.humanppi_min_af_prob)
     mlflow.log_param("include_brain_marker_gps",
                      args.include_brain_marker_gps)
     mlflow.log_param("species",
@@ -524,6 +608,12 @@ if args.mlflow_tracking:
                      args.overlap_thresh_target_genes)
     mlflow.log_param("overlap_thresh_genes",
                      args.overlap_thresh_genes)
+    mlflow.log_param("min_genes_per_gp",
+                     args.min_genes_per_gp)
+    mlflow.log_param("min_source_genes_per_gp",
+                     args.min_source_genes_per_gp)
+    mlflow.log_param("min_target_genes_per_gp",
+                     args.min_target_genes_per_gp)
     mlflow.log_param("add_fc_gps_instead_of_gp_dict_gps",
                      args.add_fc_gps_instead_of_gp_dict_gps)
     mlflow.log_param("reference_batches",
@@ -578,6 +668,9 @@ omnipath_lr_network_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_network.csv"
 collectri_tf_network_file_path = gp_data_folder_path + \
                                  f"/collectri_tf_network_{args.species}.csv"
+humanppi_network_file_path = gp_data_folder_path + \
+                             "/humanppi_network_" \
+                             f"{args.humanppi_precision}.csv"
 gene_orthologs_mapping_file_path = ga_data_folder_path + \
                                    "/human_mouse_gene_orthologs.csv"
 gtf_file_path = ga_data_folder_path + \
@@ -686,6 +779,35 @@ if args.include_collectri_gps:
         # Update gene program relevant genes (with only tf genes)
         #gp_relevant_genes = list(set(gp_relevant_genes + collectri_genes))
         
+if args.include_humanppi_gps:
+    # Human PPI gene programs from the predicted human interactome. The
+    # predictions are cached under `gp_data_folder_path` on first use and
+    # loaded from disk on subsequent runs.
+    humanppi_load_from_disk = os.path.exists(humanppi_network_file_path)
+    if not humanppi_load_from_disk:
+        os.makedirs(gp_data_folder_path, exist_ok=True)
+
+    humanppi_gp_dict = extract_gp_dict_from_humanppi_interactions(
+        species=args.species,
+        precision=args.humanppi_precision,
+        program_type=args.humanppi_program_type,
+        localization_filter=args.humanppi_localization_filter,
+        min_rf_prob=args.humanppi_min_rf_prob,
+        min_af_prob=args.humanppi_min_af_prob,
+        load_from_disk=humanppi_load_from_disk,
+        save_to_disk=not humanppi_load_from_disk,
+        ppi_network_file_path=humanppi_network_file_path,
+        gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
+        plot_gp_gene_count_distributions=False)
+
+    humanppi_genes = get_unique_genes_from_gp_dict(
+        gp_dict=humanppi_gp_dict,
+        retrieved_gene_entities=["sources", "targets"])
+
+    if args.use_new_gp_mask:
+        gp_dicts.append(humanppi_gp_dict)
+    combined_gp_dict.update(humanppi_gp_dict)
+
 if args.include_brain_marker_gps:
     # Add spatial layer marker gene GPs
     # Load experimentially validated marker genes
@@ -977,9 +1099,9 @@ add_gps_from_gp_dict_to_adata(
     gp_targets_mask_key=args.gp_targets_mask_key,
     gp_sources_mask_key=args.gp_sources_mask_key,
     gp_names_key=args.gp_names_key,
-    min_genes_per_gp=1,
-    min_source_genes_per_gp=0,
-    min_target_genes_per_gp=0,
+    min_genes_per_gp=args.min_genes_per_gp,
+    min_source_genes_per_gp=args.min_source_genes_per_gp,
+    min_target_genes_per_gp=args.min_target_genes_per_gp,
     max_genes_per_gp=None,
     max_source_genes_per_gp=None,
     max_target_genes_per_gp=None,
