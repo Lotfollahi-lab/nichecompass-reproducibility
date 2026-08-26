@@ -128,9 +128,18 @@ parser.add_argument(
     "--humanppi_localization_filter",
     type=str,
     default="surface_secreted",
-    help="Defines the set of UniProt cellular component keywords used to "
-         "decide whether a human PPI protein can act between cells. Either "
-         "'surface_secreted', 'membrane' or 'all'.")
+    help="Determines whether human PPI proteins whose localization is only "
+         "compatible with, but does not establish, an extracellular face "
+         "count as able to act between cells. Either 'surface_secreted' "
+         "(they do not) or 'membrane_strict' (they do, provided the protein "
+         "carries no intracellular keyword).")
+parser.add_argument(
+    "--humanppi_unknown_locality",
+    type=str,
+    default="exclude",
+    help="Determines how human PPI interactions are handled in which at least "
+         "one partner has no usable localization annotation. Either 'exclude' "
+         "(dropped, as they cannot be classified) or 'intracellular'.")
 parser.add_argument(
     "--humanppi_min_rf_prob",
     type=none_or_float,
@@ -590,6 +599,8 @@ if args.mlflow_tracking:
                          args.humanppi_program_type)
         mlflow.log_param("humanppi_localization_filter",
                          args.humanppi_localization_filter)
+        mlflow.log_param("humanppi_unknown_locality",
+                         args.humanppi_unknown_locality)
         mlflow.log_param("humanppi_min_rf_prob",
                          args.humanppi_min_rf_prob)
         mlflow.log_param("humanppi_min_af_prob",
@@ -792,6 +803,7 @@ if args.include_humanppi_gps:
         precision=args.humanppi_precision,
         program_type=args.humanppi_program_type,
         localization_filter=args.humanppi_localization_filter,
+        unknown_locality=args.humanppi_unknown_locality,
         min_rf_prob=args.humanppi_min_rf_prob,
         min_af_prob=args.humanppi_min_af_prob,
         load_from_disk=humanppi_load_from_disk,
