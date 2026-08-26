@@ -2,7 +2,7 @@ import pickle
 import os
 
 import wandb
-from nichecompass.utils import (extract_gp_dict_from_mebocost_es_interactions,
+from nichecompass.utils import (extract_gp_dict_from_mebocost_ms_interactions,
                                 extract_gp_dict_from_nichenet_lrt_interactions,
                                 extract_gp_dict_from_omnipath_lr_interactions,
                                 filter_and_combine_gp_dict_gps)
@@ -36,7 +36,7 @@ def generate_gene_programs(gene_orthologs_mapping_file_path, mebocost_enzyme_sen
     )
 
     # Retrieve MEBOCOST GPs (source: enzyme genes; target: sensor genes)
-    mebocost_gp_dict = extract_gp_dict_from_mebocost_es_interactions(
+    mebocost_gp_dict = extract_gp_dict_from_mebocost_ms_interactions(
         dir_path=mebocost_enzyme_sensor_interactions_folder_path,
         species="mouse",
         plot_gp_gene_count_distributions=False
