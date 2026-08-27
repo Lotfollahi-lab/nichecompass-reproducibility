@@ -135,12 +135,13 @@ parser.add_argument(
          "(they count as able to act between cells) or 'intracellular'. Has "
          "almost no effect unless --no-humanppi_use_topology is passed.")
 parser.add_argument(
-    "--humanppi_unknown_locality",
+    "--humanppi_unresolved_locality",
     type=str,
     default="exclude",
-    help="Determines how human PPI interactions are handled in which at least "
-         "one partner has no usable localization annotation. Either 'exclude' "
-         "(dropped, as they cannot be classified) or 'intracellular'.")
+    help="Determines how human PPI interactions are handled in which the "
+         "location of at least one partner could not be resolved from any "
+         "available evidence. Either 'exclude' (dropped, as they cannot be "
+         "classified either way) or 'intracellular'.")
 parser.add_argument(
     "--humanppi_detect_cis_complexes",
     action=argparse.BooleanOptionalAction,
@@ -614,8 +615,8 @@ if args.mlflow_tracking:
                          args.humanppi_program_type)
         mlflow.log_param("humanppi_ambiguous_locality",
                          args.humanppi_ambiguous_locality)
-        mlflow.log_param("humanppi_unknown_locality",
-                         args.humanppi_unknown_locality)
+        mlflow.log_param("humanppi_unresolved_locality",
+                         args.humanppi_unresolved_locality)
         mlflow.log_param("humanppi_detect_cis_complexes",
                          args.humanppi_detect_cis_complexes)
         mlflow.log_param("humanppi_min_rf_prob",
@@ -822,7 +823,7 @@ if args.include_humanppi_gps:
         precision=args.humanppi_precision,
         program_type=args.humanppi_program_type,
         ambiguous_locality=args.humanppi_ambiguous_locality,
-        unknown_locality=args.humanppi_unknown_locality,
+        unresolved_locality=args.humanppi_unresolved_locality,
         detect_cis_complexes=args.humanppi_detect_cis_complexes,
         complex_portal_file_path=(args.humanppi_complex_portal_file_path
                                   or complex_portal_file_path),
