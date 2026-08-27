@@ -127,12 +127,12 @@ parser.add_argument(
 parser.add_argument(
     "--humanppi_localization_filter",
     type=str,
-    default="surface_secreted",
+    default="strict",
     help="Determines whether human PPI proteins whose localization is only "
          "compatible with, but does not establish, an extracellular face "
-         "count as able to act between cells. Either 'surface_secreted' "
-         "(they do not) or 'membrane_strict' (they do, provided the protein "
-         "carries no intracellular keyword).")
+         "count as able to act between cells. Either 'strict' (they do not) "
+         "or 'include_ambiguous' (they do, provided the protein carries no "
+         "intracellular keyword).")
 parser.add_argument(
     "--humanppi_unknown_locality",
     type=str,
