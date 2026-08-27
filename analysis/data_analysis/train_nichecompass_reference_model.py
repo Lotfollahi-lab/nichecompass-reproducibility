@@ -125,15 +125,6 @@ parser.add_argument(
          "programs), 'intracellular' (remaining interactions as target-only "
          "gene programs) or 'both'.")
 parser.add_argument(
-    "--humanppi_localization_filter",
-    type=str,
-    default="include_ambiguous",
-    help="Determines whether human PPI proteins whose localization is only "
-         "compatible with, but does not establish, an extracellular face "
-         "count as able to act between cells. Either 'strict' (they do not) "
-         "or 'include_ambiguous' (they do, provided the protein carries no "
-         "intracellular keyword).")
-parser.add_argument(
     "--humanppi_unknown_locality",
     type=str,
     default="exclude",
@@ -611,8 +602,6 @@ if args.mlflow_tracking:
                          args.humanppi_precision)
         mlflow.log_param("humanppi_program_type",
                          args.humanppi_program_type)
-        mlflow.log_param("humanppi_localization_filter",
-                         args.humanppi_localization_filter)
         mlflow.log_param("humanppi_unknown_locality",
                          args.humanppi_unknown_locality)
         mlflow.log_param("humanppi_detect_cis_complexes",
@@ -820,7 +809,6 @@ if args.include_humanppi_gps:
         species=args.species,
         precision=args.humanppi_precision,
         program_type=args.humanppi_program_type,
-        localization_filter=args.humanppi_localization_filter,
         unknown_locality=args.humanppi_unknown_locality,
         detect_cis_complexes=args.humanppi_detect_cis_complexes,
         complex_portal_file_path=(args.humanppi_complex_portal_file_path
