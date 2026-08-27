@@ -132,8 +132,9 @@ parser.add_argument(
          "face is neither established nor contradicted, i.e. proteins that "
          "carry only a keyword compatible with an extracellular face and for "
          "which no membrane topology is available. Either 'extracellular' "
-         "(they count as able to act between cells) or 'intracellular'. Has "
-         "almost no effect unless --no-humanppi_use_topology is passed.")
+         "(they count as able to act between cells) or 'intracellular'. Only "
+         "has an effect if --no-humanppi_use_topology is passed, since "
+         "topology resolves every such protein either way.")
 parser.add_argument(
     "--humanppi_unresolved_locality",
     type=str,
@@ -187,6 +188,25 @@ parser.add_argument(
     default=None,
     help="Path of the file where the EBI Complex Portal table for human is "
          "cached. Defaults to the gene program data folder.")
+parser.add_argument(
+    "--humanppi_min_extracellular_domain_length",
+    type=int,
+    default=30,
+    help="Length in amino acids of the shortest extracellular domain that "
+         "still counts as able to reach a partner on a neighboring cell. "
+         "Contact-dependent human PPI interactions in which a partner "
+         "protrudes less far from its membrane are reclassified as "
+         "'cis_complex', since they take place within one membrane. Set to 0 "
+         "to disable this test. Requires --humanppi_use_topology.")
+parser.add_argument(
+    "--humanppi_symmetric_juxtacrine_gps",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether each contact-dependent human PPI interaction "
+         "should be turned into two gene programs, one per orientation, since "
+         "such an interaction operates in both directions between two "
+         "neighboring cells. Doubles the number of contact-dependent gene "
+         "programs and creates pairs of highly correlated gene programs.")
 parser.add_argument(
     "--humanppi_min_rf_prob",
     type=none_or_float,
@@ -656,6 +676,10 @@ if args.mlflow_tracking:
                          args.humanppi_use_topology)
         mlflow.log_param("humanppi_detect_cis_complexes",
                          args.humanppi_detect_cis_complexes)
+        mlflow.log_param("humanppi_min_extracellular_domain_length",
+                         args.humanppi_min_extracellular_domain_length)
+        mlflow.log_param("humanppi_symmetric_juxtacrine_gps",
+                         args.humanppi_symmetric_juxtacrine_gps)
         mlflow.log_param("humanppi_min_rf_prob",
                          args.humanppi_min_rf_prob)
         mlflow.log_param("humanppi_min_af_prob",
@@ -869,6 +893,9 @@ if args.include_humanppi_gps:
         topology_file_path=(args.humanppi_topology_file_path
                             or humanppi_topology_file_path),
         detect_cis_complexes=args.humanppi_detect_cis_complexes,
+        min_extracellular_domain_length=(
+            args.humanppi_min_extracellular_domain_length),
+        symmetric_juxtacrine_gps=args.humanppi_symmetric_juxtacrine_gps,
         complex_portal_file_path=(args.humanppi_complex_portal_file_path
                                   or complex_portal_file_path),
         min_rf_prob=args.humanppi_min_rf_prob,
