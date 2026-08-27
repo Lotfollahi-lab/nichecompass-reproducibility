@@ -199,6 +199,18 @@ parser.add_argument(
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
 parser.add_argument(
+    "--humanppi_orient_juxtacrine_gps",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether interactions should be oriented from evidence "
+         "about which partner sends the signal, so that the ligand is placed "
+         "in the source (neighborhood) component and the receptor in the "
+         "target (self) component. Curated gene families are used first, then "
+         "the OmniPath intercell annotation, then the Gene Ontology molecular "
+         "functions and the GPI anchor from the UniProt annotation. If "
+         "disabled, the order of the two columns in the released predictions "
+         "is kept, which is arbitrary.")
+parser.add_argument(
     "--humanppi_symmetric_juxtacrine_gps",
     action=argparse.BooleanOptionalAction,
     default=False,
@@ -678,6 +690,8 @@ if args.mlflow_tracking:
                          args.humanppi_detect_cis_complexes)
         mlflow.log_param("humanppi_min_extracellular_domain_length",
                          args.humanppi_min_extracellular_domain_length)
+        mlflow.log_param("humanppi_orient_juxtacrine_gps",
+                         args.humanppi_orient_juxtacrine_gps)
         mlflow.log_param("humanppi_symmetric_juxtacrine_gps",
                          args.humanppi_symmetric_juxtacrine_gps)
         mlflow.log_param("humanppi_min_rf_prob",
@@ -762,6 +776,8 @@ complex_portal_file_path = gp_data_folder_path + \
                            "/complex_portal_human.tsv"
 humanppi_topology_file_path = gp_data_folder_path + \
                               "/humanppi_protein_topology.tsv"
+omnipath_annotation_file_path = gp_data_folder_path + \
+                               "/omnipath_intercell_annotation.tsv"
 humanppi_network_file_path = gp_data_folder_path + \
                              "/humanppi_network_" \
                              f"{args.humanppi_precision}.csv"
@@ -895,6 +911,8 @@ if args.include_humanppi_gps:
         detect_cis_complexes=args.humanppi_detect_cis_complexes,
         min_extracellular_domain_length=(
             args.humanppi_min_extracellular_domain_length),
+        orient_juxtacrine_gps=args.humanppi_orient_juxtacrine_gps,
+        omnipath_annotation_file_path=omnipath_annotation_file_path,
         symmetric_juxtacrine_gps=args.humanppi_symmetric_juxtacrine_gps,
         complex_portal_file_path=(args.humanppi_complex_portal_file_path
                                   or complex_portal_file_path),
