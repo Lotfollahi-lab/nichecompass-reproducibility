@@ -143,6 +143,37 @@ parser.add_argument(
          "available evidence. Either 'exclude' (dropped, as they cannot be "
          "classified either way) or 'intracellular'.")
 parser.add_argument(
+    "--humanppi_filter_ig_tcr_segments",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether human PPI interactions involving an "
+         "immunoglobulin or T cell receptor V, D or J gene segment should be "
+         "dropped. Such segments are recombined into a single chain, so an "
+         "interaction between two of them is intramolecular rather than an "
+         "interaction between two proteins.")
+parser.add_argument(
+    "--humanppi_filter_paralog_cross_pairs",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether human PPI interactions between paralogues that do "
+         "not form a heterodimer should be dropped. Integrin alpha-beta pairs "
+         "are restricted to the 24 heterodimers that exist and MHC class II "
+         "alpha-beta pairs to matching isotypes.")
+parser.add_argument(
+    "--humanppi_use_topology",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether membrane topology should be retrieved from "
+         "UniProt and used to decide whether a protein can present an "
+         "extracellular face. Requires network access on first use and is "
+         "cached afterwards.")
+parser.add_argument(
+    "--humanppi_topology_file_path",
+    type=none_or_value,
+    default=None,
+    help="Path of the file where the membrane topology retrieved from UniProt "
+         "is cached. Defaults to the gene program data folder.")
+parser.add_argument(
     "--humanppi_detect_cis_complexes",
     action=argparse.BooleanOptionalAction,
     default=True,
@@ -617,6 +648,12 @@ if args.mlflow_tracking:
                          args.humanppi_ambiguous_locality)
         mlflow.log_param("humanppi_unresolved_locality",
                          args.humanppi_unresolved_locality)
+        mlflow.log_param("humanppi_filter_ig_tcr_segments",
+                         args.humanppi_filter_ig_tcr_segments)
+        mlflow.log_param("humanppi_filter_paralog_cross_pairs",
+                         args.humanppi_filter_paralog_cross_pairs)
+        mlflow.log_param("humanppi_use_topology",
+                         args.humanppi_use_topology)
         mlflow.log_param("humanppi_detect_cis_complexes",
                          args.humanppi_detect_cis_complexes)
         mlflow.log_param("humanppi_min_rf_prob",
@@ -699,6 +736,8 @@ collectri_tf_network_file_path = gp_data_folder_path + \
                                  f"/collectri_tf_network_{args.species}.csv"
 complex_portal_file_path = gp_data_folder_path + \
                            "/complex_portal_human.tsv"
+humanppi_topology_file_path = gp_data_folder_path + \
+                              "/humanppi_protein_topology.tsv"
 humanppi_network_file_path = gp_data_folder_path + \
                              "/humanppi_network_" \
                              f"{args.humanppi_precision}.csv"
@@ -824,6 +863,11 @@ if args.include_humanppi_gps:
         program_type=args.humanppi_program_type,
         ambiguous_locality=args.humanppi_ambiguous_locality,
         unresolved_locality=args.humanppi_unresolved_locality,
+        filter_ig_tcr_segments=args.humanppi_filter_ig_tcr_segments,
+        filter_paralog_cross_pairs=args.humanppi_filter_paralog_cross_pairs,
+        use_topology=args.humanppi_use_topology,
+        topology_file_path=(args.humanppi_topology_file_path
+                            or humanppi_topology_file_path),
         detect_cis_complexes=args.humanppi_detect_cis_complexes,
         complex_portal_file_path=(args.humanppi_complex_portal_file_path
                                   or complex_portal_file_path),
