@@ -127,7 +127,7 @@ parser.add_argument(
 parser.add_argument(
     "--humanppi_localization_filter",
     type=str,
-    default="strict",
+    default="include_ambiguous",
     help="Determines whether human PPI proteins whose localization is only "
          "compatible with, but does not establish, an extracellular face "
          "count as able to act between cells. Either 'strict' (they do not) "
@@ -140,6 +140,20 @@ parser.add_argument(
     help="Determines how human PPI interactions are handled in which at least "
          "one partner has no usable localization annotation. Either 'exclude' "
          "(dropped, as they cannot be classified) or 'intracellular'.")
+parser.add_argument(
+    "--humanppi_detect_cis_complexes",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether human PPI interactions whose two partners are "
+         "subunits of a common protein complex should be reclassified as "
+         "'cis_complex' rather than being treated as intercellular, since such "
+         "complexes assemble within a single cell.")
+parser.add_argument(
+    "--humanppi_complex_portal_file_path",
+    type=none_or_value,
+    default=None,
+    help="Path of the file where the EBI Complex Portal table for human is "
+         "cached. Defaults to the gene program data folder.")
 parser.add_argument(
     "--humanppi_min_rf_prob",
     type=none_or_float,
@@ -601,6 +615,8 @@ if args.mlflow_tracking:
                          args.humanppi_localization_filter)
         mlflow.log_param("humanppi_unknown_locality",
                          args.humanppi_unknown_locality)
+        mlflow.log_param("humanppi_detect_cis_complexes",
+                         args.humanppi_detect_cis_complexes)
         mlflow.log_param("humanppi_min_rf_prob",
                          args.humanppi_min_rf_prob)
         mlflow.log_param("humanppi_min_af_prob",
@@ -679,6 +695,8 @@ omnipath_lr_network_file_path = gp_data_folder_path + \
                                      "/omnipath_lr_network.csv"
 collectri_tf_network_file_path = gp_data_folder_path + \
                                  f"/collectri_tf_network_{args.species}.csv"
+complex_portal_file_path = gp_data_folder_path + \
+                           "/complex_portal_human.tsv"
 humanppi_network_file_path = gp_data_folder_path + \
                              "/humanppi_network_" \
                              f"{args.humanppi_precision}.csv"
@@ -804,6 +822,9 @@ if args.include_humanppi_gps:
         program_type=args.humanppi_program_type,
         localization_filter=args.humanppi_localization_filter,
         unknown_locality=args.humanppi_unknown_locality,
+        detect_cis_complexes=args.humanppi_detect_cis_complexes,
+        complex_portal_file_path=(args.humanppi_complex_portal_file_path
+                                  or complex_portal_file_path),
         min_rf_prob=args.humanppi_min_rf_prob,
         min_af_prob=args.humanppi_min_af_prob,
         load_from_disk=humanppi_load_from_disk,
