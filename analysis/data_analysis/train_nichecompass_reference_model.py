@@ -27,6 +27,7 @@ import scipy.sparse as sp
 import squidpy as sq
 
 from nichecompass.models import NicheCompass
+from nichecompass.train import is_main_process
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 add_multimodal_mask_to_adata,
                                 extract_gp_dict_from_collectri_tf_network,
@@ -198,6 +199,16 @@ parser.add_argument(
          "protrudes less far from its membrane are reclassified as "
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
+parser.add_argument(
+    "--multi_gpu",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Indicator whether training should be split across all processes of "
+         "a distributed job. Requires the script to be launched with "
+         "´torchrun --nproc_per_node=<n_gpus>´, and raises otherwise. The "
+         "batch sizes keep their meaning as the global batch sizes, so the "
+         "number of optimizer steps per epoch is unchanged and only the work "
+         "per step is divided between the devices.")
 parser.add_argument(
     "--humanppi_orient_juxtacrine_gps",
     action=argparse.BooleanOptionalAction,
@@ -652,8 +663,10 @@ print(f"Run timestamp: {current_timestamp + args.timestamp_suffix}.")
 print("Script arguments:")
 print(sys.argv)
 
-# Set mlflow experiment
-if args.mlflow_tracking:
+# Set mlflow experiment. Under ´torchrun´ the whole script runs once per
+# process, so only the main process tracks the run; the others train without
+# tracking, which would otherwise produce one MLflow run per device.
+if args.mlflow_tracking and is_main_process():
     experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
     mlflow_experiment_id = experiment.experiment_id
     
@@ -1306,6 +1319,7 @@ model.train(n_epochs=args.n_epochs,
             n_sampled_neighbors=args.n_sampled_neighbors,
             mlflow_experiment_id=mlflow_experiment_id,
             seed=args.seed,
+            multi_gpu=args.multi_gpu,
             verbose=True)
 
 print("\nFinished model training...")
@@ -1321,15 +1335,18 @@ if args.compute_knn_graph:
     sc.tl.umap(model.adata,
                neighbors_key=args.latent_key)
 
-# Store adata to disk
-model.adata.write(
-    f"{result_folder_path}/{args.dataset}_{args.model_label}.h5ad")
+# Store adata to disk. Under ´torchrun´ the whole script runs once per
+# process, so only the main process writes the results; the others have
+# already returned from ´train´ without touching ´adata´.
+if is_main_process():
+    model.adata.write(
+        f"{result_folder_path}/{args.dataset}_{args.model_label}.h5ad")
 
-print("\nSaving model...")
-# Save trained model
-model.save(dir_path=model_folder_path,
-           overwrite=True,
-           save_adata=True,
-           adata_file_name=f"{args.dataset}_{args.model_label}.h5ad",
-           save_adata_atac=save_adata_atac,
-           adata_atac_file_name=f"{args.dataset}_{args.model_label}_atac.h5ad")
+    print("\nSaving model...")
+    # Save trained model
+    model.save(dir_path=model_folder_path,
+               overwrite=True,
+               save_adata=True,
+               adata_file_name=f"{args.dataset}_{args.model_label}.h5ad",
+               save_adata_atac=save_adata_atac,
+               adata_atac_file_name=f"{args.dataset}_{args.model_label}_atac.h5ad")
