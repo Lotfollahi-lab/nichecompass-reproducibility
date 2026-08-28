@@ -66,13 +66,6 @@ export MKL_NUM_THREADS=${OMP_NUM_THREADS}
 echo "Host: $(hostname)"
 nvidia-smi --query-gpu=index,name,memory.total --format=csv || true
 
-# ´--n_epochs_all_gps 0´ is the one deliberate deviation from the notebook,
-# which uses 25. With only one epoch the notebook's value would leave gene
-# program pruning switched off for the whole run, so the collective that keeps
-# the pruning statistic identical across processes would never execute — and
-# that is the single most important thing this smoke run is meant to exercise.
-# Set it back to 25 for a real run.
-
 # ´nvidia-smi´ reports the host's GPUs through NVML, not what this job was
 # allocated, so the allocation is asserted through torch instead. A mismatch
 # here fails in seconds rather than as an opaque 'invalid device ordinal' on
@@ -81,61 +74,25 @@ echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-unset}"
 python -c "import torch, sys; n = torch.cuda.device_count(); \
 print('visible CUDA devices:', n); sys.exit(0 if n == ${N_GPUS} else 1)"
 
+# ´--n_epochs_all_gps 0´ is the one deliberate deviation from the notebook,
+# which uses 25. With only one epoch the notebook's value would leave gene
+# program pruning switched off for the whole run, so the collective that keeps
+# the pruning statistic identical across processes would never execute — and
+# that is the single most important thing this smoke run is meant to exercise.
+# Set it back to 25 for a real run.
+
+# The same configuration the single device warm-up job uses, so the two cannot
+# drift apart
+source "$(dirname "$0")/xenium_humanppi_args.sh"
+
 torchrun \
     --standalone \
     --nnodes=1 \
     --nproc_per_node=${N_GPUS} \
     train_nichecompass_reference_model.py \
+    "${NICHECOMPASS_ARGS[@]}" \
     --multi_gpu \
-    --dataset xenium_human_breast_cancer \
-    --reference_batches batch1 batch2 \
-    --counts_key counts \
-    --spatial_key spatial \
-    --n_neighbors 8 \
-    --species human \
     --model_label humanppi_1epoch_multigpu \
-    `# Prior gene programs: the human PPI resource only, as in the notebook` \
-    --no-include_omnipath_gps \
-    --no-include_nichenet_gps \
-    --no-include_mebocost_gps \
-    --no-include_collectri_gps \
-    --include_humanppi_gps \
-    --humanppi_precision 80 \
-    --humanppi_program_type intercellular \
-    --humanppi_ambiguous_locality extracellular \
-    --humanppi_unresolved_locality exclude \
-    --humanppi_use_topology \
-    --humanppi_detect_cis_complexes \
-    --humanppi_min_extracellular_domain_length 30 \
-    --humanppi_orient_juxtacrine_gps \
-    --no-humanppi_symmetric_juxtacrine_gps \
-    --humanppi_filter_ig_tcr_segments \
-    --humanppi_filter_paralog_cross_pairs \
-    --humanppi_min_rf_prob None \
-    --humanppi_min_af_prob None \
-    `# No combining, and keep only programs that still encode an interaction` \
-    --gp_filter_mode none \
-    --min_genes_per_gp 2 \
-    --min_source_genes_per_gp 1 \
-    --min_target_genes_per_gp 1 \
-    `# Model architecture` \
-    --conv_layer_encoder gatv2conv \
-    --active_gp_thresh_ratio 0.01 \
-    --n_addon_gp 100 \
-    `# Batch as a categorical covariate, two samples, no cross-sample edges` \
-    --cat_covariates_keys batch \
-    --cat_covariates_embeds_nums 2 \
-    --cat_covariates_no_edges True \
-    --cat_covariates_embeds_injection gene_expr_decoder \
-    `# Training: one epoch, everything else as in the notebook` \
     --n_epochs 1 \
     --n_epochs_all_gps 0 \
-    --lr 0.001 \
-    --lambda_edge_recon 5000000. \
-    --lambda_gene_expr_recon 3000. \
-    --lambda_l1_masked 0. \
-    --lambda_l1_addon 30. \
-    --edge_batch_size 512 \
-    --n_sampled_neighbors 4 \
-    --seed 0 \
     "$@"
