@@ -10,21 +10,13 @@
 # intended differences from a full run are the epoch count and the fact that
 # training is split across four devices.
 #
-# BEFORE THE FIRST RUN, two things:
+# The data is read from ´datasets/st_data/gold/{dataset}_{batch}.h5ad´, which
+# is where the notebook reads it from too.
 #
-# 1. The script reads the data from
-#    ´datasets/st_data/gold/{dataset}_{batch}.h5ad´, while the notebook reads it
-#    from ´datasets/st_data/{dataset}/´. Link the files into place once:
-#
-#      cd "${ROOT}/datasets/st_data"
-#      mkdir -p gold
-#      ln -sf ../xenium_human_breast_cancer/xenium_human_breast_cancer_batch1.h5ad gold/
-#      ln -sf ../xenium_human_breast_cancer/xenium_human_breast_cancer_batch2.h5ad gold/
-#
-# 2. Populate the prior gene program caches with a SINGLE process run, since
-#    all four processes would otherwise race to download and write the same
-#    files. Running this script once without ´--multi_gpu´ and with
-#    ´--nproc_per_node=1´ is enough, or run the notebook's gene program cells.
+# BEFORE THE FIRST RUN, populate the prior gene program caches with a SINGLE
+# process run, since all four processes would otherwise race to download and
+# write the same files. Running this script once without ´--multi_gpu´ and with
+# ´--nproc_per_node=1´ is enough, or run the notebook's gene program cells.
 
 #BSUB -J nichecompass_xenium_smoke
 #BSUB -q gpu-normal
