@@ -66,6 +66,30 @@ if visible != expected:
     sys.exit(f"the job was allocated {visible} devices, not {expected}")
 PYEOF
 
+# The compute nodes have no route to the internet: the log of a failed run
+# shows every OmniPath, UniProt and Complex Portal request timing out. Every
+# prior gene program resource therefore has to be cached BEFORE the job runs,
+# by executing the pipeline once on a node that does have a route. Checking
+# here turns a confusing mid-run timeout into one line up front.
+GP_DATA_DIR="${GP_DATA_DIR:-${ARGS_DIR}/../../datasets/gp_data}"
+MISSING_CACHES=""
+for cache in "humanppi_network_80.csv" "humanppi_protein_topology.tsv" \
+             "complex_portal_human.tsv" "omnipath_intercell_annotation.tsv"; do
+    if [ ! -r "${GP_DATA_DIR}/${cache}" ]; then
+        MISSING_CACHES="${MISSING_CACHES} ${cache}"
+    fi
+done
+if [ -n "${MISSING_CACHES}" ]; then
+    echo "ERROR: these prior gene program caches are missing from" >&2
+    echo "  ${GP_DATA_DIR}" >&2
+    for cache in ${MISSING_CACHES}; do echo "    ${cache}" >&2; done
+    echo "The compute nodes cannot reach the internet, so they cannot be" >&2
+    echo "downloaded from here. Run the pipeline once on a node with a" >&2
+    echo "route, for example the login node, to populate them." >&2
+    echo "Set GP_DATA_DIR if they live elsewhere." >&2
+    exit 1
+fi
+
 # The shared run configuration, also used by any other submitter
 source "${ARGS_DIR}/xenium_humanppi_args.sh"
 
