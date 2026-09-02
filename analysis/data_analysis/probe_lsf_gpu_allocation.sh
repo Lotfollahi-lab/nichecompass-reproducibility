@@ -28,7 +28,9 @@ N_GPUS="${N_GPUS:-4}"
 N_CORES_PER_GPU="${N_CORES_PER_GPU:-6}"
 LSF_MEM_GB="${LSF_MEM_GB:-200}"
 LSF_GPU_MEM_MB="${LSF_GPU_MEM_MB:-80000}"
-CONDA_ENV="${CONDA_ENV:-nichecompass-reproducibility}"
+# Defaults to the environment you submit from, since that is the one you
+# have verified works. The repository env is only the fallback.
+CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-nichecompass-reproducibility}}"
 OPENMPI_MODULE="${OPENMPI_MODULE:-ISG/experimental/fg12/openmpi/5.0.4-cuda12.1-lsf}"
 DRY_RUN="${DRY_RUN:-0}"
 
