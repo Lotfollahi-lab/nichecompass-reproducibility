@@ -66,11 +66,10 @@ if visible != expected:
     sys.exit(f"the job was allocated {visible} devices, not {expected}")
 PYEOF
 
-# Network access differs between an interactive shell and a batch job: proxy
-# variables are commonly exported from ´.bashrc´, which a non-interactive batch
-# shell never reads. A run that downloads fine interactively can therefore time
-# out inside the job. Report what this job actually has, so the log answers the
-# question instead of leaving it to be guessed.
+# Proxy variables are commonly exported from ´.bashrc´, which a non-interactive
+# batch shell never reads, so a job can end up with different network settings
+# than the shell it was submitted from. Reporting them puts that in the log
+# rather than leaving it to be inferred.
 for proxy_var in http_proxy https_proxy no_proxy \
                  HTTP_PROXY HTTPS_PROXY NO_PROXY; do
     if [ -n "${!proxy_var:-}" ]; then
@@ -78,11 +77,17 @@ for proxy_var in http_proxy https_proxy no_proxy \
     fi
 done
 
-# The caches are required because the job may have no route to the internet: the log of a failed run
-# A failed run's log showed every OmniPath, UniProt and Complex Portal request
-# timing out inside the job, while the same downloads succeed interactively.
-# Whatever the cause, the resources have to be cached BEFORE the job runs.
-# Checking here turns a confusing mid-run timeout into one line up front.
+# The prior gene program resources have to be cached BEFORE the job runs, for a
+# reason that has nothing to do with connectivity: every rank reaches this code
+# at the same moment and they would race to download and write the SAME cache
+# files, which can leave a truncated file behind for later runs to load.
+#
+# Upstream flakiness compounds it rather than causing it. The omnipath client
+# uses a one second connect timeout, and four simultaneous requests to
+# omnipathdb.org were enough to trip it in one observed run. Those were
+# warnings and did not fail that run.
+#
+# Checking here turns a mid-run failure on four ranks into one line up front.
 GP_DATA_DIR="${GP_DATA_DIR:-${ARGS_DIR}/../../datasets/gp_data}"
 MISSING_CACHES=""
 for cache in "humanppi_network_80.csv" "humanppi_protein_topology.tsv" \
@@ -95,10 +100,9 @@ if [ -n "${MISSING_CACHES}" ]; then
     echo "ERROR: these prior gene program caches are missing from" >&2
     echo "  ${GP_DATA_DIR}" >&2
     for cache in ${MISSING_CACHES}; do echo "    ${cache}" >&2; done
-    echo "A batch job here may have no route to the internet, so they" >&2
-    echo "cannot be downloaded from inside it. Run the pipeline once" >&2
-    echo "somewhere that does have a route, such as the login node or an" >&2
-    echo "interactive session, to populate them." >&2
+    echo "They are deliberately not downloaded from inside the job, since" >&2
+    echo "all ranks would race to write the same files. Run the pipeline" >&2
+    echo "once as a single process to populate them, then resubmit." >&2
     echo "Set GP_DATA_DIR if they live elsewhere." >&2
     exit 1
 fi
