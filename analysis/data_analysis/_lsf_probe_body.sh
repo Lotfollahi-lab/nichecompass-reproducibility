@@ -31,6 +31,28 @@ echo "LSB_MCPU_HOSTS: ${LSB_MCPU_HOSTS:-unset}"
 echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-unset}"
 
 echo
+echo "=== 3b. does this batch job have a route to the internet? ==="
+# The same downloads can succeed interactively and time out in a batch job,
+# because proxy variables usually come from .bashrc, which a non-interactive
+# shell does not read. This settles it rather than leaving it to be inferred.
+for proxy_var in http_proxy https_proxy no_proxy HTTP_PROXY HTTPS_PROXY NO_PROXY; do
+    [ -n "${!proxy_var:-}" ] && echo "  ${proxy_var}=${!proxy_var}"
+done
+if command -v curl >/dev/null 2>&1; then
+    for host in https://omnipathdb.org/about?format=text \
+                https://rest.uniprot.org/ \
+                https://ftp.ebi.ac.uk/; do
+        if curl -sS -m 10 -o /dev/null -w "  %{http_code} ${host}\n" "${host}"; then
+            :
+        else
+            echo "  UNREACHABLE ${host}"
+        fi
+    done
+else
+    echo "  curl not available, skipping"
+fi
+
+echo
 echo "=== 4. GPUs the host has, and what this job can see ==="
 nvidia-smi --query-gpu=index,name,memory.total,compute_mode --format=csv || true
 
@@ -116,6 +138,8 @@ mpirun \
     -map-by slot \
     --mca pml ob1 --mca btl ^openib \
     -x PATH -x LD_LIBRARY_PATH -x VIRTUAL_ENV \
+    -x http_proxy -x https_proxy -x no_proxy \
+    -x HTTP_PROXY -x HTTPS_PROXY -x NO_PROXY \
     -x MASTER_ADDR -x MASTER_PORT \
     -x NCCL_DEBUG -x NCCL_NVLS_ENABLE -x NCCL_IB_DISABLE \
     python "${PROBE_PY}" \
