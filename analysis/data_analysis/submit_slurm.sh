@@ -34,8 +34,20 @@ mkdir -p logs
 # number of processes PER NODE. If the job dies with an out of memory error
 # that does not mention CUDA, this is why.
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate nichecompass-reproducibility
+# Activate the python environment. A virtualenv is preferred; conda is the
+# fallback for the environment.yaml in envs/.
+VENV_PATH="${VENV_PATH:-}"
+CONDA_ENV="${CONDA_ENV:-nichecompass-reproducibility}"
+if [ -n "${VENV_PATH}" ] && [ -r "${VENV_PATH}/bin/activate" ]; then
+    source "${VENV_PATH}/bin/activate"
+elif command -v conda >/dev/null 2>&1; then
+    source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate "${CONDA_ENV}"
+else
+    echo "ERROR: set VENV_PATH to a virtualenv, or install conda." >&2
+    exit 1
+fi
+echo "python: $(command -v python)"
 
 # Keep the per process thread pools from oversubscribing the allocated cores.
 # One task per node is requested and ´torchrun´ forks the per GPU processes

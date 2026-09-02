@@ -30,7 +30,10 @@ export LSF_MEM_GB="${LSF_MEM_GB:-200}"
 export LSF_GPU_MEM_MB="${LSF_GPU_MEM_MB:-80000}"
 # Defaults to the environment you submit from, since that is the one you
 # have verified works. The repository env is only the fallback.
-export CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-nichecompass-reproducibility}}"
+# A virtualenv is preferred, matching how terra and squint run on this farm.
+# Point VENV_PATH elsewhere, or unset it and set CONDA_ENV, to use conda.
+export VENV_PATH="${VENV_PATH:-/nfs/team361/sb75/.venvs/nichecompass}"
+export CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-}}"
 export OPENMPI_MODULE="${OPENMPI_MODULE:-ISG/experimental/fg12/openmpi/5.0.4-cuda12.1-lsf}"
 DRY_RUN="${DRY_RUN:-0}"
 

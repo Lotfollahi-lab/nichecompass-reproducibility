@@ -9,7 +9,6 @@
 set -euo pipefail
 
 : "${N_GPUS:?N_GPUS must be exported by the submitter}"
-: "${CONDA_ENV:?CONDA_ENV must be exported by the submitter}"
 : "${OPENMPI_MODULE:=ISG/experimental/fg12/openmpi/5.0.4-cuda12.1-lsf}"
 : "${MODULES_INIT:=/usr/share/modules/init/sh}"
 
@@ -35,8 +34,26 @@ echo
 echo "=== 4. GPUs the host has, and what this job can see ==="
 nvidia-smi --query-gpu=index,name,memory.total,compute_mode --format=csv || true
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate "${CONDA_ENV}"
+# Activate the python environment. A virtualenv (uv, venv, virtualenv) is
+# preferred, since that is what this farm uses: terra and squint both keep
+# theirs under /nfs/team361/sb75/.venvs/<project>. Conda is the fallback, for
+# the environment.yaml in envs/.
+if [ -n "${VENV_PATH:-}" ] && [ -r "${VENV_PATH}/bin/activate" ]; then
+    # shellcheck disable=SC1091
+    source "${VENV_PATH}/bin/activate"
+    echo "environment: ${VENV_PATH} (virtualenv)"
+elif [ -n "${CONDA_ENV:-}" ] && command -v conda >/dev/null 2>&1; then
+    source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate "${CONDA_ENV}"
+    echo "environment: ${CONDA_ENV} (conda)"
+else
+    echo "ERROR: no python environment to activate." >&2
+    echo "Set VENV_PATH to a virtualenv, for example" >&2
+    echo "  VENV_PATH=/nfs/team361/sb75/.venvs/nichecompass" >&2
+    echo "or set CONDA_ENV with conda on PATH." >&2
+    exit 1
+fi
+echo "python: $(command -v python)"
 python - <<'PYEOF'
 import torch
 print("torch:", torch.__version__)
@@ -98,7 +115,7 @@ mpirun \
     -bind-to none \
     -map-by slot \
     --mca pml ob1 --mca btl ^openib \
-    -x PATH -x LD_LIBRARY_PATH \
+    -x PATH -x LD_LIBRARY_PATH -x VIRTUAL_ENV \
     -x MASTER_ADDR -x MASTER_PORT \
     -x NCCL_DEBUG -x NCCL_NVLS_ENABLE -x NCCL_IB_DISABLE \
     python "${PROBE_PY}" \

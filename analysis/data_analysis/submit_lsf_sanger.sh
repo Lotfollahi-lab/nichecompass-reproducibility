@@ -42,9 +42,10 @@ export N_CORES_PER_GPU="${N_CORES_PER_GPU:-6}"
 export LSF_MEM_GB="${LSF_MEM_GB:-200}"            # per node
 export LSF_GPU_MEM_MB="${LSF_GPU_MEM_MB:-80000}"  # gmem, as terra requests
 export LSF_WALL="${LSF_WALL:-2:00}"
-# Defaults to the environment you submit from, which is the one you have
-# already verified works. The repository environment is only the fallback.
-export CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-nichecompass-reproducibility}}"
+# A virtualenv is preferred, matching how terra and squint run on this farm.
+# Point VENV_PATH elsewhere, or unset it and set CONDA_ENV, to use conda.
+export VENV_PATH="${VENV_PATH:-/nfs/team361/sb75/.venvs/nichecompass}"
+export CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-}}"
 export OPENMPI_MODULE="${OPENMPI_MODULE:-ISG/experimental/fg12/openmpi/5.0.4-cuda12.1-lsf}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -77,7 +78,7 @@ echo "  GPUs/ranks  : ${N_GPUS}"
 echo "  cores       : ${N_CORES} (ptile ${N_CORES})"
 echo "  memory      : ${LSF_MEM_GB}G per node, gmem ${LSF_GPU_MEM_MB}MB per GPU"
 echo "  reservation : ${LSF_RESERVATION:-none}"
-echo "  environment : ${CONDA_ENV}"
+echo "  environment : ${VENV_PATH:-${CONDA_ENV}}"
 echo "  model label : ${MODEL_LABEL}"
 echo "  extra args  : ${FORWARDED:-none}"
 
