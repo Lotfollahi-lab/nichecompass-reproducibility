@@ -812,8 +812,13 @@ gene_orthologs_mapping_file_path = ga_data_folder_path + \
                                    "/human_mouse_gene_orthologs.csv"
 gtf_file_path = ga_data_folder_path + \
                 "/gencode.vM32.chr_patch_hapl_scaff.annotation.gtf.gz"
-os.makedirs(model_folder_path, exist_ok=True)
-os.makedirs(result_folder_path, exist_ok=True)
+# Only the writing process needs these. Every process stamps its own
+# ´current_timestamp´, so creating them everywhere leaves up to
+# ´world_size - 1´ empty directory pairs behind whenever the processes start
+# either side of a second boundary.
+if is_main_process():
+    os.makedirs(model_folder_path, exist_ok=True)
+    os.makedirs(result_folder_path, exist_ok=True)
 
 ###############################################################################
 ## 2. Gene Program Mask ##
@@ -1338,21 +1343,29 @@ model.train(n_epochs=args.n_epochs,
 
 print("\nFinished model training...")
 
-if args.compute_knn_graph:
-    print("\nComputing neighbor graph...")
-    # Use latent representation for UMAP generation
-    sc.pp.neighbors(model.adata,
-                    use_rep=args.latent_key,
-                    key_added=args.latent_key)
-
-    print("\nComputing UMAP embedding...")
-    sc.tl.umap(model.adata,
-               neighbors_key=args.latent_key)
-
-# Store adata to disk. Under ´torchrun´ the whole script runs once per
-# process, so only the main process writes the results; the others have
-# already returned from ´train´ without touching ´adata´.
+# Everything from here on is the main process's alone, and the guard has to
+# start HERE rather than at the write below. Under a multi process launch the
+# whole script runs once per process, and the other processes returned from
+# ´train´ without ever touching ´adata´ -- so they hold no latent
+# representation, and ´sc.pp.neighbors(use_rep=args.latent_key)´ raises
+# "Did not find nichecompass_latent in .obsm.keys()" on every one of them
+# within seconds. ´mpirun´ tears the whole job down when a rank exits non
+# zero, which killed the main process while it was still computing the
+# neighbor graph, before it had written anything. A completed multi-GPU
+# training run produced no output at all.
 if is_main_process():
+    if args.compute_knn_graph:
+        print("\nComputing neighbor graph...")
+        # Use latent representation for UMAP generation
+        sc.pp.neighbors(model.adata,
+                        use_rep=args.latent_key,
+                        key_added=args.latent_key)
+
+        print("\nComputing UMAP embedding...")
+        sc.tl.umap(model.adata,
+                   neighbors_key=args.latent_key)
+
+    print("\nStoring adata to disk...")
     model.adata.write(
         f"{result_folder_path}/{args.dataset}_{args.model_label}.h5ad")
 
