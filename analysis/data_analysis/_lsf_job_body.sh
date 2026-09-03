@@ -88,9 +88,36 @@ done
 # warnings and did not fail that run.
 #
 # Checking here turns a mid-run failure on four ranks into one line up front.
+# The shared run configuration, also used by any other submitter. Sourced
+# BEFORE the cache check, so that the check can see the arguments the job will
+# actually run with.
+source "${ARGS_DIR}/xenium_humanppi_args.sh"
+
 GP_DATA_DIR="${GP_DATA_DIR:-${ARGS_DIR}/../../datasets/gp_data}"
+
+# The interactome cache is named after the precision, so the precision has to
+# be read out of the EFFECTIVE arguments rather than assumed. Anything passed
+# to this script is appended after the shared arguments and therefore wins, so
+# the last occurrence is the one that counts. Hardcoding a precision here would
+# have let ´--humanppi_precision 90´ pass a check on the 80 table and then send
+# four ranks to write the 90 table at the same moment.
+EFFECTIVE_ARGS=("${NICHECOMPASS_ARGS[@]}" "$@")
+HUMANPPI_PRECISION=""
+for (( arg_index=0; arg_index<${#EFFECTIVE_ARGS[@]}; arg_index++ )); do
+    if [ "${EFFECTIVE_ARGS[$arg_index]}" = "--humanppi_precision" ]; then
+        HUMANPPI_PRECISION="${EFFECTIVE_ARGS[$((arg_index + 1))]}"
+    fi
+done
+if [ -z "${HUMANPPI_PRECISION}" ]; then
+    echo "ERROR: could not determine --humanppi_precision from the arguments," >&2
+    echo "so the interactome cache to check for cannot be named." >&2
+    exit 1
+fi
+echo "humanppi precision: ${HUMANPPI_PRECISION}"
+
 MISSING_CACHES=""
-for cache in "humanppi_network_80.csv" "humanppi_protein_topology.tsv" \
+for cache in "humanppi_network_${HUMANPPI_PRECISION}.csv" \
+             "humanppi_protein_topology.tsv" \
              "complex_portal_human.tsv" "omnipath_intercell_annotation.tsv"; do
     if [ ! -r "${GP_DATA_DIR}/${cache}" ]; then
         MISSING_CACHES="${MISSING_CACHES} ${cache}"
@@ -102,13 +129,18 @@ if [ -n "${MISSING_CACHES}" ]; then
     for cache in ${MISSING_CACHES}; do echo "    ${cache}" >&2; done
     echo "They are deliberately not downloaded from inside the job, since" >&2
     echo "all ranks would race to write the same files. Run the pipeline" >&2
-    echo "once as a single process to populate them, then resubmit." >&2
+    echo "once as a single process to populate them, then resubmit:" >&2
+    echo "  N_GPUS=1 bash submit_lsf_sanger.sh --n_epochs 1 $*" >&2
     echo "Set GP_DATA_DIR if they live elsewhere." >&2
     exit 1
 fi
 
-# The shared run configuration, also used by any other submitter
-source "${ARGS_DIR}/xenium_humanppi_args.sh"
+# Readability is all this check can establish. A cache that EXISTS but is
+# incomplete -- a topology table that predates an interactome refresh, so that
+# some accessions are missing -- is refetched and rewritten in full by every
+# rank, and no test here can see that. Any change of precision, or any refresh
+# of a prior resource, therefore needs a single process warm-up run first.
+echo "prior gene program caches: present in ${GP_DATA_DIR}"
 
 if [ "${N_GPUS}" -gt 1 ]; then
     # The module system has to be initialised explicitly, as terra does
