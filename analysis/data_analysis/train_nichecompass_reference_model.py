@@ -16,6 +16,7 @@
 import argparse
 import os
 import sys
+import warnings
 from datetime import datetime
 
 import anndata as ad
@@ -667,90 +668,103 @@ print(sys.argv)
 # process, so only the main process tracks the run; the others train without
 # tracking, which would otherwise produce one MLflow run per device.
 if args.mlflow_tracking and is_main_process():
-    experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
-    mlflow_experiment_id = experiment.experiment_id
+    # Experiment tracking must never be able to kill a training run:
+    # a job that has already loaded the data and built the gene
+    # program mask should not be lost because the metrics database
+    # has a schema problem. One database, left half migrated by an
+    # earlier crash, aborted a run here with 'duplicate column name'.
+    try:
+        experiment = mlflow.set_experiment(f"{args.dataset}_{args.model_label}")
+        mlflow_experiment_id = experiment.experiment_id
     
-    # Track params that are not part of model
-    mlflow.log_param("timestamp", current_timestamp + args.timestamp_suffix)
-    mlflow.log_param("nichenet_keep_target_genes_ratio",
-                     args.nichenet_keep_target_genes_ratio)
-    mlflow.log_param("nichenet_max_n_target_genes_per_gp",
-                     args.nichenet_max_n_target_genes_per_gp)
-    mlflow.log_param("include_nichenet_gps",
-                     args.include_nichenet_gps)
-    mlflow.log_param("include_mebocost_gps",
-                     args.include_mebocost_gps)
-    mlflow.log_param("include_collectri_gps",
-                     args.include_collectri_gps)
-    mlflow.log_param("include_humanppi_gps",
-                     args.include_humanppi_gps)
-    if args.include_humanppi_gps:
-        mlflow.log_param("humanppi_precision",
-                         args.humanppi_precision)
-        mlflow.log_param("humanppi_program_type",
-                         args.humanppi_program_type)
-        mlflow.log_param("humanppi_ambiguous_locality",
-                         args.humanppi_ambiguous_locality)
-        mlflow.log_param("humanppi_unresolved_locality",
-                         args.humanppi_unresolved_locality)
-        mlflow.log_param("humanppi_filter_ig_tcr_segments",
-                         args.humanppi_filter_ig_tcr_segments)
-        mlflow.log_param("humanppi_filter_paralog_cross_pairs",
-                         args.humanppi_filter_paralog_cross_pairs)
-        mlflow.log_param("humanppi_use_topology",
-                         args.humanppi_use_topology)
-        mlflow.log_param("humanppi_detect_cis_complexes",
-                         args.humanppi_detect_cis_complexes)
-        mlflow.log_param("humanppi_min_extracellular_domain_length",
-                         args.humanppi_min_extracellular_domain_length)
-        mlflow.log_param("humanppi_orient_juxtacrine_gps",
-                         args.humanppi_orient_juxtacrine_gps)
-        mlflow.log_param("humanppi_symmetric_juxtacrine_gps",
-                         args.humanppi_symmetric_juxtacrine_gps)
-        mlflow.log_param("humanppi_min_rf_prob",
-                         args.humanppi_min_rf_prob)
-        mlflow.log_param("humanppi_min_af_prob",
-                         args.humanppi_min_af_prob)
-    mlflow.log_param("include_brain_marker_gps",
-                     args.include_brain_marker_gps)
-    mlflow.log_param("species",
-                     args.species)
-    mlflow.log_param("gp_filter_mode",
-                     args.gp_filter_mode)
-    mlflow.log_param("combine_overlap_gps",
-                     args.combine_overlap_gps)
-    mlflow.log_param("overlap_thresh_source_genes",
-                     args.overlap_thresh_source_genes)
-    mlflow.log_param("overlap_thresh_target_genes",
-                     args.overlap_thresh_target_genes)
-    mlflow.log_param("overlap_thresh_genes",
-                     args.overlap_thresh_genes)
-    mlflow.log_param("min_genes_per_gp",
-                     args.min_genes_per_gp)
-    mlflow.log_param("min_source_genes_per_gp",
-                     args.min_source_genes_per_gp)
-    mlflow.log_param("min_target_genes_per_gp",
-                     args.min_target_genes_per_gp)
-    mlflow.log_param("add_fc_gps_instead_of_gp_dict_gps",
-                     args.add_fc_gps_instead_of_gp_dict_gps)
-    mlflow.log_param("reference_batches",
-                     args.reference_batches)
-    mlflow.log_param("n_neighbors",
-                     args.n_neighbors)
-    mlflow.log_param("filter_genes",
-                     args.filter_genes)
-    mlflow.log_param("n_hvg",
-                     args.n_hvg)
-    mlflow.log_param("n_svg",
-                     args.n_svg)
-    mlflow.log_param("n_svp",
-                     args.n_svp)
-    mlflow.log_param("include_atac_modality",
-                     args.include_atac_modality)
-    if args.include_atac_modality:
-        mlflow.log_param("filter_peaks", args.filter_peaks)
-        mlflow.log_param("min_cell_peak_thresh_ratio",
-                         args.min_cell_peak_thresh_ratio)
+        # Track params that are not part of model
+        mlflow.log_param("timestamp", current_timestamp + args.timestamp_suffix)
+        mlflow.log_param("nichenet_keep_target_genes_ratio",
+                         args.nichenet_keep_target_genes_ratio)
+        mlflow.log_param("nichenet_max_n_target_genes_per_gp",
+                         args.nichenet_max_n_target_genes_per_gp)
+        mlflow.log_param("include_nichenet_gps",
+                         args.include_nichenet_gps)
+        mlflow.log_param("include_mebocost_gps",
+                         args.include_mebocost_gps)
+        mlflow.log_param("include_collectri_gps",
+                         args.include_collectri_gps)
+        mlflow.log_param("include_humanppi_gps",
+                         args.include_humanppi_gps)
+        if args.include_humanppi_gps:
+            mlflow.log_param("humanppi_precision",
+                             args.humanppi_precision)
+            mlflow.log_param("humanppi_program_type",
+                             args.humanppi_program_type)
+            mlflow.log_param("humanppi_ambiguous_locality",
+                             args.humanppi_ambiguous_locality)
+            mlflow.log_param("humanppi_unresolved_locality",
+                             args.humanppi_unresolved_locality)
+            mlflow.log_param("humanppi_filter_ig_tcr_segments",
+                             args.humanppi_filter_ig_tcr_segments)
+            mlflow.log_param("humanppi_filter_paralog_cross_pairs",
+                             args.humanppi_filter_paralog_cross_pairs)
+            mlflow.log_param("humanppi_use_topology",
+                             args.humanppi_use_topology)
+            mlflow.log_param("humanppi_detect_cis_complexes",
+                             args.humanppi_detect_cis_complexes)
+            mlflow.log_param("humanppi_min_extracellular_domain_length",
+                             args.humanppi_min_extracellular_domain_length)
+            mlflow.log_param("humanppi_orient_juxtacrine_gps",
+                             args.humanppi_orient_juxtacrine_gps)
+            mlflow.log_param("humanppi_symmetric_juxtacrine_gps",
+                             args.humanppi_symmetric_juxtacrine_gps)
+            mlflow.log_param("humanppi_min_rf_prob",
+                             args.humanppi_min_rf_prob)
+            mlflow.log_param("humanppi_min_af_prob",
+                             args.humanppi_min_af_prob)
+        mlflow.log_param("include_brain_marker_gps",
+                         args.include_brain_marker_gps)
+        mlflow.log_param("species",
+                         args.species)
+        mlflow.log_param("gp_filter_mode",
+                         args.gp_filter_mode)
+        mlflow.log_param("combine_overlap_gps",
+                         args.combine_overlap_gps)
+        mlflow.log_param("overlap_thresh_source_genes",
+                         args.overlap_thresh_source_genes)
+        mlflow.log_param("overlap_thresh_target_genes",
+                         args.overlap_thresh_target_genes)
+        mlflow.log_param("overlap_thresh_genes",
+                         args.overlap_thresh_genes)
+        mlflow.log_param("min_genes_per_gp",
+                         args.min_genes_per_gp)
+        mlflow.log_param("min_source_genes_per_gp",
+                         args.min_source_genes_per_gp)
+        mlflow.log_param("min_target_genes_per_gp",
+                         args.min_target_genes_per_gp)
+        mlflow.log_param("add_fc_gps_instead_of_gp_dict_gps",
+                         args.add_fc_gps_instead_of_gp_dict_gps)
+        mlflow.log_param("reference_batches",
+                         args.reference_batches)
+        mlflow.log_param("n_neighbors",
+                         args.n_neighbors)
+        mlflow.log_param("filter_genes",
+                         args.filter_genes)
+        mlflow.log_param("n_hvg",
+                         args.n_hvg)
+        mlflow.log_param("n_svg",
+                         args.n_svg)
+        mlflow.log_param("n_svp",
+                         args.n_svp)
+        mlflow.log_param("include_atac_modality",
+                         args.include_atac_modality)
+        if args.include_atac_modality:
+            mlflow.log_param("filter_peaks", args.filter_peaks)
+            mlflow.log_param("min_cell_peak_thresh_ratio",
+                             args.min_cell_peak_thresh_ratio)
+    except Exception as mlflow_error:
+        warnings.warn(
+            "Experiment tracking is disabled for this run: "
+            f"{mlflow_error}. Training continues. If the tracking "
+            "database was left broken by an earlier crash, move it "
+            "aside so that a fresh one is created.")
+        mlflow_experiment_id = None
 else:
     mlflow_experiment_id = None
 
