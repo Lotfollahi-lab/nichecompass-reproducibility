@@ -24,6 +24,14 @@ here rather than left to the reader.
    naive correlation would read that as violent disagreement. What is compared
    here is |r|, with the number of mirrored programs reported separately -- it is
    a property of the initialisation, not a difference between the runs.
+
+3. ´Add-on_<i>_GP´ is a SLOT, not a name. The add-on programs start unmasked and
+   learn whatever they learn, so add-on 7 of one run has no reason to be the
+   same programme as add-on 7 of another. Their names match across runs and mean
+   nothing, which would silently drag the agreement statistics down. They are
+   therefore reported separately from the prior programs and never pooled with
+   them; to ask whether the two runs found the same add-on programmes you have to
+   match them by decoder weights, not by name.
 """
 
 import argparse
@@ -135,38 +143,77 @@ def main():
 
     idx_a = {n: i for i, n in enumerate(names_a)}
     idx_b = {n: i for i, n in enumerate(names_b)}
-    ordered = [n for n in names_a if n in shared]
-    Za = np.asarray(a.obsm[args.latent_key])[:, [idx_a[n] for n in ordered]]
-    Zb = np.asarray(b.obsm[args.latent_key])[:, [idx_b[n] for n in ordered]]
+    Za_all = np.asarray(a.obsm[args.latent_key])
+    Zb_all = np.asarray(b.obsm[args.latent_key])
 
-    # Pearson r per gene program, computed column-wise
-    Za_c = Za - Za.mean(0, keepdims=True)
-    Zb_c = Zb - Zb.mean(0, keepdims=True)
-    denom = np.linalg.norm(Za_c, axis=0) * np.linalg.norm(Zb_c, axis=0)
-    with np.errstate(invalid="ignore", divide="ignore"):
-        r = np.where(denom > 0, (Za_c * Zb_c).sum(0) / denom, np.nan)
-    abs_r = np.abs(r)
-    mirrored = int(np.nansum(r < 0))
+    def agreement(ordered):
+        """|Pearson r| per program, and how many came out sign-mirrored."""
+        if not ordered:
+            return np.array([]), np.array([]), 0
+        Za = Za_all[:, [idx_a[n] for n in ordered]]
+        Zb = Zb_all[:, [idx_b[n] for n in ordered]]
+        Za_c = Za - Za.mean(0, keepdims=True)
+        Zb_c = Zb - Zb.mean(0, keepdims=True)
+        denom = np.linalg.norm(Za_c, axis=0) * np.linalg.norm(Zb_c, axis=0)
+        # A program pruned to zero has a constant latent column, so its
+        # correlation is undefined rather than bad. Left as nan and excluded
+        # from every statistic below, and counted separately.
+        with np.errstate(invalid="ignore", divide="ignore"):
+            r = np.where(denom > 0, (Za_c * Zb_c).sum(0) / denom, np.nan)
+        return r, np.abs(r), int(np.nansum(r < 0))
 
-    print("\n=== Latent agreement, per shared gene program ===")
-    print(f"  programs compared:    {len(ordered)}")
-    print(f"  median |r|:           {np.nanmedian(abs_r):.4f}")
-    print(f"  mean |r|:             {np.nanmean(abs_r):.4f}")
-    print(f"  |r| >= 0.9:           {int(np.nansum(abs_r >= 0.9))} "
-          f"({100 * np.nanmean(abs_r >= 0.9):.1f}%)")
-    print(f"  |r| >= 0.7:           {int(np.nansum(abs_r >= 0.7))} "
-          f"({100 * np.nanmean(abs_r >= 0.7):.1f}%)")
-    print(f"  |r| <  0.3:           {int(np.nansum(abs_r < 0.3))}")
-    print(f"  sign-mirrored:        {mirrored} of {len(ordered)} "
-          f"({100 * mirrored / max(len(ordered), 1):.0f}%)")
-    print("    ^ expected to sit near 50%. The sign is a gauge choice, not a")
-    print("      disagreement: it is fixed by initialisation, and flipping it")
-    print("      changes nothing the model computes.")
+    def report(title, ordered, explain_sign):
+        r, abs_r, mirrored = agreement(ordered)
+        finite = np.isfinite(abs_r)
+        n = int(finite.sum())
+        print(f"\n=== {title} ===")
+        print(f"  programs compared:    {n}"
+              + (f"   ({len(ordered) - n} undefined, constant in one run)"
+                 if len(ordered) != n else ""))
+        if n == 0:
+            return
+        v = abs_r[finite]
+        print(f"  median |r|:           {np.median(v):.4f}")
+        print(f"  mean |r|:             {v.mean():.4f}")
+        for thresh in (0.9, 0.7):
+            print(f"  |r| >= {thresh}:           {int((v >= thresh).sum())} "
+                  f"({100 * (v >= thresh).mean():.1f}%)")
+        print(f"  |r| <  0.3:           {int((v < 0.3).sum())}")
+        print(f"  sign-mirrored:        {mirrored} of {n} "
+              f"({100 * mirrored / max(n, 1):.0f}%)")
+        if explain_sign:
+            print("    ^ expected near 50%. The sign is a gauge choice, not a")
+            print("      disagreement: it is fixed by initialisation, and")
+            print("      flipping it changes nothing the model computes.")
+        order = np.argsort(np.where(finite, abs_r, np.inf))
+        print("  weakest agreement:")
+        for i in order[:6]:
+            if np.isfinite(abs_r[i]):
+                print(f"    |r| = {abs_r[i]:.4f}   {ordered[i]}")
 
-    worst = np.argsort(np.nan_to_num(abs_r))[:8]
-    print("\n  weakest agreement:")
-    for i in worst:
-        print(f"    |r| = {abs_r[i]:.4f}   {ordered[i]}")
+    # Prior programs carry a real identity: the same name is the same
+    # interaction with the same prior mask in both runs.
+    prior = [n for n in names_a if n in shared and not n.startswith("Add-on")]
+    addon = [n for n in names_a if n in shared and n.startswith("Add-on")]
+
+    report("Latent agreement, prior gene programs", prior, explain_sign=True)
+
+    if addon:
+        report("Latent agreement, ADD-ON slots (not comparable by name)",
+               addon, explain_sign=False)
+        print("    ^ read this as a sanity check only, NOT as agreement.")
+        print("      Add-on programs start unmasked and learn whatever they")
+        print("      learn, so ´Add-on_7_GP´ in one run is not the same")
+        print("      programme as ´Add-on_7_GP´ in the other. Low |r| here is")
+        print("      expected and says nothing about the runs disagreeing. To")
+        print("      compare them properly, match add-on columns between the")
+        print("      two saved models by decoder weight similarity:")
+        print("        _, W_a, _ = model_a.get_gp_data()")
+        print("        _, W_b, _ = model_b.get_gp_data()")
+        print("      normalise |W| per column and cosine-match the add-on ones.")
+        ordered = prior
+    else:
+        ordered = prior
 
     # --------------------------------------------------------------- niches ---
     if args.cluster:
@@ -175,7 +222,9 @@ def main():
             from sklearn.metrics import adjusted_rand_score
             print("\n=== Niche agreement ===")
             labels = {}
-            for tag, adata, Z in [(args.label_a, a, Za), (args.label_b, b, Zb)]:
+            Za_p = Za_all[:, [idx_a[n] for n in prior]]
+            Zb_p = Zb_all[:, [idx_b[n] for n in prior]]
+            for tag, adata, Z in [(args.label_a, a, Za_p), (args.label_b, b, Zb_p)]:
                 tmp = anndata.AnnData(Z)
                 sc.pp.neighbors(tmp, use_rep="X")
                 sc.tl.leiden(tmp, resolution=args.resolution,
@@ -184,8 +233,11 @@ def main():
                 print(f"  {tag}: {len(set(labels[tag]))} niches")
             ari = adjusted_rand_score(labels[args.label_a], labels[args.label_b])
             print(f"  adjusted Rand index: {ari:.4f}")
-            print("    ^ clustered on the SHARED programs only, so this is the")
-            print("      agreement of the niches the two runs would give you.")
+            print("    ^ clustered on the shared PRIOR programs only, so this")
+            print("      is the agreement of the niches the two runs give you.")
+            print("      Add-on slots are excluded: they are not the same")
+            print("      programmes across runs, so including them would")
+            print("      understate the agreement.")
         except ImportError as error:
             print(f"\n  clustering skipped: {error}")
 
