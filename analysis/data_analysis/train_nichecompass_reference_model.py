@@ -201,6 +201,32 @@ parser.add_argument(
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
 parser.add_argument(
+    "--batch_size_scaling",
+    type=str,
+    default="global",
+    choices=["global", "per_process"],
+    help="How the batch sizes are read with --multi_gpu. 'global' gives every "
+         "process a world_size-th of the given batch, so the optimizer steps "
+         "per epoch and the effective batch match a single device run. "
+         "'per_process' gives every process the whole given batch, so the "
+         "effective batch and the throughput grow with the device count but "
+         "the run is no longer comparable to a single device one.")
+parser.add_argument(
+    "--use_early_stopping",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether to stop training once the validation loss stops "
+         "improving, and to reduce the learning rate on plateau. Turning it "
+         "off makes two runs follow a comparable trajectory for a fixed "
+         "number of epochs, which is what a controlled comparison needs.")
+parser.add_argument(
+    "--reload_best_model",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether to reload the best model state at the end of "
+         "training. Each run picks its own best epoch, so turning this off "
+         "makes two runs comparable at the same epoch.")
+parser.add_argument(
     "--multi_gpu",
     action=argparse.BooleanOptionalAction,
     default=False,
@@ -1339,6 +1365,9 @@ model.train(n_epochs=args.n_epochs,
             mlflow_experiment_id=mlflow_experiment_id,
             seed=args.seed,
             multi_gpu=args.multi_gpu,
+            batch_size_scaling=args.batch_size_scaling,
+            use_early_stopping=args.use_early_stopping,
+            reload_best_model=args.reload_best_model,
             verbose=True)
 
 print("\nFinished model training...")
