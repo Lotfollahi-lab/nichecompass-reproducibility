@@ -203,14 +203,16 @@ parser.add_argument(
 parser.add_argument(
     "--batch_size_scaling",
     type=str,
-    default="global",
+    default="per_process",
     choices=["global", "per_process"],
-    help="How the batch sizes are read with --multi_gpu. 'global' gives every "
-         "process a world_size-th of the given batch, so the optimizer steps "
-         "per epoch and the effective batch match a single device run. "
-         "'per_process' gives every process the whole given batch, so the "
-         "effective batch and the throughput grow with the device count but "
-         "the run is no longer comparable to a single device one.")
+    help="How the batch sizes are read with --multi_gpu. 'per_process', the "
+         "default, gives every process the whole given batch, so the "
+         "effective batch and the throughput grow with the device count; the "
+         "learning rate is NOT scaled for you and the run is not comparable "
+         "to a single device one. 'global' gives every process a "
+         "world_size-th of the given batch, so the optimizer steps per epoch "
+         "and the effective batch match a single device run -- use it to "
+         "reproduce a single device result or to test the distributed path.")
 parser.add_argument(
     "--use_early_stopping",
     action=argparse.BooleanOptionalAction,
