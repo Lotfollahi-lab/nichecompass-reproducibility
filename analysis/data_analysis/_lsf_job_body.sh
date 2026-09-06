@@ -160,6 +160,43 @@ if [ "${N_GPUS}" -gt 1 ]; then
     export NCCL_NVLS_ENABLE=0
     export NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-1}"
 
+    # Two knobs for the teardown warning that every successful run on this
+    # farm prints on ´world_size - 1´ of its processes:
+    #
+    #   distributed.py: Releasing the process group failed ... NCCL error ...
+    #   Cuda failure 'CUDA-capable device(s) is/are busy or unavailable'
+    #
+    # A run with NCCL_DEBUG=INFO established what that is. The failing line
+    # comes from a non-main process on a thread whose CURRENT DEVICE is the
+    # main process's, which under mode=exclusive_process it may not open, and
+    # the peer transport is in use beforehand: "via P2P/CUMEM" on every
+    # channel. So the peer mappings are what cannot be released.
+    #
+    # Neither knob is set by default, because the warning is harmless: it is
+    # raised after every collective has completed and after everything the run
+    # produces has been computed. Set one only to make the log quiet, and
+    # prefer the first, which is the targeted one.
+    #
+    #   NCCL_CUMEM_ENABLE=0  keeps peer-to-peer but maps peer buffers through
+    #                        the legacy IPC path instead of the cuMem VMM API.
+    #                        Legacy IPC maps a peer buffer without setting the
+    #                        peer's device, so it should avoid the refused
+    #                        call at no bandwidth cost. Untested here.
+    #   NCCL_P2P_DISABLE=1   removes peer transport altogether, which
+    #                        certainly avoids it. The all-reduce then goes
+    #                        through shared memory: about 3.2 MB per step for
+    #                        this model, so roughly 0.2 ms on a 37.7 ms step,
+    #                        which is about 0.5% of an epoch.
+    export NCCL_CUMEM_ENABLE="${NCCL_CUMEM_ENABLE:-}"
+    export NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-}"
+    for nccl_var in NCCL_CUMEM_ENABLE NCCL_P2P_DISABLE; do
+        if [ -n "${!nccl_var}" ]; then
+            echo "nccl: ${nccl_var}=${!nccl_var}"
+        else
+            unset "${nccl_var}"
+        fi
+    done
+
     # mpirun does not set the rendezvous variables that torch.distributed
     # reads, so they are derived from the allocation here and forwarded to
     # every rank with -x. The port is derived from the job id so that two jobs
@@ -181,6 +218,8 @@ if [ "${N_GPUS}" -gt 1 ]; then
         -x HTTP_PROXY -x HTTPS_PROXY -x NO_PROXY \
         -x MASTER_ADDR -x MASTER_PORT \
         -x NCCL_DEBUG -x NCCL_NVLS_ENABLE -x NCCL_IB_DISABLE \
+        ${NCCL_CUMEM_ENABLE:+-x NCCL_CUMEM_ENABLE} \
+        ${NCCL_P2P_DISABLE:+-x NCCL_P2P_DISABLE} \
         -x OMP_NUM_THREADS -x MKL_NUM_THREADS \
         python train_nichecompass_reference_model.py \
             "${NICHECOMPASS_ARGS[@]}" \
