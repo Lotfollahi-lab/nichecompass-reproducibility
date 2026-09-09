@@ -201,6 +201,16 @@ parser.add_argument(
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
 parser.add_argument(
+    "--data_folder_path",
+    type=str,
+    default=None,
+    help="Folder holding the spatial omics files, which are read as "
+         "'{data_folder_path}/{dataset}_{batch}.h5ad' when reference batches "
+         "are given and '{data_folder_path}/{dataset}.h5ad' otherwise. "
+         "Defaults to 'datasets/st_data/gold' inside the repository, which is "
+         "where the notebooks read from. Give it when the data lives "
+         "elsewhere, for instance on a cluster filesystem.")
+parser.add_argument(
     "--batch_size_scaling",
     type=str,
     default="per_process",
@@ -816,7 +826,8 @@ ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
                                                              # data
 so_data_folder_path = f"{root_folder_path}/datasets/st_data" # spatial omics
                                                              # data
-so_data_gold_folder_path = f"{so_data_folder_path}/gold"
+so_data_gold_folder_path = (args.data_folder_path if args.data_folder_path
+                            else f"{so_data_folder_path}/gold")
 nichenet_lr_network_file_path = gp_data_folder_path + \
                                 "/nichenet_lr_network_v2_" \
                                 f"{args.species}.csv"

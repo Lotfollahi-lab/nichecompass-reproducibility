@@ -1,85 +1,126 @@
 #!/bin/bash
-# Submit a multi-GPU NicheCompass training run to a Slurm cluster.
+# Submit a NicheCompass training run to a Slurm cluster.
 #
-#   sbatch submit_slurm.sh                 # one node, four GPUs
-#   sbatch --nodes=2 submit_slurm.sh       # two nodes, four GPUs each
+#   DATA_DIR=/path/to/h5ads bash submit_slurm.sh --n_epochs 100
+#   DATA_DIR=... N_GPUS=2 bash submit_slurm.sh --n_epochs 100
+#   DATA_DIR=... N_GPUS=1 bash submit_slurm.sh --n_epochs 1     # single device
+#   DATA_DIR=... DRY_RUN=1 bash submit_slurm.sh --n_epochs 100  # inspect only
 #
-# Adjust the partition, the account, the memory and the wall clock limit to
-# your cluster.
+# DATA_DIR is required and is the folder holding the spatial omics files, read
+# as '{DATA_DIR}/{dataset}_{batch}.h5ad'. It is passed through rather than
+# baked in, so the data can live anywhere the compute nodes can see.
 #
-# Before the first multi-GPU run, populate the prior gene program caches with a
-# single process run, since all processes would otherwise race to download and
-# write the same cache files. See the "Retrieve the prior gene program caches
-# first" section of the multi-GPU user guide.
-
-#SBATCH --job-name=nichecompass_train
-#SBATCH --partition=gpu
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=4
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=200G
-#SBATCH --time=24:00:00
-#SBATCH --output=logs/nichecompass_%j.out
-#SBATCH --error=logs/nichecompass_%j.err
+# This generates the #SBATCH directives and then runs _slurm_job_body.sh, which
+# is a normal committed script rather than generated text. Two reasons, the
+# same as for the LSF submitter:
+#   - #SBATCH lines are read before any shell runs and cannot reference
+#     variables, so they have to be generated to keep the GPU request and the
+#     launcher's process count from drifting apart;
+#   - the body cannot be generated safely, because passing backslash-newline
+#     continuations through a heredoc collapses the launcher invocation onto
+#     one line.
+#
+# ASKING FOR A PARTICULAR GPU MODEL. Clusters label GPU models in one of two
+# ways and they are not interchangeable:
+#   - a typed gres, requested as --gres=gpu:a100:N
+#   - a node feature, requested as --constraint=a100
+# Find out which this one uses before submitting:
+#       sinfo -o '%20P %10G %40f'
+# The %G column shows the gres (look for 'gpu:a100:4' rather than a bare
+# 'gpu:4'); %f shows the features. Set GPU_GRES or GPU_CONSTRAINT to match. A
+# type request the scheduler does not understand is not an error -- it is
+# silently satisfied by whatever was free -- so the job body also asserts the
+# model it actually got, through REQUIRE_GPU_MODEL, and fails if it is wrong.
 
 set -euo pipefail
 
-N_GPUS_PER_NODE=4
+# --- site configuration, override from the environment ----------------------
+export SLURM_PARTITION="${SLURM_PARTITION:-highgpu}"
+export N_GPUS="${N_GPUS:-4}"                       # GPUs, and ranks, per node
+export N_NODES="${N_NODES:-1}"
+export N_CPUS_PER_GPU="${N_CPUS_PER_GPU:-6}"
+export MEM_GB="${MEM_GB:-200}"                     # per node
+export WALL="${WALL:-12:00:00}"
+export SLURM_ACCOUNT="${SLURM_ACCOUNT:-}"          # optional
+# A100 by default, as a typed gres. If this cluster uses node features
+# instead, set GPU_GRES="gpu:${N_GPUS}" and GPU_CONSTRAINT="a100".
+export GPU_GRES="${GPU_GRES:-gpu:a100:${N_GPUS}}"
+export GPU_CONSTRAINT="${GPU_CONSTRAINT:-}"
+# Checked against nvidia-smi on the allocated node. Empty disables the check.
+export REQUIRE_GPU_MODEL="${REQUIRE_GPU_MODEL:-A100}"
+export VENV_PATH="${VENV_PATH:-}"
+export CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-}}"
+DRY_RUN="${DRY_RUN:-0}"
 
-mkdir -p logs
-
-# Every process holds its own copy of the graph and of ´adata´, so the host
-# memory the job needs is roughly the single device requirement times the
-# number of processes PER NODE. If the job dies with an out of memory error
-# that does not mention CUDA, this is why.
-
-# Activate the python environment. A virtualenv is preferred; conda is the
-# fallback for the environment.yaml in envs/.
-VENV_PATH="${VENV_PATH:-}"
-CONDA_ENV="${CONDA_ENV:-nichecompass-reproducibility}"
-if [ -n "${VENV_PATH}" ] && [ -r "${VENV_PATH}/bin/activate" ]; then
-    source "${VENV_PATH}/bin/activate"
-elif command -v conda >/dev/null 2>&1; then
-    source "$(conda info --base)/etc/profile.d/conda.sh"
-    conda activate "${CONDA_ENV}"
-else
-    echo "ERROR: set VENV_PATH to a virtualenv, or install conda." >&2
+if [ -z "${DATA_DIR:-}" ]; then
+    echo "ERROR: DATA_DIR is required. It is the folder holding the" >&2
+    echo "spatial omics files, read as '{DATA_DIR}/{dataset}_{batch}.h5ad'." >&2
+    echo "  DATA_DIR=/path/to/h5ads bash submit_slurm.sh --n_epochs 100" >&2
     exit 1
 fi
-echo "python: $(command -v python)"
+export DATA_DIR
+export ARGS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_DIR="${LOG_DIR:-${ARGS_DIR}/logs}"
+mkdir -p "${LOG_DIR}"
 
-# Keep the per process thread pools from oversubscribing the allocated cores.
-# One task per node is requested and ´torchrun´ forks the per GPU processes
-# below, so the cores of the task are shared between them.
-export OMP_NUM_THREADS=$(( ${SLURM_CPUS_PER_TASK:-16} / N_GPUS_PER_NODE ))
-export MKL_NUM_THREADS=${OMP_NUM_THREADS}
+N_CPUS=$(( N_GPUS * N_CPUS_PER_GPU ))
 
-# Rendezvous on the first node of the allocation. The port is derived from the
-# job id so that two jobs sharing a node do not collide.
-MASTER_ADDR=$(scontrol show hostnames "${SLURM_JOB_NODELIST}" | head -n 1)
-MASTER_PORT=$(( 20000 + SLURM_JOB_ID % 20000 ))
-export MASTER_ADDR MASTER_PORT
+if [ "${N_GPUS}" -gt 1 ]; then
+    export MODEL_LABEL="${MODEL_LABEL:-humanppi_multigpu}"
+else
+    export MODEL_LABEL="${MODEL_LABEL:-humanppi_singlegpu}"
+fi
 
-echo "Nodes: ${SLURM_JOB_NODELIST}"
-echo "Rendezvous: ${MASTER_ADDR}:${MASTER_PORT}"
-nvidia-smi --query-gpu=index,name,memory.total --format=csv || true
+# Built as a list and joined with the empty entries REMOVED, because a blank
+# line is not a comment and Slurm stops reading #SBATCH directives at the first
+# line that is not one. An unset optional directive left as an empty string
+# would therefore silently discard every directive below it.
+DIRECTIVES=(
+    "#SBATCH --job-name=nichecompass_${MODEL_LABEL}"
+    "#SBATCH --partition=${SLURM_PARTITION}"
+    "${SLURM_ACCOUNT:+#SBATCH --account=${SLURM_ACCOUNT}}"
+    "#SBATCH --nodes=${N_NODES}"
+    "#SBATCH --ntasks-per-node=1"
+    "#SBATCH --gres=${GPU_GRES}"
+    "${GPU_CONSTRAINT:+#SBATCH --constraint=${GPU_CONSTRAINT}}"
+    "#SBATCH --cpus-per-task=${N_CPUS}"
+    "#SBATCH --mem=${MEM_GB}G"
+    "#SBATCH --time=${WALL}"
+    "#SBATCH --output=${LOG_DIR}/${MODEL_LABEL}_%j.out"
+    "#SBATCH --error=${LOG_DIR}/${MODEL_LABEL}_%j.err"
+)
 
-# ´srun´ starts one task per node and each of those runs ´torchrun´, which in
-# turn starts one training process per GPU on its node. The c10d rendezvous
-# assigns the node ranks, so nothing has to be threaded through by hand.
-# ´--multi_gpu´ tells NicheCompass to actually split the training; without it
-# the script would run on every process independently, which is not what you
-# want.
-srun --kill-on-bad-exit=1 torchrun \
-    --nnodes="${SLURM_NNODES}" \
-    --nproc_per_node="${N_GPUS_PER_NODE}" \
-    --rdzv_id="${SLURM_JOB_ID}" \
-    --rdzv_backend=c10d \
-    --rdzv_endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
-    train_nichecompass_reference_model.py \
-    --multi_gpu \
-    --dataset xenium_human_breast_cancer \
-    --n_epochs 400 \
-    --edge_batch_size 512 \
-    "$@"
+FORWARDED=""
+if [ "$#" -gt 0 ]; then
+    FORWARDED="$(printf '%q ' "$@")"
+fi
+
+echo "Submitting to ${SLURM_PARTITION}"
+echo "  nodes       : ${N_NODES}"
+echo "  GPUs/ranks  : ${N_GPUS} per node   (${GPU_GRES})"
+[ -n "${GPU_CONSTRAINT}" ] && echo "  constraint  : ${GPU_CONSTRAINT}"
+echo "  asserted    : ${REQUIRE_GPU_MODEL:-none}"
+echo "  cores       : ${N_CPUS} per node"
+echo "  memory      : ${MEM_GB}G per node"
+echo "  wall clock  : ${WALL}"
+echo "  data        : ${DATA_DIR}"
+echo "  environment : ${VENV_PATH:-${CONDA_ENV:-none}}"
+echo "  model label : ${MODEL_LABEL}"
+echo "  extra args  : ${FORWARDED:-none}"
+
+# Only the directives are generated, and every one of them is a single line
+JOB="#!/bin/bash"
+for directive in "${DIRECTIVES[@]}"; do
+    [ -n "${directive}" ] || continue
+    JOB="${JOB}"$'\n'"${directive}"
+done
+JOB="${JOB}"$'\n'"exec bash ${ARGS_DIR}/_slurm_job_body.sh ${FORWARDED}"
+
+if [ "${DRY_RUN}" != "0" ]; then
+    echo "--- DRY RUN, the job that would be submitted ---"
+    printf '%s\n' "${JOB}"
+    echo "--- and the body it runs: ${ARGS_DIR}/_slurm_job_body.sh ---"
+    exit 0
+fi
+
+printf '%s\n' "${JOB}" | sbatch --export=ALL
