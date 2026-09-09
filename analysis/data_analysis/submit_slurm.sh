@@ -48,7 +48,11 @@ export GPU_GRES="${GPU_GRES:-gpu:a100:${N_GPUS}}"
 export GPU_CONSTRAINT="${GPU_CONSTRAINT:-}"
 # Checked against nvidia-smi on the allocated node. Empty disables the check.
 export REQUIRE_GPU_MODEL="${REQUIRE_GPU_MODEL:-A100}"
-export VENV_PATH="${VENV_PATH:-}"
+# Default to whichever environment is active in the submitting shell, so that
+# "activate it, then submit" does the obvious thing. ´VIRTUAL_ENV´ is set by a
+# virtualenv's activate script and ´CONDA_DEFAULT_ENV´ by conda's; either can
+# still be overridden explicitly.
+export VENV_PATH="${VENV_PATH:-${VIRTUAL_ENV:-}}"
 export CONDA_ENV="${CONDA_ENV:-${CONDA_DEFAULT_ENV:-}}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -104,7 +108,12 @@ echo "  cores       : ${N_CPUS} per node"
 echo "  memory      : ${MEM_GB}G per node"
 echo "  wall clock  : ${WALL}"
 echo "  data        : ${DATA_DIR}"
-echo "  environment : ${VENV_PATH:-${CONDA_ENV:-none}}"
+if [ -z "${VENV_PATH}" ] && [ -z "${CONDA_ENV}" ]; then
+    echo "ERROR: no python environment. Activate the one you want the job to" >&2
+    echo "use and resubmit, or set VENV_PATH (a virtualenv) or CONDA_ENV." >&2
+    exit 1
+fi
+echo "  environment : ${VENV_PATH:-${CONDA_ENV}}"
 echo "  model label : ${MODEL_LABEL}"
 echo "  extra args  : ${FORWARDED:-none}"
 
