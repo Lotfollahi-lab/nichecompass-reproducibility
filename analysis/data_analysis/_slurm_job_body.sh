@@ -17,8 +17,18 @@ set -euo pipefail
 : "${MODEL_LABEL:?MODEL_LABEL must be exported by the submitter}"
 : "${ARGS_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 
-echo "Nodes:            ${SLURM_JOB_NODELIST:-unset}"
-echo "SLURM_JOB_ID:     ${SLURM_JOB_ID:-unset}"
+# Slurm spells these differently between versions, and ´set -u´ turns a name
+# that is not set into a crash rather than a fallback. Resolved once, here,
+# with the alternatives tried in order, so that nothing below has to know which
+# spelling this cluster uses -- and so that the script still runs outside a
+# Slurm allocation, which is what makes it testable.
+NODELIST="${SLURM_JOB_NODELIST:-${SLURM_NODELIST:-}}"
+JOB_ID="${SLURM_JOB_ID:-${SLURM_JOBID:-0}}"
+N_NODES_ALLOC="${SLURM_NNODES:-${SLURM_JOB_NUM_NODES:-1}}"
+N_CPUS_ALLOC="${SLURM_CPUS_PER_TASK:-$(( N_GPUS * 6 ))}"
+
+echo "Nodes:            ${NODELIST:-not under slurm}"
+echo "SLURM job id:     ${JOB_ID}"
 echo "GPUs per node:    ${N_GPUS}"
 echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-unset}"
 nvidia-smi --query-gpu=index,name,memory.total,compute_mode --format=csv || true
@@ -119,21 +129,26 @@ echo "prior gene program caches: present in ${GP_DATA_DIR}"
 # NicheCompass detects, so nothing has to be threaded through by hand. The
 # rendezvous is on the first node of the allocation; the port comes from the
 # job id so that two jobs sharing a node cannot collide.
-MASTER_ADDR="$(scontrol show hostnames "${SLURM_JOB_NODELIST}" | head -n 1)"
-MASTER_PORT="$(( 20000 + ${SLURM_JOB_ID:-0} % 20000 ))"
+if [ -n "${NODELIST}" ] && command -v scontrol >/dev/null 2>&1; then
+    MASTER_ADDR="$(scontrol show hostnames "${NODELIST}" | head -n 1)"
+else
+    # Not under Slurm, or no scontrol: a single node, so this host is it.
+    MASTER_ADDR="$(hostname -s)"
+fi
+MASTER_PORT="$(( 20000 + JOB_ID % 20000 ))"
 export MASTER_ADDR MASTER_PORT
 echo "rendezvous: ${MASTER_ADDR}:${MASTER_PORT}"
 
 # One task per node, and torchrun forks one process per GPU under it, so the
 # task's cores are shared between them.
-export OMP_NUM_THREADS="$(( ${SLURM_CPUS_PER_TASK:-$(( N_GPUS * 6 ))} / N_GPUS ))"
+export OMP_NUM_THREADS="$(( N_CPUS_ALLOC / N_GPUS ))"
 export MKL_NUM_THREADS="${OMP_NUM_THREADS}"
 
 if [ "${N_GPUS}" -gt 1 ]; then
     srun --kill-on-bad-exit=1 torchrun \
-        --nnodes="${SLURM_NNODES:-1}" \
+        --nnodes="${N_NODES_ALLOC}" \
         --nproc_per_node="${N_GPUS}" \
-        --rdzv_id="${SLURM_JOB_ID:-0}" \
+        --rdzv_id="${JOB_ID}" \
         --rdzv_backend=c10d \
         --rdzv_endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
         train_nichecompass_reference_model.py \
