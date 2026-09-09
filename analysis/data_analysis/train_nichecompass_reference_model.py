@@ -201,6 +201,18 @@ parser.add_argument(
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
 parser.add_argument(
+    "--gp_data_folder_path",
+    type=str,
+    default=None,
+    help="Folder holding the prior gene program resources, both the tables "
+         "cached from the internet on first use and the ones shipped with the "
+         "repository. Defaults to 'datasets/gp_data' inside the repository. "
+         "Give it to keep the caches somewhere shared, or off a filesystem "
+         "with no room. Note that --include_mebocost_gps and "
+         "--include_brain_marker_gps additionally read the shipped "
+         "'metabolite_enzyme_sensor_gps' and 'marker_gps' subfolders, which "
+         "would have to be copied there as well.")
+parser.add_argument(
     "--data_folder_path",
     type=str,
     default=None,
@@ -820,7 +832,8 @@ model_folder_path = f"{artifacts_folder_path}/{args.dataset}/models/" \
 result_folder_path = f"{artifacts_folder_path}/{args.dataset}/results/" \
                      f"{args.model_label}/{current_timestamp}" \
                      f"{args.timestamp_suffix}"
-gp_data_folder_path = f"{root_folder_path}/datasets/gp_data" # gene program
+gp_data_folder_path = (args.gp_data_folder_path if args.gp_data_folder_path
+                       else f"{root_folder_path}/datasets/gp_data") # gene program
                                                              # data
 ga_data_folder_path = f"{root_folder_path}/datasets/ga_data" # gene annotation
                                                              # data

@@ -223,6 +223,7 @@ if [ "${N_GPUS}" -gt 1 ]; then
         -x OMP_NUM_THREADS -x MKL_NUM_THREADS \
         python train_nichecompass_reference_model.py \
             "${NICHECOMPASS_ARGS[@]}" \
+            --gp_data_folder_path "${GP_DATA_DIR}" \
             --multi_gpu \
             --model_label "${MODEL_LABEL}" \
             "$@"
@@ -231,6 +232,7 @@ else
     export MKL_NUM_THREADS="${OMP_NUM_THREADS}"
     python train_nichecompass_reference_model.py \
         "${NICHECOMPASS_ARGS[@]}" \
+        --gp_data_folder_path "${GP_DATA_DIR}" \
         --model_label "${MODEL_LABEL}" \
         "$@"
 fi

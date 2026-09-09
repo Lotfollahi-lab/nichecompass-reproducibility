@@ -153,6 +153,7 @@ if [ "${N_GPUS}" -gt 1 ]; then
         --rdzv_endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
         train_nichecompass_reference_model.py \
             "${NICHECOMPASS_ARGS[@]}" \
+            --gp_data_folder_path "${GP_DATA_DIR}" \
             --multi_gpu \
             --data_folder_path "${DATA_DIR}" \
             --model_label "${MODEL_LABEL}" \
@@ -160,6 +161,7 @@ if [ "${N_GPUS}" -gt 1 ]; then
 else
     python train_nichecompass_reference_model.py \
         "${NICHECOMPASS_ARGS[@]}" \
+        --gp_data_folder_path "${GP_DATA_DIR}" \
         --data_folder_path "${DATA_DIR}" \
         --model_label "${MODEL_LABEL}" \
         "$@"
