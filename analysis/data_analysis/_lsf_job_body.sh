@@ -115,6 +115,9 @@ if [ -z "${HUMANPPI_PRECISION}" ]; then
 fi
 echo "humanppi precision: ${HUMANPPI_PRECISION}"
 
+# Only a MULTI process run can race, so only a multi process run is refused.
+# A single process run is precisely how the caches get populated, and blocking
+# it would make the instruction in the error below impossible to follow.
 MISSING_CACHES=""
 for cache in "humanppi_network_${HUMANPPI_PRECISION}.csv" \
              "humanppi_protein_topology.tsv" \
@@ -123,15 +126,15 @@ for cache in "humanppi_network_${HUMANPPI_PRECISION}.csv" \
         MISSING_CACHES="${MISSING_CACHES} ${cache}"
     fi
 done
-if [ -n "${MISSING_CACHES}" ]; then
+if [ -n "${MISSING_CACHES}" ] && [ "${N_GPUS}" -gt 1 ]; then
     echo "ERROR: these prior gene program caches are missing from" >&2
     echo "  ${GP_DATA_DIR}" >&2
     for cache in ${MISSING_CACHES}; do echo "    ${cache}" >&2; done
-    echo "They are deliberately not downloaded from inside the job, since" >&2
-    echo "all ranks would race to write the same files. Run the pipeline" >&2
-    echo "once as a single process to populate them, then resubmit:" >&2
-    echo "  N_GPUS=1 bash submit_lsf_sanger.sh --n_epochs 1 $*" >&2
-    echo "Set GP_DATA_DIR if they live elsewhere." >&2
+    echo "They are deliberately not downloaded from inside a multi process" >&2
+    echo "job, since all ranks would race to write the same files. Run once" >&2
+    echo "as a single process to populate them, then resubmit. That run is" >&2
+    echo "not refused, because one process cannot race itself:" >&2
+    echo "  GP_DATA_DIR=${GP_DATA_DIR} N_GPUS=1 bash submit_lsf_sanger.sh --n_epochs 1 $*" >&2
     exit 1
 fi
 
@@ -140,7 +143,14 @@ fi
 # some accessions are missing -- is refetched and rewritten in full by every
 # rank, and no test here can see that. Any change of precision, or any refresh
 # of a prior resource, therefore needs a single process warm-up run first.
-echo "prior gene program caches: present in ${GP_DATA_DIR}"
+if [ -n "${MISSING_CACHES}" ]; then
+    echo "These prior gene program caches are not in ${GP_DATA_DIR} yet:"
+    for cache in ${MISSING_CACHES}; do echo "    ${cache}"; done
+    echo "This is a single process run, so it will fetch and write them."
+    echo "That needs outbound network access from this node."
+else
+    echo "prior gene program caches: present in ${GP_DATA_DIR}"
+fi
 
 if [ "${N_GPUS}" -gt 1 ]; then
     # The module system has to be initialised explicitly, as terra does
