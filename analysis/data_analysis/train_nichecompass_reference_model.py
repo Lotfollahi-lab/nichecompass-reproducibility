@@ -201,6 +201,18 @@ parser.add_argument(
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
 parser.add_argument(
+    "--batch_key",
+    type=str,
+    default=None,
+    help="Column of adata.obs naming the sample each cell belongs to, for the "
+         "case where ONE file holds every sample. When given, the file read is "
+         "'{data_folder_path}/{dataset}.h5ad' and it is split on this column, "
+         "with --reference_batches selecting which values to keep (all of "
+         "them if it is not given). A spatial graph is then built per sample "
+         "and the graphs are combined as disconnected components, exactly as "
+         "for one file per sample, so no edge ever joins two samples. Leave "
+         "unset for the one-file-per-sample layout.")
+parser.add_argument(
     "--gp_data_folder_path",
     type=str,
     default=None,
@@ -363,18 +375,20 @@ parser.add_argument(
 parser.add_argument(
     "--dataset",
     type=str,
-    help="Input dataset name. The adata file name has to be f'{dataset}.h5ad' "
-         "if `reference_batches` is `None`. If `reference_batches` is not "
-         "`None`, the adata file names have to be f'{dataset}_{batch}.h5ad' "
-         "for each batch in `reference_batches`.")
+    help="Input dataset name, i.e. the file name without the '.h5ad' suffix. "
+         "The file read is f'{data_folder_path}/{dataset}.h5ad', except in "
+         "the one-file-per-sample layout (`reference_batches` given without "
+         "`batch_key`), where it is f'{dataset}_{batch}.h5ad' for each batch "
+         "in `reference_batches`.")
 parser.add_argument(
     "--reference_batches",
     nargs='+',
     type=none_or_value,
     default=None,
-    help="Batches of the input dataset used as reference. If not `None`, the "
-         "adata file names have to be f'{dataset}_{batch}.h5ad' for each batch"
-         " in `reference_batches`.")
+    help="Batches of the input dataset used as reference. With `batch_key`, "
+         "these are the values of that adata.obs column to keep, all of them "
+         "if this is not given. Without `batch_key`, these name one file per "
+         "batch, f'{dataset}_{batch}.h5ad'.")
 parser.add_argument(
     "--counts_key",
     type=none_or_value,
@@ -700,6 +714,19 @@ if args.cat_covariates_embeds_nums == [None]:
     args.cat_covariates_embeds_nums = None
     
 if args.include_atac_modality:
+    # The ATAC section still assumes one file per sample, keyed on
+    # ´reference_batches´, and pairs cells with the RNA object by position.
+    # Under ´batch_key´ the RNA object is regrouped sample by sample, so the
+    # two would no longer line up row for row. Refuse the combination rather
+    # than let it through.
+    if args.batch_key is not None:
+        raise ValueError(
+            "--batch_key cannot be combined with --include_atac_modality. The "
+            "ATAC data path expects one file per sample "
+            "('{dataset}_{batch}_atac.h5ad') and matches cells to the RNA "
+            "object by row position, which the batch column split does not "
+            "preserve. Use the one-file-per-sample layout "
+            "(--reference_batches without --batch_key) for multiomic runs.")
     save_adata_atac = True
 else:
     save_adata_atac = False
@@ -1088,30 +1115,108 @@ print(f"Number of gene programs after filtering and combining: "
 ###############################################################################
 
 # RNA-seq data
+def compute_spatial_graph(adata_to_graph):
+    """
+    Add the spatial neighborhood graph to one sample, in place.
+
+    Factored out because it is needed by all three layouts below, and because
+    the single file branch used to pass the loop variable of the OTHER branch
+    to it, which was an undefined name whenever that branch was actually
+    taken.
+    """
+    if args.graph_type == "radius":
+        sq.gr.spatial_neighbors(adata_to_graph,
+                                coord_type="generic",
+                                spatial_key=args.spatial_key,
+                                radius=args.radius)
+    elif args.graph_type == "knn":
+        sq.gr.spatial_neighbors(adata_to_graph,
+                                coord_type="generic",
+                                spatial_key=args.spatial_key,
+                                n_neighs=args.n_neighbors)
+    # Make adjacency matrix symmetric
+    adata_to_graph.obsp[args.adj_key] = (
+        adata_to_graph.obsp[args.adj_key].maximum(
+            adata_to_graph.obsp[args.adj_key].T))
+
+
 adata_batch_list = []
-if args.reference_batches is not None:
+if args.batch_key is not None:
+    # One file holding every sample, split on ´batch_key´. The samples are
+    # graphed separately for the same reason they are when they arrive in
+    # separate files: two cells from different samples can sit arbitrarily
+    # close in coordinate space, and a graph over the concatenated object
+    # would join them into a neighborhood that does not exist.
+    print(f"\nLoading data and splitting on '{args.batch_key}'...")
+    adata_all = ad.read_h5ad(
+        f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
+    if args.batch_key not in adata_all.obs:
+        raise ValueError(
+            f"--batch_key is '{args.batch_key}', which is not a column of "
+            f"adata.obs. Available: {sorted(adata_all.obs.columns)}")
+    # The sample labels are rendered as strings once, and that one rendering
+    # is used both to list what is available and to select cells, so the two
+    # can never disagree. Rendering them twice would: ´str(value)´ and
+    # ´.astype(str)´ agree for strings but not for every dtype.
+    batch_labels = adata_all.obs[args.batch_key]
+    labeled_mask = batch_labels.notna()
+    # Cells carrying no sample label are excluded rather than allowed through.
+    # As a string a missing value reads 'nan', which would otherwise be taken
+    # for a sample, pooling cells from every tissue into one group whose
+    # spatial graph then joins cells that are not neighbors - the exact wrong
+    # edges the per-sample split exists to prevent.
+    n_unlabeled = int((~labeled_mask).sum())
+    if n_unlabeled > 0:
+        print(f"Ignoring {n_unlabeled} cells with no '{args.batch_key}' "
+              "value.")
+    if (pd.api.types.is_float_dtype(batch_labels) and
+            (batch_labels[labeled_mask] % 1 == 0).all()):
+        # Integer sample ids that pandas widened to float because of the
+        # missing values; without this they would have to be named '1.0'
+        batch_labels = batch_labels.astype("Int64")
+    batch_labels = batch_labels.astype(str)
+    available_batches = batch_labels[labeled_mask].unique().tolist()
+    if args.reference_batches is not None:
+        selected_batches = [str(batch) for batch in args.reference_batches]
+        unknown = [batch for batch in selected_batches
+                   if batch not in available_batches]
+        if unknown:
+            raise ValueError(
+                f"--reference_batches names {unknown}, which do not appear in "
+                f"adata.obs['{args.batch_key}']. Available: "
+                f"{sorted(available_batches)}")
+    else:
+        selected_batches = sorted(available_batches)
+    print(f"Using {len(selected_batches)} of {len(available_batches)} "
+          f"samples: {selected_batches}")
+
+    for batch in selected_batches:
+        print(f"\nProcessing batch {batch}...")
+        # ´.copy()´ because a view shares the parent's arrays, and the graph is
+        # written back into ´.obsp´
+        adata_batch = adata_all[
+            (labeled_mask & (batch_labels == batch)).values].copy()
+        print(f"Computing spatial neighborhood graph "
+              f"({adata_batch.shape[0]} cells)...")
+        compute_spatial_graph(adata_batch)
+        adata_batch_list.append(adata_batch)
+    del adata_all
+elif args.reference_batches is not None:
     for batch in args.reference_batches:
         print(f"\nProcessing batch {batch}...")
         print("Loading data...")
         adata_batch = ad.read_h5ad(
             f"{so_data_gold_folder_path}/{args.dataset}_{batch}.h5ad")
         print("Computing spatial neighborhood graph...")
-        # Compute spatial neighborhood graphs
-        if args.graph_type == "radius":
-            sq.gr.spatial_neighbors(adata_batch,
-                                    coord_type="generic",
-                                    spatial_key=args.spatial_key,
-                                    radius=args.radius)
-        elif args.graph_type == "knn":
-            sq.gr.spatial_neighbors(adata_batch,
-                                    coord_type="generic",
-                                    spatial_key=args.spatial_key,
-                                    n_neighs=args.n_neighbors)
-        # Make adjacency matrix symmetric
-        adata_batch.obsp[args.adj_key] = (
-            adata_batch.obsp[args.adj_key].maximum(
-                adata_batch.obsp[args.adj_key].T))
+        compute_spatial_graph(adata_batch)
         adata_batch_list.append(adata_batch)
+else:
+    adata = ad.read_h5ad(
+        f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
+    print("Computing spatial neighborhood graph...")
+    compute_spatial_graph(adata)
+
+if adata_batch_list:
     adata = ad.concat(adata_batch_list, join="inner")
 
     # Combine spatial neighborhood graphs as disconnected components
@@ -1149,24 +1254,6 @@ if args.reference_batches is not None:
         len_before_batch += adata_batch_list[i].shape[0]
     connectivities = sp.vstack(batch_connectivities)
     adata.obsp[args.adj_key] = connectivities
-else:
-    adata = ad.read_h5ad(
-            f"{so_data_gold_folder_path}/{args.dataset}.h5ad")
-    # Compute (separate) spatial neighborhood graphs
-    if args.graph_type == "radius":
-        sq.gr.spatial_neighbors(adata_batch,
-                                coord_type="generic",
-                                spatial_key=args.spatial_key,
-                                radius=args.radius)
-    elif args.graph_type == "knn":
-        sq.gr.spatial_neighbors(adata_batch,
-                                coord_type="generic",
-                                spatial_key=args.spatial_key,
-                                n_neighs=args.n_neighbors)
-    # Make adjacency matrix symmetric
-    adata.obsp[args.adj_key] = (
-        adata.obsp[args.adj_key].maximum(
-            adata.obsp[args.adj_key].T))
 adata.obs[args.mapping_entity_key] = "reference"
 adata.obs_names_make_unique()
 
