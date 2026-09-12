@@ -6,9 +6,11 @@
 #   DATA_DIR=... N_GPUS=1 bash submit_slurm.sh --n_epochs 1     # single device
 #   DATA_DIR=... DRY_RUN=1 bash submit_slurm.sh --n_epochs 100  # inspect only
 #
-# DATA_DIR is required and is the folder holding the spatial omics files, read
-# as '{DATA_DIR}/{dataset}_{batch}.h5ad'. It is passed through rather than
-# baked in, so the data can live anywhere the compute nodes can see.
+# DATA_DIR is required and is the folder holding the spatial omics files. It
+# is passed through rather than baked in, so the data can live anywhere the
+# compute nodes can see. The file read is '{DATA_DIR}/{dataset}.h5ad', or
+# '{DATA_DIR}/{dataset}_{batch}.h5ad' per batch in the one-file-per-sample
+# layout (--reference_batches without --batch_key).
 #
 # This generates the #SBATCH directives and then runs _slurm_job_body.sh, which
 # is a normal committed script rather than generated text. Two reasons, the
@@ -58,7 +60,9 @@ DRY_RUN="${DRY_RUN:-0}"
 
 if [ -z "${DATA_DIR:-}" ]; then
     echo "ERROR: DATA_DIR is required. It is the folder holding the" >&2
-    echo "spatial omics files, read as '{DATA_DIR}/{dataset}_{batch}.h5ad'." >&2
+    echo "spatial omics files, read as '{DATA_DIR}/{dataset}.h5ad' (or" >&2
+    echo "'{DATA_DIR}/{dataset}_{batch}.h5ad' with --reference_batches and" >&2
+    echo "no --batch_key)." >&2
     echo "  DATA_DIR=/path/to/h5ads bash submit_slurm.sh --n_epochs 100" >&2
     exit 1
 fi
