@@ -28,7 +28,7 @@ import scipy.sparse as sp
 import squidpy as sq
 
 from nichecompass.models import NicheCompass
-from nichecompass.train import is_main_process
+from nichecompass.train import is_main_process, StageBudget
 from nichecompass.utils import (add_gps_from_gp_dict_to_adata,
                                 add_multimodal_mask_to_adata,
                                 extract_gp_dict_from_collectri_tf_network,
@@ -200,6 +200,20 @@ parser.add_argument(
          "protrudes less far from its membrane are reclassified as "
          "'cis_complex', since they take place within one membrane. Set to 0 "
          "to disable this test. Requires --humanppi_use_topology.")
+parser.add_argument(
+    "--profile",
+    type=str,
+    default="off",
+    choices=["off", "phase", "step", "imbalance"],
+    help="Runtime instrumentation. 'off' is free. 'phase' times the per epoch "
+         "stages, which is enough to see which parts of an epoch shrink when "
+         "processes are added and which do not. 'step' adds per training step "
+         "probes, at the cost of two CUDA synchronizations per step, so the "
+         "epoch time itself grows somewhat -- compare its numbers against each "
+         "other, not against an unprofiled run. 'imbalance' adds a barrier at "
+         "the end of every epoch to measure how long each process waits for "
+         "the slowest one. A whole run stage budget is printed in every mode "
+         "except 'off'. Every line is prefixed '[nc-prof]'.")
 parser.add_argument(
     "--batch_key",
     type=str,
@@ -702,6 +716,10 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+# Started here so that argument parsing is the only thing outside the
+# budget. Every process builds one; only the main process prints it.
+stage_budget = StageBudget(enabled=args.profile != "off")
+
 if args.reference_batches == [None]:
     args.reference_batches = None
 if args.cat_covariates_embeds_injection == [None]:
@@ -1101,6 +1119,8 @@ else:
         overlap_thresh_genes=args.overlap_thresh_genes,
         verbose=False)
 
+stage_budget.checkpoint("prior gene programs", "all ranks")
+
 print("Number of gene programs before filtering and combining: "
       f"{len(combined_gp_dict)}.")
 print(f"Number of gene programs after filtering and combining: "
@@ -1256,6 +1276,7 @@ if adata_batch_list:
     adata.obsp[args.adj_key] = connectivities
 adata.obs[args.mapping_entity_key] = "reference"
 adata.obs_names_make_unique()
+stage_budget.checkpoint("load data + spatial graph", "all ranks")
 
 # ATAC data (if included)
 if args.include_atac_modality:
@@ -1381,6 +1402,8 @@ if args.include_atac_modality:
         adata_atac=adata_atac,
         gtf_file_path=gtf_file_path)
 
+stage_budget.checkpoint("filter features + annotate", "all ranks")
+
 ###############################################################################
 ### 3.4 Add Gene Program Mask to Data ###
 ###############################################################################
@@ -1479,9 +1502,12 @@ model.train(n_epochs=args.n_epochs,
             seed=args.seed,
             multi_gpu=args.multi_gpu,
             batch_size_scaling=args.batch_size_scaling,
+            profile=args.profile,
             use_early_stopping=args.use_early_stopping,
             reload_best_model=args.reload_best_model,
             verbose=True)
+
+stage_budget.checkpoint("training", "all ranks")
 
 print("\nFinished model training...")
 
@@ -1503,9 +1529,12 @@ if is_main_process():
                         use_rep=args.latent_key,
                         key_added=args.latent_key)
 
+        stage_budget.checkpoint("knn graph", "rank 0 only")
+
         print("\nComputing UMAP embedding...")
         sc.tl.umap(model.adata,
                    neighbors_key=args.latent_key)
+        stage_budget.checkpoint("umap", "rank 0 only")
 
     print("\nStoring adata to disk...")
     model.adata.write(
@@ -1519,3 +1548,10 @@ if is_main_process():
                adata_file_name=f"{args.dataset}_{args.model_label}.h5ad",
                save_adata_atac=save_adata_atac,
                adata_atac_file_name=f"{args.dataset}_{args.model_label}_atac.h5ad")
+    stage_budget.checkpoint("write adata + save model", "rank 0 only")
+
+    # Printed last, and only on the main process, because the stages after
+    # training are the main process's alone: the other processes are already
+    # gone, and their budgets would stop at ´training´ anyway.
+    if args.profile != "off":
+        print(stage_budget.report())
