@@ -551,8 +551,14 @@ parser.add_argument(
 parser.add_argument(
     "--cat_covariates_embeds_injection",
     nargs='+',
-    default=["gene_expr_decoder"],
-    help="s. NicheCompass class signature")
+    default=["encoder", "gene_expr_decoder"],
+    help="Modules the categorical covariate embeddings are injected into. "
+         "Including 'encoder' lets the embedding absorb technical shift out "
+         "of the latent, which is what makes a query mapping run able to "
+         "change the query gene program scores at all. It has to be set when "
+         "the reference is trained: it changes the encoder's input dimension "
+         "and cannot be switched on for an existing checkpoint. "
+         "s. NicheCompass class signature")
 parser.add_argument(
     "--cat_covariates_embeds_nums",
     nargs='+',
