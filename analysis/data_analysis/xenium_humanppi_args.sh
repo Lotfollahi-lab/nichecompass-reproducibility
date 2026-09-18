@@ -52,7 +52,7 @@ NICHECOMPASS_ARGS=(
     --cat_covariates_keys batch
     --cat_covariates_embeds_nums 2
     --cat_covariates_no_edges True
-    --cat_covariates_embeds_injection gene_expr_decoder
+    --cat_covariates_embeds_injection encoder gene_expr_decoder
 
     # Training
     --lr 0.001
