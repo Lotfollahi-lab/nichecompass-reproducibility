@@ -7,8 +7,8 @@ such dataset. The usual culprit is uns['log1p']['base'], which scanpy sets to
 None and which nothing in NicheCompass reads.
 
 Usage:
-    python strip_nulls.py FILE.h5ad          # list what would be removed
-    python strip_nulls.py FILE.h5ad --apply  # remove it, in place
+    python strip_h5ad_nulls.py FILE.h5ad          # list what would be removed
+    python strip_h5ad_nulls.py FILE.h5ad --apply  # remove it, in place
 """
 import shutil
 import sys
