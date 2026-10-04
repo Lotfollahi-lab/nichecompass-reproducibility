@@ -277,6 +277,18 @@ parser.add_argument(
          "training. Each run picks its own best epoch, so turning this off "
          "makes two runs comparable at the same epoch.")
 parser.add_argument(
+    "--prune_aware_early_stopping",
+    action=argparse.BooleanOptionalAction,
+    default=True,
+    help="Indicator whether early stopping respects gene program pruning, "
+         "which starts after --n_epochs_all_gps epochs and makes the loss "
+         "jump. The epochs before pruning then run as a fixed warm-up, early "
+         "stopping starts with the first pruned epoch, and the reloaded best "
+         "state brings back the decoder masks of its own epoch. "
+         "--no-prune_aware_early_stopping restores the previous behaviour, in "
+         "which an unpruned state usually stays the best one and training "
+         "stops soon after pruning starts.")
+parser.add_argument(
     "--multi_gpu",
     action=argparse.BooleanOptionalAction,
     default=False,
@@ -1511,6 +1523,7 @@ model.train(n_epochs=args.n_epochs,
             profile=args.profile,
             use_early_stopping=args.use_early_stopping,
             reload_best_model=args.reload_best_model,
+            prune_aware_early_stopping=args.prune_aware_early_stopping,
             verbose=True)
 
 stage_budget.checkpoint("training", "all ranks")
